@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Data Usage — BG eSIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
+            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
+        </div>
+    </div>
+    <nav class="flex items-center gap-3">
+        <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠</a>
+        <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions }}</a>
+        <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts }}</a>
+    </nav>
+</header>
+
+<div class="max-w-lg mx-auto px-4 py-16">
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-2 text-center">📊 Data Usage</h2>
+    <p class="text-gray-500 text-center mb-8 font-mono text-sm">ICCID: {{ iccid }}</p>
+
+    {% if error %}
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-600">
+        ❌ {{ error }}
+    </div>
+
+    {% elif usage_data %}
+    <!-- Прогрес бар -->
+    <div class="bg-white rounded-2xl shadow-sm p-8">
+
+        <div class="flex justify-between text-sm text-gray-500 mb-2">
+            <span>Използвани</span>
+            <span>{{ usage_data.percent }}%</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-6">
+            <div class="h-4 rounded-full transition-all
+                {% if usage_data.percent > 80 %}bg-red-500
+                {% elif usage_data.percent > 50 %}bg-yellow-400
+                {% else %}bg-green-500{% endif %}"
+                style="width: {{ usage_data.percent }}%">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="bg-gray-50 rounded-xl p-4">
+                <p class="text-xl font-bold text-gray-800">{{ usage_data.total }}</p>
+                <p class="text-xs text-gray-500 mt-1">Общо</p>
+            </div>
+            <div class="bg-red-50 rounded-xl p-4">
+                <p class="text-xl font-bold text-red-500">{{ usage_data.used }}</p>
+                <p class="text-xs text-gray-500 mt-1">Използвани</p>
+            </div>
+            <div class="bg-green-50 rounded-xl p-4">
+                <p class="text-xl font-bold text-green-600">{{ usage_data.remaining }}</p>
+                <p class="text-xs text-gray-500 mt-1">Оставащи</p>
+            </div>
+        </div>
+
+        <p class="text-center text-gray-400 text-xs mt-6">
+            ℹ️ Данните се обновяват на всеки 2–3 часа.
+        </p>
+    </div>
+    {% endif %}
+
+    <div class="text-center mt-8">
+        <a href="/" class="text-blue-600 text-sm hover:underline">← Към началото</a>
+    </div>
+
+</div>
+
+<footer class="text-center py-8 text-gray-400 text-sm">© 2025 {{ t.footer }}</footer>
+</body>
+</html>

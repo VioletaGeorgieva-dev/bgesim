@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.site_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<!-- Header -->
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
+            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 flex-wrap">
+        <nav class="flex items-center gap-3">
+            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
+            <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
+            <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+        </nav>
+        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
+        <div class="flex items-center gap-2 flex-wrap">
+            {% for code, label in supported_langs.items() %}
+            <a href="{{ lang_urls[code] }}"
+               class="px-3 py-1 rounded-lg text-sm font-semibold transition
+               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+
+    <!-- Търсачка -->
+    <div class="bg-white rounded-2xl shadow p-6 mb-8">
+        <h2 class="text-lg font-semibold text-gray-600 mb-4">🔍 {{ t.search_title }}</h2>
+        <div class="relative" id="search-wrapper">
+            <div class="flex flex-wrap gap-3">
+                <div class="relative flex-1 min-w-[220px]">
+                    <input
+                        type="text"
+                        id="country-input"
+                        name="country"
+                        placeholder="{{ t.search_placeholder }}"
+                        value="{{ selected_country }}"
+                        autocomplete="off"
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base
+                               focus:outline-none focus:border-blue-500 transition pr-9"
+                        oninput="onSearchInput(this.value)"
+                        onkeydown="onSearchKeydown(event)"
+                        onfocus="onSearchInput(this.value)"
+                    >
+                    <button type="button" id="clear-btn" onclick="clearSearch()"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
+                               hover:text-gray-600 text-lg leading-none
+                               {% if not selected_country %}hidden{% endif %}">✕</button>
+                    <ul id="suggestions-list"
+                        class="absolute z-50 w-full bg-white border border-gray-200
+                               rounded-xl shadow-xl mt-1 max-h-64 overflow-y-auto hidden"></ul>
+                </div>
+                <button type="button" onclick="submitSearch()"
+                    class="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
+                    🔍 {{ t.search_btn }}
+                </button>
+            </div>
+        </div>
+        <p class="mt-3 text-xs text-gray-400">💡 {{ t.search_hint }}</p>
+    </div>
+
+
+        <!-- ── КАКВО Е eSIM ───────────────────────────────────── -->
+    {% if groups is none %}
+    <div class="mb-8" id="esim-section">
+
+        <!-- Заглавие -->
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-700">
+                {{ t.esim_what_title | default('Какво е eSIM и как работи?') }}
+            </h2>
+            <p class="text-gray-400 text-sm mt-2">
+                {{ t.esim_what_subtitle | default('Модерна технология за пътуване без граници') }}
+            </p>
+        </div>
+
+        <!-- 3 карти -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Карта 1 — Дигитална технология -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100
+                        hover:shadow-md transition hover:-translate-y-1 group">
+                <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center
+                            mb-4 group-hover:bg-blue-200 transition text-3xl">
+                    📱
+                </div>
+                <h3 class="font-bold text-gray-800 text-base mb-2">
+                    {{ t.esim_card1_title | default('Дигитална технология') }}
+                </h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    {{ t.esim_card1_text | default('eSIM е дигитална СИМ карта, вградена директно в телефона. Без физически пластики и без досадни иглички за отваряне.') }}
+                </p>
+                <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    <span class="text-xs text-blue-500 font-semibold">
+                        {{ t.esim_card1_tag | default('100% дигитален') }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Карта 2 — Две карти едновременно -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100
+                        hover:shadow-md transition hover:-translate-y-1 group">
+                <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center
+                            mb-4 group-hover:bg-green-200 transition text-3xl">
+                    🔄
+                </div>
+                <h3 class="font-bold text-gray-800 text-base mb-2">
+                    {{ t.esim_card2_title | default('Две карти едновременно') }}
+                </h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    {{ t.esim_card2_text | default('Вашият личен номер остава активен за разговори и съобщения (WhatsApp/Viber). eSIM се използва само за данни в чужбина.') }}
+                </p>
+                <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-xs text-green-500 font-semibold">
+                        {{ t.esim_card2_tag | default('Dual SIM') }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Карта 3 — Спестява време и пари -->
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100
+                        hover:shadow-md transition hover:-translate-y-1 group">
+                <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center
+                            mb-4 group-hover:bg-purple-200 transition text-3xl">
+                    💸
+                </div>
+                <h3 class="font-bold text-gray-800 text-base mb-2">
+                    {{ t.esim_card3_title | default('Спестява време и пари') }}
+                </h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    {{ t.esim_card3_text | default('Спирате скъпия роуминг. Без търсене на магазини по летищата — имате интернет веднага след кацане.') }}
+                </p>
+                <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                    <span class="text-xs text-purple-500 font-semibold">
+                        {{ t.esim_card3_tag | default('Без роуминг такси') }}
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Loader -->
+    <div id="loader" class="hidden text-center py-16">
+        <div class="inline-block w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+        <p class="text-gray-500 text-base">{{ t.loading }}</p>
+    </div>
+
+    <!-- Съдържание -->
+    <div id="content">
+
+        {% if error %}
+        <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+            ⚠️ {{ error }}
+        </div>
+
+        {% elif groups is none %}
+        <div class="text-center py-20 text-gray-400">
+            <div class="text-6xl mb-4">🌐</div>
+            <h2 class="text-xl font-semibold text-gray-500 mb-2">{{ t.welcome_title }}</h2>
+            <p class="text-sm">{{ t.welcome_text }}</p>
+        </div>
+
+        {% else %}
+
+        {% if resolved_code %}
+        <div class="bg-green-50 border border-green-200 text-green-700 px-5 py-3 rounded-xl mb-4 text-sm">
+            ✅ {{ t.found }} <strong>{{ total }}</strong> {{ t.packages_for }} „{{ selected_country }}" ({{ resolved_code }})
+        </div>
+        {% endif %}
+
+        <!-- 3 колони -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for col_key, col_label, col_color in [
+                ("7",  t.col_7,  "bg-purple-100 text-purple-700"),
+                ("15", t.col_15, "bg-blue-100 text-blue-700"),
+                ("30", t.col_30, "bg-green-100 text-green-700")
+            ] %}
+            <div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="{{ col_color }} text-xs font-bold px-3 py-1 rounded-full">📅 {{ col_label }}</span>
+                    <span class="text-gray-400 text-sm">({{ groups[col_key]|length }} {{ t.packages }})</span>
+                </div>
+                {% if groups[col_key] %}
+                    {% for p in groups[col_key] %}
+                    <div class="bg-white rounded-2xl shadow-sm p-4 mb-4 hover:shadow-md transition hover:-translate-y-1">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-semibold text-sm text-gray-800 flex-1 pr-2">{{ p.name }}</h3>
+                            {% if p.dataType == 2 %}
+                            <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">{{ t.label_daily }}</span>
+                            {% else %}
+                            <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">{{ t.label_total }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase tracking-wide">{{ t.label_data }}</p>
+                                <p class="font-bold text-gray-700">{{ p.volume_gb }} GB</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400 uppercase tracking-wide">{{ t.label_validity }}</p>
+                                <p class="font-bold text-gray-700">{{ p.duration }} {{ t.days }}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 flex-wrap mb-3">
+                            {% for s in p.speed.split('/') %}
+                            <span class="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded font-semibold">{{ s }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+                            <p class="text-xl font-bold text-blue-600">€{{ "%.2f"|format(p.price_eur) }}</p>
+                            <a href="/checkout?package_slug={{ p.slug }}&country={{ p.country_name }}&duration={{ p.duration }}&gb={{ p.volume_gb }}&price_eur={{ p.price_eur }}"
+                               class="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition font-semibold">
+                                {{ t.buy_btn }}
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm">
+                    {{ t.no_packages }} {{ col_label }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div><!-- /content -->
+
+</div><!-- /max-w-7xl -->
+
+<footer class="text-center py-8 text-gray-400 text-sm">
+    © 2025 {{ t.footer }}
+</footer>
+
+<script>
+    function showLoader() {
+    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('content').classList.add('hidden');
+        var esim = document.getElementById('esim-section');
+        if (esim) esim.classList.add('hidden');
+}
+
+    const ALL_COUNTRIES = [
+        {% for code, name in country_suggestions %}
+        { code: "{{ code }}", name: "{{ name }}" },
+        {% endfor %}
+    ];
+
+    let activeIndex = -1;
+
+    function onSearchInput(val) {
+        const clearBtn = document.getElementById("clear-btn");
+        clearBtn.classList.toggle("hidden", val.length === 0);
+        if (val.trim().length < 1) { hideDropdown(); return; }
+        const q = val.toLowerCase().trim();
+        const matches = ALL_COUNTRIES.filter(function(c) {
+            return c.name.toLowerCase().startsWith(q) ||
+                   c.name.toLowerCase().includes(q) ||
+                   c.code.toLowerCase() === q;
+        }).slice(0, 8);
+        renderDropdown(matches, val);
+    }
+
+    function renderDropdown(matches, inputVal) {
+        const list = document.getElementById("suggestions-list");
+        if (matches.length === 0) { hideDropdown(); return; }
+        list.innerHTML = "";
+        activeIndex = -1;
+        matches.forEach(function(country) {
+            const li = document.createElement("li");
+            const q = inputVal.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp("(" + q + ")", "gi");
+            const highlighted = country.name.replace(regex, "<strong class='text-blue-600'>$1</strong>");
+            li.innerHTML = "<span class='text-gray-400 text-xs font-mono mr-2 w-8 inline-block'>" + country.code + "</span>" + highlighted;
+            li.className = "px-4 py-3 cursor-pointer hover:bg-blue-50 text-gray-800 text-sm flex items-center transition";
+            li.addEventListener("mousedown", function(e) { e.preventDefault(); selectCountry(country.name); });
+            list.appendChild(li);
+        });
+        list.classList.remove("hidden");
+    }
+
+    function hideDropdown() {
+        document.getElementById("suggestions-list").classList.add("hidden");
+        activeIndex = -1;
+    }
+
+    function selectCountry(name) {
+        document.getElementById("country-input").value = name;
+        document.getElementById("clear-btn").classList.remove("hidden");
+        hideDropdown();
+        submitSearch();
+    }
+
+    function submitSearch() {
+        const val = document.getElementById("country-input").value.trim();
+        if (val) {
+            showLoader();
+            window.location.href = "/search?country=" + encodeURIComponent(val);
+        }
+    }
+
+    function clearSearch() {
+        document.getElementById("country-input").value = "";
+        document.getElementById("clear-btn").classList.add("hidden");
+        hideDropdown();
+        document.getElementById("country-input").focus();
+        window.location.href = "/";
+    }
+
+    function onSearchKeydown(e) {
+        const list = document.getElementById("suggestions-list");
+        const items = list.querySelectorAll("li");
+        if (e.key === "ArrowDown") {
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, items.length - 1);
+            updateActive(items);
+        } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, -1);
+            updateActive(items);
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (activeIndex >= 0 && items[activeIndex]) {
+                items[activeIndex].dispatchEvent(new Event("mousedown"));
+            } else { submitSearch(); }
+        } else if (e.key === "Escape") { hideDropdown(); }
+    }
+
+    function updateActive(items) {
+        items.forEach(function(li, i) {
+            if (i === activeIndex) {
+                li.classList.add("bg-blue-50", "font-semibold");
+                li.scrollIntoView({ block: "nearest" });
+            } else {
+                li.classList.remove("bg-blue-50", "font-semibold");
+            }
+        });
+    }
+
+    document.addEventListener("click", function(e) {
+        const wrapper = document.getElementById("search-wrapper");
+        if (wrapper && !wrapper.contains(e.target)) { hideDropdown(); }
+    });
+</script>
+
+</body>
+</html>

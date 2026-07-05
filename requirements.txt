@@ -1,0 +1,34 @@
+# Web Framework
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+
+# HTTP клиент (за eSIM Access API)
+requests==2.32.3
+httpx==0.28.1
+
+# Pydantic + Settings (четене на .env)
+pydantic==2.10.3
+pydantic-settings==2.7.0
+
+# Шаблони (Jinja2 за HTML страници)
+jinja2==3.1.4
+
+# Email (SMTP - info@bgesim.bg)
+aiosmtplib==3.0.2
+
+# Stripe плащания
+stripe==11.3.0
+
+# Python-dotenv (.env файл)
+python-dotenv==1.0.1
+
+# Статични файлове (CSS/JS)
+python-multipart==0.0.20
+
+# CSV/Excel парсване (за пакетите от провайдера)
+pandas==2.2.3
+openpyxl==3.1.5
+
+# Сигурност
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0

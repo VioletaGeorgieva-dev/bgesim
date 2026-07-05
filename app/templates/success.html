@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.success_title }} — {{ t.site_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
+            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 flex-wrap">
+        <nav class="flex items-center gap-3">
+            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠</a>
+            <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions }}</a>
+            <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts }}</a>
+        </nav>
+        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
+        <div class="flex items-center gap-2 flex-wrap">
+            {% for code, label in supported_langs.items() %}
+            <a href="{{ lang_urls[code] }}"
+               class="px-3 py-1 rounded-lg text-sm font-semibold transition
+               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</header>
+
+<div class="max-w-lg mx-auto px-4 py-20 text-center">
+
+    <!-- Икона успех -->
+    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <span class="text-5xl">✅</span>
+    </div>
+
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">{{ t.success_title }}</h2>
+    <p class="text-gray-600 text-lg mb-3">{{ t.success_text }}</p>
+    <p class="text-gray-400 text-sm mb-10">{{ t.success_check_email }}</p>
+
+    {% if session_id %}
+    <p class="text-xs text-gray-300 mb-8">ref: {{ session_id }}</p>
+    {% endif %}
+
+    <a href="/"
+       class="inline-block px-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+        🏠 {{ t.success_back }}
+    </a>
+
+</div>
+
+<footer class="text-center py-8 text-gray-400 text-sm">© 2025 {{ t.footer }}</footer>
+</body>
+</html>

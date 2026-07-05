@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.checkout_title }} — {{ t.site_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
+            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 flex-wrap">
+        <nav class="flex items-center gap-3">
+            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠</a>
+            <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions }}</a>
+            <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts }}</a>
+        </nav>
+        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+            {% for code, label in supported_langs.items() %}
+            <a href="{{ lang_urls[code] }}"
+               class="px-3 py-1 rounded-lg text-sm font-semibold transition
+               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</header>
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-8">🛒 {{ t.checkout_title }}</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <div>
+            <div class="bg-white rounded-2xl shadow-sm p-6">
+                <h3 class="text-lg font-bold text-gray-700 mb-5 pb-3 border-b border-gray-100">
+                    📦 {{ t.order_summary }}
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm">{{ t.order_country }}</span>
+                        <span class="font-semibold text-gray-800">{{ country }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm">{{ t.order_data }}</span>
+                        <span class="font-semibold text-gray-800">{{ gb }} GB</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm">{{ t.order_duration }}</span>
+                        <span class="font-semibold text-gray-800">{{ duration }} {{ t.days }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t-2 border-gray-100 flex justify-between items-center">
+                    <span class="text-gray-600 font-semibold">{{ t.order_price }}</span>
+                    <span class="text-3xl font-bold text-blue-600">€{{ "%.2f"|format(price_eur) }}</span>
+                </div>
+
+                <p class="mt-4 text-xs text-gray-300 text-right">ref: {{ package_slug }}</p>
+            </div>
+
+            <div class="mt-4 text-center text-gray-400 text-xs flex items-center justify-center gap-2">
+                🔒 {{ t.checkout_secure }}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-lg font-bold text-gray-700 mb-5 pb-3 border-b border-gray-100">
+                👤 {{ t.billing_details }}
+            </h3>
+
+            <form id="checkout-form"
+                  method="POST"
+                  action="/pay"
+                  onsubmit="return validateForm()">
+
+                <input type="hidden" name="package_slug" value="{{ package_slug }}">
+                <input type="hidden" name="country" value="{{ country }}">
+                <input type="hidden" name="duration" value="{{ duration }}">
+                <input type="hidden" name="gb" value="{{ gb }}">
+                <input type="hidden" name="price_eur" value="{{ price_eur }}">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        {{ t.first_last_name }}
+                    </label>
+                    <input
+                        type="text"
+                        name="full_name"
+                        placeholder="{{ t.first_last_name_placeholder }}"
+                        required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-500 transition"
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        {{ t.email }}
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="{{ t.email_placeholder }}"
+                        required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-500 transition"
+                    >
+                </div>
+
+                <div class="mb-2">
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">
+                        {{ t.confirm_email }}
+                    </label>
+                    <input
+                        type="email"
+                        id="confirm_email"
+                        name="confirm_email"
+                        placeholder="{{ t.confirm_email_placeholder }}"
+                        required
+                        class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-blue-500 transition"
+                    >
+                    <p id="email-error"
+                       class="hidden mt-1 text-sm text-red-500 font-semibold">
+                        ⚠️ {{ t.email_mismatch }}
+                    </p>
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full mt-6 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 transition">
+                    {{ t.button_proceed }}
+                </button>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<footer class="text-center py-8 text-gray-400 text-sm">© 2026 {{ t.footer }}</footer>
+
+<script>
+    function validateForm() {
+        const email = document.getElementById('email').value.trim();
+        const confirm = document.getElementById('confirm_email').value.trim();
+        const errorEl = document.getElementById('email-error');
+        const confirmInput = document.getElementById('confirm_email');
+
+        if (email !== confirm) {
+            errorEl.classList.remove('hidden');
+            confirmInput.classList.add('border-red-400');
+            confirmInput.classList.remove('border-gray-200');
+            confirmInput.focus();
+            return false;
+        }
+
+        errorEl.classList.add('hidden');
+        confirmInput.classList.remove('border-red-400');
+        return true;
+    }
+
+    document.getElementById('confirm_email').addEventListener('input', function () {
+        const email = document.getElementById('email').value.trim();
+        const errorEl = document.getElementById('email-error');
+
+        if (this.value && this.value !== email) {
+            errorEl.classList.remove('hidden');
+            this.classList.add('border-red-400');
+        } else {
+            errorEl.classList.add('hidden');
+            this.classList.remove('border-red-400');
+        }
+    });
+</script>
+
+</body>
+</html>

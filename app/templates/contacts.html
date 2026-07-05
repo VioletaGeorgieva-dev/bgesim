@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ t.nav_contacts }} — {{ t.site_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
+            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 flex-wrap">
+        <nav class="flex items-center gap-3">
+            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠</a>
+            <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions }}</a>
+            <a href="/contacts" class="text-sm font-semibold text-white underline">📞 {{ t.nav_contacts }}</a>
+        </nav>
+        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
+        <div class="flex items-center gap-2 flex-wrap">
+            {% for code, label in supported_langs.items() %}
+            <a href="{{ lang_urls[code] }}"
+               class="px-3 py-1 rounded-lg text-sm font-semibold transition
+               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</header>
+
+<div class="max-w-2xl mx-auto px-4 py-12">
+
+    <h2 class="text-3xl font-bold text-gray-800 mb-2">📞 {{ t.contacts_title }}</h2>
+    <p class="text-gray-500 mb-10">{{ t.contacts_subtitle }}</p>
+
+    <div class="space-y-4">
+
+        <!-- Viber -->
+        <a href="viber://chat?number={{ support_phone }}"
+           class="flex items-center gap-5 bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition hover:-translate-y-1 group">
+            <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">💬</div>
+            <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg group-hover:text-purple-600 transition">Viber</p>
+                <p class="text-gray-500 text-sm">+{{ support_phone }}</p>
+            </div>
+            <span class="text-purple-500 font-semibold text-sm">{{ t.contacts_viber_cta }}</span>
+        </a>
+
+        <!-- WhatsApp -->
+        <a href="https://wa.me/{{ support_phone }}"
+           target="_blank" rel="noopener noreferrer"
+           class="flex items-center gap-5 bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition hover:-translate-y-1 group">
+            <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">📱</div>
+            <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg group-hover:text-green-600 transition">WhatsApp</p>
+                <p class="text-gray-500 text-sm">+{{ support_phone }}</p>
+            </div>
+            <span class="text-green-500 font-semibold text-sm">{{ t.contacts_whatsapp_cta }}</span>
+        </a>
+
+        <!-- Email -->
+        <a href="mailto:{{ support_email }}"
+           class="flex items-center gap-5 bg-white rounded-2xl shadow-sm p-5 hover:shadow-md transition hover:-translate-y-1 group">
+            <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0">✉️</div>
+            <div class="flex-1">
+                <p class="font-bold text-gray-800 text-lg group-hover:text-blue-600 transition">Email</p>
+                <p class="text-gray-500 text-sm">{{ support_email }}</p>
+            </div>
+            <span class="text-blue-500 font-semibold text-sm">{{ t.contacts_email_cta }}</span>
+        </a>
+
+    </div>
+
+    <!-- Работно време -->
+    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 mt-8 text-center">
+        <p class="text-2xl mb-2">🕐</p>
+        <p class="font-semibold text-gray-700">{{ t.working_hours_title }}</p>
+        <p class="text-gray-500 text-sm mt-1">{{ t.working_hours_weekdays }}</p>
+        <p class="text-gray-500 text-sm">{{ t.working_hours_saturday }}</p>
+    </div>
+
+</div>
+
+<footer class="text-center py-8 text-gray-400 text-sm">© 2025 {{ t.footer }}</footer>
+</body>
+</html>
