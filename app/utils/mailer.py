@@ -71,12 +71,8 @@ def send_usage_email(
     usage_url: str,
     lang: str = "en",
 ) -> None:
-    """
-    Изпраща втори имейл с бутон за проверка на оставащите данни.
-    """
     u = USAGE_TRANSLATIONS.get(lang, USAGE_TRANSLATIONS["en"])
 
-    # ── Получател ─────────────────────────────────────────
     if getattr(settings, "APP_ENV", "production") == "development" and settings.SUPPORT_EMAIL:
         recipient = settings.SUPPORT_EMAIL
         print(f"[USAGE EMAIL] ⚠️ Dev override: {to_email} → {recipient}")
@@ -90,60 +86,21 @@ def send_usage_email(
     <html lang="{lang}">
     <head><meta charset="UTF-8"></head>
     <body style="margin:0; padding:0; background:#f3f4f6; font-family:Arial,sans-serif;">
-
-      <div style="max-width:520px; margin:40px auto; background:#ffffff;
-                  border-radius:16px; overflow:hidden;
-                  box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-
-        <!-- Хедър -->
-        <div style="background:linear-gradient(135deg,#2563eb,#1e40af);
-                    padding:32px 40px; text-align:center;">
+      <div style="max-width:520px; margin:40px auto; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+        <div style="background:linear-gradient(135deg,#2563eb,#1e40af); padding:32px 40px; text-align:center;">
           <h1 style="color:#ffffff; margin:0; font-size:24px;">📊 BG eSIM</h1>
-          <p style="color:#bfdbfe; margin:8px 0 0; font-size:14px;">
-            {u["header_sub"]}
-          </p>
+          <p style="color:#bfdbfe; margin:8px 0 0; font-size:14px;">{u["header_sub"]}</p>
         </div>
-
-        <!-- Съдържание -->
         <div style="padding:32px 40px; text-align:center;">
-
-          <p style="color:#1f2937; font-size:16px; margin-top:0; text-align:left;">
-            {u["greeting"].format(full_name=full_name)}
-          </p>
-          <p style="color:#374151; font-size:15px; line-height:1.6; text-align:left;">
-            {u["body"].format(country=country)}
-          </p>
-
-          <!-- ICCID -->
-          <p style="color:#6b7280; font-size:13px; margin:16px 0 24px; text-align:left;">
-            {u["iccid_label"]}: <strong style="color:#1f2937; font-family:monospace;">{iccid}</strong>
-          </p>
-
-          <!-- Бутон -->
-          <a href="{usage_url}"
-             style="display:inline-block; background:#2563eb; color:#ffffff;
-                    font-size:16px; font-weight:bold; text-decoration:none;
-                    padding:16px 36px; border-radius:12px; margin:8px 0;">
-            {u["btn"]}
-          </a>
-
-          <!-- Бележка -->
-          <p style="color:#9ca3af; font-size:12px; margin-top:24px;">
-            ℹ️ {u["note"]}
-          </p>
-
+          <p style="color:#1f2937; font-size:16px; margin-top:0; text-align:left;">{u["greeting"].format(full_name=full_name)}</p>
+          <p style="color:#374151; font-size:15px; line-height:1.6; text-align:left;">{u["body"].format(country=country)}</p>
+          <p style="color:#6b7280; font-size:13px; margin:16px 0 24px; text-align:left;">{u["iccid_label"]}: <strong style="color:#1f2937; font-family:monospace;">{iccid}</strong></p>
+          <a href="{usage_url}" style="display:inline-block; background:#2563eb; color:#ffffff; font-size:16px; font-weight:bold; text-decoration:none; padding:16px 36px; border-radius:12px; margin:8px 0;">{u["btn"]}</a>
+          <p style="color:#9ca3af; font-size:12px; margin-top:24px;">ℹ️ {u["note"]}</p>
         </div>
-
-        <!-- Футър -->
-        <div style="background:#f9fafb; border-top:1px solid #e5e7eb;
-                    padding:20px 40px; text-align:center;">
-          <p style="color:#9ca3af; font-size:12px; margin:0;">
-            © 2025 BG eSIM · {u["footer"]}
-            <a href="mailto:{settings.SUPPORT_EMAIL}"
-               style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a>
-          </p>
+        <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 40px; text-align:center;">
+          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2025 BG eSIM · {u["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
         </div>
-
       </div>
     </body>
     </html>
@@ -155,12 +112,22 @@ def send_usage_email(
     msg["To"]      = recipient
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(settings.smtp_server, settings.smtp_port, context=context) as server:
-        server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-        server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+    # Използваме стандартен SMTP с TLS порт 587, който работи безотказно в Render
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(settings.smtp_server, 587, timeout=15) as server:
+            server.starttls(context=context)
+            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
+            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+        print(f"[USAGE EMAIL] ✅ Изпратен към {recipient} (lang={lang})")
+    except Exception as e:
+        print(f"[USAGE EMAIL] ❌ Втори опит през порт 465 SSL поради грешка: {e}")
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(settings.smtp_server, 465, context=context, timeout=15) as server:
+            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
+            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+        print(f"[USAGE EMAIL] ✅ Изпратен през архивен SSL порт към {recipient}")
 
-    print(f"[USAGE EMAIL] ✅ Изпратен към {recipient} (lang={lang})")
 
 EMAIL_TRANSLATIONS = {
     "en": {
@@ -295,163 +262,95 @@ def send_esim_email(
 ) -> None:
     t = _get_t(lang)
     if getattr(settings, "APP_ENV", "production") == "development" and settings.SUPPORT_EMAIL:
-
         recipient = settings.SUPPORT_EMAIL
         print(f"[EMAIL] ⚠️ Development override: {to_email} → {recipient}")
     else:
         recipient = to_email
 
     print(f"[EMAIL] Изпращане към: {recipient} (lang={lang})")
-
     subject = t["subject"].format(country=country)
 
-    # ── QR секция ─────────────────────────────────────────
     if qr_code_url:
         qr_section = f"""
         <div style="text-align:center; margin:30px 0;">
-            <p style="color:#374151; font-size:15px; margin-bottom:12px;">
-                {t["scan_qr"]}
-            </p>
-            <img src="{qr_code_url}"
-                 alt="QR Code" width="220"
-                 style="border:4px solid #e5e7eb; border-radius:12px; padding:8px;">
+            <p style="color:#374151; font-size:15px; margin-bottom:12px;">{t["scan_qr"]}</p>
+            <img src="{qr_code_url}" alt="QR Code" width="220" style="border:4px solid #e5e7eb; border-radius:12px; padding:8px;">
         </div>
         """
     else:
         qr_section = f"""
-        <div style="background:#fef3c7; border:1px solid #f59e0b;
-                    border-radius:8px; padding:12px; margin:20px 0; text-align:center;">
-            {t["qr_pending"]}
-        </div>
+        <div style="background:#fef3c7; border:1px solid #f59e0b; border-radius:8px; padding:12px; margin:20px 0; text-align:center;">{t["qr_pending"]}</div>
         """
 
-    # ── ICCID секция ──────────────────────────────────────
     iccid_section = ""
     if iccid:
         iccid_section = f"""
-        <p style="text-align:center; color:#6b7280; font-size:13px; margin-top:8px;">
-            {t["iccid_label"]}: <strong style="color:#1f2937;">{iccid}</strong>
-        </p>
+        <p style="text-align:center; color:#6b7280; font-size:13px; margin-top:8px;">{t["iccid_label"]}: <strong style="color:#1f2937;">{iccid}</strong></p>
         """
 
-    # ── Секция за ръчно инсталиране ───────────────────────
     manual_section = ""
     if smdp_address and matching_id:
         manual_section = f"""
-        <div style="background:#f9fafb; border:1px solid #e5e7eb;
-                    border-radius:12px; padding:20px; margin-top:16px;">
-            <p style="color:#374151; font-weight:bold; margin:0 0 12px; font-size:14px;">
-                {t["manual_title"]}
-            </p>
+        <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin-top:16px;">
+            <p style="color:#374151; font-weight:bold; margin:0 0 12px; font-size:14px;">{t["manual_title"]}</p>
             <table style="width:100%; border-collapse:collapse; font-size:13px;">
                 <tr style="border-bottom:1px solid #e5e7eb;">
-                    <td style="color:#6b7280; padding:8px 0; width:45%;">
-                        {t["manual_smdp"]}
-                    </td>
-                    <td style="color:#1f2937; font-weight:bold; padding:8px 0;
-                               font-family:monospace; word-break:break-all;">
-                        {smdp_address}
-                    </td>
+                    <td style="color:#6b7280; padding:8px 0; width:45%;">{t["manual_smdp"]}</td>
+                    <td style="color:#1f2937; font-weight:bold; padding:8px 0; font-family:monospace; word-break:break-all;">{smdp_address}</td>
                 </tr>
                 <tr>
-                    <td style="color:#6b7280; padding:8px 0;">
-                        {t["manual_code"]}
-                    </td>
-                    <td style="color:#1f2937; font-weight:bold; padding:8px 0;
-                               font-family:monospace; word-break:break-all;">
-                        {matching_id}
-                    </td>
+                    <td style="color:#6b7280; padding:8px 0;">{t["manual_code"]}</td>
+                    <td style="color:#1f2937; font-weight:bold; padding:8px 0; font-family:monospace; word-break:break-all;">{matching_id}</td>
                 </tr>
             </table>
         </div>
         """
 
-    # ── HTML тяло ─────────────────────────────────────────
     html_body = f"""
     <!DOCTYPE html>
     <html lang="{lang}">
     <head><meta charset="UTF-8"></head>
     <body style="margin:0; padding:0; background:#f3f4f6; font-family:Arial,sans-serif;">
-
-      <div style="max-width:560px; margin:40px auto; background:#ffffff;
-                  border-radius:16px; overflow:hidden;
-                  box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-
-        <!-- Хедър -->
-        <div style="background:linear-gradient(135deg,#2563eb,#1e40af);
-                    padding:32px 40px; text-align:center;">
+      <div style="max-width:560px; margin:40px auto; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+        <div style="background:linear-gradient(135deg,#2563eb,#1e40af); padding:32px 40px; text-align:center;">
           <h1 style="color:#ffffff; margin:0; font-size:24px;">🌐 BG eSIM</h1>
-          <p style="color:#bfdbfe; margin:8px 0 0; font-size:14px;">
-            {t["header_sub"]}
-          </p>
+          <p style="color:#bfdbfe; margin:8px 0 0; font-size:14px;">{t["header_sub"]}</p>
         </div>
-
-        <!-- Съдържание -->
         <div style="padding:32px 40px;">
-
-          <p style="color:#1f2937; font-size:16px; margin-top:0;">
-            {t["greeting"].format(full_name=full_name)}
-          </p>
-          <p style="color:#374151; font-size:15px; line-height:1.6;">
-            {t["thank_you"]}
-          </p>
-
-          <!-- Детайли за пакета -->
-          <div style="background:#f9fafb; border:1px solid #e5e7eb;
-                      border-radius:12px; padding:20px; margin:24px 0;">
+          <p style="color:#1f2937; font-size:16px; margin-top:0;">{t["greeting"].format(full_name=full_name)}</p>
+          <p style="color:#374151; font-size:15px; line-height:1.6;">{t["thank_you"]}</p>
+          <div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:12px; padding:20px; margin:24px 0;">
             <table style="width:100%; border-collapse:collapse;">
               <tr style="border-bottom:1px solid #e5e7eb;">
                 <td style="color:#6b7280; font-size:14px; padding:10px 0;">{t["col_country"]}</td>
-                <td style="color:#1f2937; font-weight:bold; font-size:14px;
-                           text-align:right; padding:10px 0;">{country}</td>
+                <td style="color:#1f2937; font-weight:bold; font-size:14px; text-align:right; padding:10px 0;">{country}</td>
               </tr>
               <tr style="border-bottom:1px solid #e5e7eb;">
                 <td style="color:#6b7280; font-size:14px; padding:10px 0;">{t["col_data"]}</td>
-                <td style="color:#1f2937; font-weight:bold; font-size:14px;
-                           text-align:right; padding:10px 0;">{gb} GB</td>
+                <td style="color:#1f2937; font-weight:bold; font-size:14px; text-align:right; padding:10px 0;">{gb} GB</td>
               </tr>
               <tr>
                 <td style="color:#6b7280; font-size:14px; padding:10px 0;">{t["col_validity"]}</td>
-                <td style="color:#1f2937; font-weight:bold; font-size:14px;
-                           text-align:right; padding:10px 0;">
-                    {t["col_days"].format(duration=duration)}
-                </td>
+                <td style="color:#1f2937; font-weight:bold; font-size:14px; text-align:right; padding:10px 0;">{t["col_days"].format(duration=duration)}</td>
               </tr>
             </table>
           </div>
-
-          <!-- QR код -->
           {qr_section}
           {iccid_section}
           {manual_section}
-
-          <!-- Инструкции -->
-          <div style="background:#eff6ff; border:1px solid #bfdbfe;
-                      border-radius:12px; padding:20px; margin-top:24px;">
-            <p style="color:#1e40af; font-weight:bold; margin:0 0 12px;">
-              {t["how_to"]}
-            </p>
-            <ol style="color:#374151; font-size:14px; line-height:1.8;
-                       margin:0; padding-left:20px;">
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:20px; margin-top:24px;">
+            <p style="color:#1e40af; font-weight:bold; margin:0 0 12px;">{t["how_to"]}</p>
+            <ol style="color:#374151; font-size:14px; line-height:1.8; margin:0; padding-left:20px;">
               <li>{t["step1"]}</li>
               <li>{t["step2"]}</li>
               <li>{t["step3"]}</li>
               <li>{t["step4"]}</li>
             </ol>
           </div>
-
         </div>
-
-        <!-- Футър -->
-        <div style="background:#f9fafb; border-top:1px solid #e5e7eb;
-                    padding:20px 40px; text-align:center;">
-          <p style="color:#9ca3af; font-size:12px; margin:0;">
-            © 2025 BG eSIM · {t["footer"]}
-            <a href="mailto:{settings.SUPPORT_EMAIL}"
-               style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a>
-          </p>
+        <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 40px; text-align:center;">
+          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2025 BG eSIM · {t["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
         </div>
-
       </div>
     </body>
     </html>
@@ -463,9 +362,18 @@ def send_esim_email(
     msg["To"]      = recipient
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(settings.smtp_server, settings.smtp_port, context=context) as server:
-        server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-        server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
-
-    print(f"[EMAIL] ✅ Изпратен успешно към {recipient} (lang={lang})")
+    # Интелигентно тестване през порт 587 (с TLS) и автоматичен бекъп към 465 (SSL)
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP(settings.smtp_server, 587, timeout=15) as server:
+            server.starttls(context=context)
+            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
+            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+        print(f"[EMAIL] ✅ Изпратен успешно през TLS порт 587 към {recipient}")
+    except Exception as e:
+        print(f"[EMAIL] ❌ Грешка през TLS, опит през SSL порт 465: {e}")
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(settings.smtp_server, 465, context=context, timeout=15) as server:
+            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
+            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+        print(f"[EMAIL] ✅ Изпратен успешно през SSL порт 465 към {recipient}")
