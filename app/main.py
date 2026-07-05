@@ -1,6 +1,6 @@
 from collections import defaultdict
 import time
-from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException
+from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -31,9 +31,105 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 app = FastAPI(title="BG eSIM Portal")
 
 
+def process_webhook_data(event, base_url):
+    """Тази функция обработва тежката логика на заден план, без да бави отговора към Stripe."""
+    if event["type"] == "checkout.session.completed":
+        raw_session = event["data"]["object"]
+        session_id  = raw_session["id"]
+
+        stripe_session = stripe.checkout.Session.retrieve(session_id)
+        meta           = dict(stripe_session.get("metadata") or {})
+
+        print(f"[BACKGROUND TASK] 🔍 Metadata: {meta}")
+
+        if not meta.get("package_slug"):
+            print("[BACKGROUND TASK] ⚠️ Липсва package_slug в metadata!")
+            return
+
+        package_slug   = meta.get("package_slug", "")
+        full_name      = meta.get("full_name", "")
+        country        = meta.get("country", "")
+        duration       = meta.get("duration", "")
+        gb             = meta.get("gb", "")
+        lang           = meta.get("lang", "en")
+        customer_email = stripe_session.get("customer_email", "")
+
+        qr_code_url  = None
+        iccid        = None
+        smdp_address = ""
+        matching_id  = ""
+        lpa_string   = ""
+        
+        try:
+            esim_result  = order_esim(package_code=package_slug)
+            qr_code_url  = esim_result["qr_code_url"]
+            iccid        = esim_result["iccid"]
+            smdp_address = esim_result.get("smdp_address", "")
+            matching_id  = esim_result.get("matching_id", "")
+            lpa_string   = esim_result.get("lpa_string", "")
+            print(f"[BACKGROUND TASK] ✅ eSIM купен: ICCID={iccid}")
+        except Exception as e:
+            print(f"[BACKGROUND TASK] ❌ Грешка при купуване на eSIM: {e}")
+
+        try:
+            save_order(
+                stripe_session_id = session_id,
+                full_name         = full_name,
+                email             = customer_email,
+                package_slug      = package_slug,
+                country           = country,
+                gb                = gb,
+                duration          = duration,
+                iccid             = iccid or "",
+                qr_code_url       = qr_code_url or "",
+                smdp_address      = smdp_address,
+                matching_id       = matching_id,
+                lang              = lang,
+                status            = "completed" if iccid else "esim_failed",
+            )
+        except Exception as e:
+            print(f"[BACKGROUND TASK] ❌ Грешка при запис в БД: {e}")
+
+        try:
+            from app.utils.mailer import send_esim_email
+            send_esim_email(
+                to_email     = customer_email,
+                full_name    = full_name,
+                country      = country,
+                gb           = gb,
+                duration     = duration,
+                qr_code_url  = qr_code_url,
+                iccid        = iccid,
+                lang         = lang,
+                smdp_address = smdp_address,
+                matching_id  = matching_id,
+                lpa_string   = lpa_string,
+            )
+            print(f"[BACKGROUND TASK] 📧 Имейл 1 изпратен към: {customer_email}")
+        except Exception as e:
+            print(f"[BACKGROUND TASK] ❌ Грешка при имейл 1: {e}")
+
+        try:
+            from app.utils.mailer import send_usage_email
+            usage_url = base_url + f"usage/{iccid}"
+            send_usage_email(
+                to_email  = customer_email,
+                full_name = full_name,
+                country   = country,
+                iccid     = iccid or "",
+                usage_url = usage_url,
+                lang      = lang,
+            )
+            print(f"[BACKGROUND TASK] 📧 Имейл 2 изпратен към: {customer_email}")
+        except Exception as e:
+            print(f"[BACKGROUND TASK] ❌ Грешка при имейл 2: {e}")
+    else:
+        print(f"[BACKGROUND TASK] ℹ️ Игнорирано събитие: {event['type']}")
+
+
 # ─── WEBHOOK ПЪРВО — преди всякакъв middleware! ───────────────────────────────
 @app.post("/webhook")
-async def stripe_webhook(request: Request):
+async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
@@ -58,102 +154,13 @@ async def stripe_webhook(request: Request):
         print(f"[WEBHOOK] ❌ Invalid signature: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid signature: {e}")
 
-    print(f"[WEBHOOK] ✅ Валидиран event: {event['type']}")
+    print(f"[WEBHOOK] ✅ Валидиран event: {event['type']}. Прехвърляне на заден план...")
+    
+    # Стартираме background обработката и освобождаваме Stripe за под 0.1 сек.
+    base_url = str(request.base_url)
+    background_tasks.add_task(process_webhook_data, event, base_url)
 
-    if event["type"] == "checkout.session.completed":
-        raw_session = event["data"]["object"]
-        session_id  = raw_session["id"]
-
-        stripe_session = stripe.checkout.Session.retrieve(session_id)
-        meta           = dict(stripe_session.get("metadata") or {})
-
-        print(f"[WEBHOOK] 🔍 Metadata: {meta}")
-
-        if not meta.get("package_slug"):
-            print("[WEBHOOK] ⚠️ Липсва package_slug в metadata!")
-            return {"status": "missing metadata"}
-
-        package_slug   = meta.get("package_slug", "")
-        full_name      = meta.get("full_name", "")
-        country        = meta.get("country", "")
-        duration       = meta.get("duration", "")
-        gb             = meta.get("gb", "")
-        lang           = meta.get("lang", "en")
-        customer_email = stripe_session.get("customer_email", "")
-
-        qr_code_url  = None
-        iccid        = None
-        smdp_address = ""
-        matching_id  = ""
-        lpa_string   = ""
-        try:
-            esim_result  = order_esim(package_code=package_slug)
-            qr_code_url  = esim_result["qr_code_url"]
-            iccid        = esim_result["iccid"]
-            smdp_address = esim_result.get("smdp_address", "")
-            matching_id  = esim_result.get("matching_id", "")
-            lpa_string   = esim_result.get("lpa_string", "")
-            print(f"[WEBHOOK] ✅ eSIM купен: ICCID={iccid}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при купуване на eSIM: {e}")
-
-        try:
-            save_order(
-                stripe_session_id = session_id,
-                full_name         = full_name,
-                email             = customer_email,
-                package_slug      = package_slug,
-                country           = country,
-                gb                = gb,
-                duration          = duration,
-                iccid             = iccid or "",
-                qr_code_url       = qr_code_url or "",
-                smdp_address      = smdp_address,
-                matching_id       = matching_id,
-                lang              = lang,
-                status            = "completed" if iccid else "esim_failed",
-            )
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при запис в БД: {e}")
-
-        try:
-            from app.utils.mailer import send_esim_email
-            send_esim_email(
-                to_email     = customer_email,
-                full_name    = full_name,
-                country      = country,
-                gb           = gb,
-                duration     = duration,
-                qr_code_url  = qr_code_url,
-                iccid        = iccid,
-                lang         = lang,
-                smdp_address = smdp_address,
-                matching_id  = matching_id,
-                lpa_string   = lpa_string,
-            )
-            print(f"[WEBHOOK] 📧 Имейл 1 изпратен към: {customer_email}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при имейл 1: {e}")
-
-        try:
-            from app.utils.mailer import send_usage_email
-            usage_url = str(request.base_url) + f"usage/{iccid}"
-            send_usage_email(
-                to_email  = customer_email,
-                full_name = full_name,
-                country   = country,
-                iccid     = iccid or "",
-                usage_url = usage_url,
-                lang      = lang,
-            )
-            print(f"[WEBHOOK] 📧 Имейл 2 изпратен към: {customer_email}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при имейл 2: {e}")
-
-    else:
-        print(f"[WEBHOOK] ℹ️ Игнорирано събитие: {event['type']}")
-
-    return {"status": "ok"}
+    return {"status": "accepted"}
 # ─────────────────────────────────────────────────────────────────────────────
 
 
