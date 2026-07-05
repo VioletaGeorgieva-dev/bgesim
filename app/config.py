@@ -17,11 +17,10 @@ class Settings(BaseSettings):
     ADMIN_USER: str = "admin"
     ALLOWED_ORIGINS: str = "https://твоя-домейн.com"
 
-    # SMTP Email
-    smtp_server: str = "mail.bgesim.bg"
-    smtp_port: int = 465
+    # Email (Brevo HTTP API)
     smtp_sender_email: str = "info@bgesim.bg"
-    smtp_sender_password: str
+    smtp_sender_password: str = ""  # запазен за backward compat
+    brevo_api_key: str = ""
 
     # Stripe
     stripe_publishable_key: str

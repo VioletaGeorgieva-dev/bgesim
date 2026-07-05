@@ -1,11 +1,30 @@
-import smtplib
-import ssl
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import requests
 from app.config import get_settings
 from typing import Optional
 
 settings = get_settings()
+
+# ─────────────────────────────────────────────
+# Вътрешна функция за изпращане през Brevo API
+# ─────────────────────────────────────────────
+def _send_via_brevo(to_email: str, subject: str, html_body: str) -> None:
+    response = requests.post(
+        "https://api.brevo.com/v3/smtp/email",
+        headers={
+            "api-key": settings.brevo_api_key,
+            "Content-Type": "application/json",
+        },
+        json={
+            "sender": {"name": "BG eSIM", "email": settings.smtp_sender_email},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "htmlContent": html_body,
+        },
+        timeout=15,
+    )
+    response.raise_for_status()
+
+
 # ─────────────────────────────────────────────
 # Преводи за Usage имейла
 # ─────────────────────────────────────────────
@@ -106,27 +125,12 @@ def send_usage_email(
     </html>
     """
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = settings.smtp_sender_email
-    msg["To"]      = recipient
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-    # Използваме стандартен SMTP с TLS порт 587, който работи безотказно в Render
     try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP(settings.smtp_server, 587, timeout=15) as server:
-            server.starttls(context=context)
-            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
+        _send_via_brevo(recipient, subject, html_body)
         print(f"[USAGE EMAIL] ✅ Изпратен към {recipient} (lang={lang})")
     except Exception as e:
-        print(f"[USAGE EMAIL] ❌ Втори опит през порт 465 SSL поради грешка: {e}")
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(settings.smtp_server, 465, context=context, timeout=15) as server:
-            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
-        print(f"[USAGE EMAIL] ✅ Изпратен през архивен SSL порт към {recipient}")
+        print(f"[USAGE EMAIL] ❌ Грешка при изпращане: {e}")
+        raise
 
 
 EMAIL_TRANSLATIONS = {
@@ -356,24 +360,9 @@ def send_esim_email(
     </html>
     """
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = settings.smtp_sender_email
-    msg["To"]      = recipient
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-    # Интелигентно тестване през порт 587 (с TLS) и автоматичен бекъп към 465 (SSL)
     try:
-        context = ssl.create_default_context()
-        with smtplib.SMTP(settings.smtp_server, 587, timeout=15) as server:
-            server.starttls(context=context)
-            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
-        print(f"[EMAIL] ✅ Изпратен успешно през TLS порт 587 към {recipient}")
+        _send_via_brevo(recipient, subject, html_body)
+        print(f"[EMAIL] ✅ Изпратен успешно към {recipient}")
     except Exception as e:
-        print(f"[EMAIL] ❌ Грешка през TLS, опит през SSL порт 465: {e}")
-        context = ssl.create_default_context()
-        with smtplib.SMTP_SSL(settings.smtp_server, 465, context=context, timeout=15) as server:
-            server.login(settings.smtp_sender_email, settings.smtp_sender_password)
-            server.sendmail(settings.smtp_sender_email, recipient, msg.as_string())
-        print(f"[EMAIL] ✅ Изпратен успешно през SSL порт 465 към {recipient}")
+        print(f"[EMAIL] ❌ Грешка при изпращане: {e}")
+        raise
