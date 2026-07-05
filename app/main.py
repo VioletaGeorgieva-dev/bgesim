@@ -20,7 +20,6 @@ import urllib.parse
 import uvicorn
 import pycountry
 import stripe
-from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
 init_db()  # ← веднага след импорта
@@ -40,14 +39,7 @@ app.add_middleware(
 )
 
 
-class RawBodyMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        if request.url.path == "/webhook":
-            await request.body()
-        return await call_next(request)
 
-
-app.add_middleware(RawBodyMiddleware)
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
 templates.env.filters["urlencode"] = urllib.parse.quote
@@ -363,14 +355,10 @@ def cancel(request: Request, lang: str = Cookie(default="en")):
 
 @app.post("/webhook")
 async def stripe_webhook(request: Request):
-
-    try:
-        payload = await request.body()
-    except Exception as e:
-        print(f"[WEBHOOK] ❌ Грешка при четене на body: {e}")
-        raise HTTPException(status_code=400, detail="Cannot read body")
-
+    payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
+
+    print(f"[WEBHOOK] 📥 Получен! bytes={len(payload)}, sig={sig_header[:20]}")
 
     if not sig_header:
         raise HTTPException(status_code=400, detail="Missing Stripe-Signature")
@@ -378,13 +366,9 @@ async def stripe_webhook(request: Request):
     if not payload:
         raise HTTPException(status_code=400, detail="Empty payload")
 
-    print(f"[WEBHOOK] 📥 payload={len(payload)} bytes")
-
     try:
         event = stripe.Webhook.construct_event(
-            payload,
-            sig_header,
-            settings.stripe_webhook_secret,
+            payload, sig_header, settings.stripe_webhook_secret
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid payload: {e}")
@@ -413,7 +397,6 @@ async def stripe_webhook(request: Request):
         lang           = meta.get("lang", "en")
         customer_email = stripe_session.get("customer_email", "")
 
-        # 4а. Купуване на eSIM
         qr_code_url  = None
         iccid        = None
         smdp_address = ""
@@ -430,7 +413,6 @@ async def stripe_webhook(request: Request):
         except Exception as e:
             print(f"[WEBHOOK] ❌ Грешка при купуване на eSIM: {e}")
 
-        # 4б. Запис в БД
         try:
             save_order(
                 stripe_session_id = session_id,
@@ -450,7 +432,6 @@ async def stripe_webhook(request: Request):
         except Exception as e:
             print(f"[WEBHOOK] ❌ Грешка при запис в БД: {e}")
 
-        # 4в. Имейл 1 — Активация
         try:
             from app.utils.mailer import send_esim_email
             send_esim_email(
@@ -470,7 +451,6 @@ async def stripe_webhook(request: Request):
         except Exception as e:
             print(f"[WEBHOOK] ❌ Грешка при имейл 1: {e}")
 
-        # 4г. Имейл 2 — Usage
         try:
             from app.utils.mailer import send_usage_email
             usage_url = str(request.base_url) + f"usage/{iccid}"
@@ -482,7 +462,7 @@ async def stripe_webhook(request: Request):
                 usage_url = usage_url,
                 lang      = lang,
             )
-            print(f"[WEBHOOK] 📧 Имейл 2 (usage) изпратен към: {customer_email}")
+            print(f"[WEBHOOK] 📧 Имейл 2 изпратен към: {customer_email}")
         except Exception as e:
             print(f"[WEBHOOK] ❌ Грешка при имейл 2: {e}")
 
