@@ -4,7 +4,7 @@ from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from app.api.client import check_balance, get_packages, query_esim_usage  # ← един import
+from app.api.client import check_balance, get_packages, query_esim_usage
 from app.services.esim import order_esim
 from app.config import settings
 from app.translations import (
@@ -13,7 +13,7 @@ from app.translations import (
     resolve_iso2_from_text,
     get_ui,
 )
-from app.database import init_db, save_order, get_all_orders  # ← един import
+from app.database import init_db, save_order, get_all_orders
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import urllib.parse
@@ -22,7 +22,7 @@ import pycountry
 import stripe
 from fastapi.middleware.cors import CORSMiddleware
 
-init_db()  # ← веднага след импорта
+init_db()
 
 stripe.api_key = settings.stripe_secret_key
 
@@ -30,14 +30,150 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 app = FastAPI(title="BG eSIM Portal")
 
+
+# ─── WEBHOOK ПЪРВО — преди всякакъв middleware! ───────────────────────────────
+@app.post("/webhook")
+async def stripe_webhook(request: Request):
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+
+    print(f"[WEBHOOK] 📥 Получен! bytes={len(payload)}, sig={sig_header[:30]}")
+
+    if not sig_header:
+        print("[WEBHOOK] ❌ Липсва Stripe-Signature header!")
+        raise HTTPException(status_code=400, detail="Missing Stripe-Signature")
+
+    if not payload:
+        print("[WEBHOOK] ❌ Празен payload!")
+        raise HTTPException(status_code=400, detail="Empty payload")
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, settings.stripe_webhook_secret
+        )
+    except ValueError as e:
+        print(f"[WEBHOOK] ❌ Invalid payload: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid payload: {e}")
+    except stripe.SignatureVerificationError as e:
+        print(f"[WEBHOOK] ❌ Invalid signature: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid signature: {e}")
+
+    print(f"[WEBHOOK] ✅ Валидиран event: {event['type']}")
+
+    if event["type"] == "checkout.session.completed":
+        raw_session = event["data"]["object"]
+        session_id  = raw_session["id"]
+
+        stripe_session = stripe.checkout.Session.retrieve(session_id)
+        meta           = dict(stripe_session.get("metadata") or {})
+
+        print(f"[WEBHOOK] 🔍 Metadata: {meta}")
+
+        if not meta.get("package_slug"):
+            print("[WEBHOOK] ⚠️ Липсва package_slug в metadata!")
+            return {"status": "missing metadata"}
+
+        package_slug   = meta.get("package_slug", "")
+        full_name      = meta.get("full_name", "")
+        country        = meta.get("country", "")
+        duration       = meta.get("duration", "")
+        gb             = meta.get("gb", "")
+        lang           = meta.get("lang", "en")
+        customer_email = stripe_session.get("customer_email", "")
+
+        qr_code_url  = None
+        iccid        = None
+        smdp_address = ""
+        matching_id  = ""
+        lpa_string   = ""
+        try:
+            esim_result  = order_esim(package_code=package_slug)
+            qr_code_url  = esim_result["qr_code_url"]
+            iccid        = esim_result["iccid"]
+            smdp_address = esim_result.get("smdp_address", "")
+            matching_id  = esim_result.get("matching_id", "")
+            lpa_string   = esim_result.get("lpa_string", "")
+            print(f"[WEBHOOK] ✅ eSIM купен: ICCID={iccid}")
+        except Exception as e:
+            print(f"[WEBHOOK] ❌ Грешка при купуване на eSIM: {e}")
+
+        try:
+            save_order(
+                stripe_session_id = session_id,
+                full_name         = full_name,
+                email             = customer_email,
+                package_slug      = package_slug,
+                country           = country,
+                gb                = gb,
+                duration          = duration,
+                iccid             = iccid or "",
+                qr_code_url       = qr_code_url or "",
+                smdp_address      = smdp_address,
+                matching_id       = matching_id,
+                lang              = lang,
+                status            = "completed" if iccid else "esim_failed",
+            )
+        except Exception as e:
+            print(f"[WEBHOOK] ❌ Грешка при запис в БД: {e}")
+
+        try:
+            from app.utils.mailer import send_esim_email
+            send_esim_email(
+                to_email     = customer_email,
+                full_name    = full_name,
+                country      = country,
+                gb           = gb,
+                duration     = duration,
+                qr_code_url  = qr_code_url,
+                iccid        = iccid,
+                lang         = lang,
+                smdp_address = smdp_address,
+                matching_id  = matching_id,
+                lpa_string   = lpa_string,
+            )
+            print(f"[WEBHOOK] 📧 Имейл 1 изпратен към: {customer_email}")
+        except Exception as e:
+            print(f"[WEBHOOK] ❌ Грешка при имейл 1: {e}")
+
+        try:
+            from app.utils.mailer import send_usage_email
+            usage_url = str(request.base_url) + f"usage/{iccid}"
+            send_usage_email(
+                to_email  = customer_email,
+                full_name = full_name,
+                country   = country,
+                iccid     = iccid or "",
+                usage_url = usage_url,
+                lang      = lang,
+            )
+            print(f"[WEBHOOK] 📧 Имейл 2 изпратен към: {customer_email}")
+        except Exception as e:
+            print(f"[WEBHOOK] ❌ Грешка при имейл 2: {e}")
+
+    else:
+        print(f"[WEBHOOK] ℹ️ Игнорирано събитие: {event['type']}")
+
+    return {"status": "ok"}
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+# ─── MIDDLEWARE (след webhook!) ───────────────────────────────────────────────
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f"[REQUEST] {request.method} {request.url.path}")
+    response = await call_next(request)
+    print(f"[RESPONSE] {response.status_code}")
+    return response
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS.split(","), # ← Чете динамично списъка от .env
+    allow_origins=settings.ALLOWED_ORIGINS.split(","),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
-
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
@@ -45,8 +181,8 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
 templates.env.filters["urlencode"] = urllib.parse.quote
 _request_counts: dict = defaultdict(list)
 
+
 def rate_limit(ip: str, max_requests: int = 10, window: int = 60) -> bool:
-    """Връща True ако е превишен лимитът."""
     now = time.time()
     _request_counts[ip] = [
         t for t in _request_counts[ip]
@@ -56,6 +192,8 @@ def rate_limit(ip: str, max_requests: int = 10, window: int = 60) -> bool:
         return True
     _request_counts[ip].append(now)
     return False
+
+
 REGIONAL_KEYWORDS = {
     "europe", "asia", "africa",
     "north america", "south america", "latin america",
@@ -172,11 +310,9 @@ def make_context(request: Request, lang: str, **kwargs) -> dict:
 
 
 def get_country_suggestions(lang: str) -> list:
-    """Връща [(iso2, name), ...] за dropdown-а на избрания език."""
     from app.translations import COUNTRY_TRANSLATIONS
     result = []
     for iso2, names in COUNTRY_TRANSLATIONS.items():
-        # names е {"en": "Germany", "bg": "Германия", ...}
         name = names.get(lang) or names.get("en") or iso2
         result.append((iso2, name))
     return sorted(result, key=lambda x: x[1])
@@ -303,7 +439,6 @@ async def pay(
     ip = request.client.host
     if rate_limit(ip, max_requests=5, window=60):
         raise HTTPException(status_code=429, detail="Твърде много заявки. Моля, изчакайте една минута.")
-    # ----------------------------------
 
     amount_cents = int(round(price_eur * 100))
 
@@ -353,125 +488,6 @@ def cancel(request: Request, lang: str = Cookie(default="en")):
     return templates.TemplateResponse("cancel.html", ctx)
 
 
-@app.post("/webhook")
-async def stripe_webhook(request: Request):
-    payload = await request.body()
-    sig_header = request.headers.get("stripe-signature", "")
-
-    print(f"[WEBHOOK] 📥 Получен! bytes={len(payload)}, sig={sig_header[:20]}")
-
-    if not sig_header:
-        raise HTTPException(status_code=400, detail="Missing Stripe-Signature")
-
-    if not payload:
-        raise HTTPException(status_code=400, detail="Empty payload")
-
-    try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.stripe_webhook_secret
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid payload: {e}")
-    except stripe.SignatureVerificationError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid signature: {e}")
-
-    print(f"[WEBHOOK] ✅ Валидиран event: {event['type']}")
-
-    if event["type"] == "checkout.session.completed":
-        raw_session = event["data"]["object"]
-        session_id  = raw_session["id"]
-
-        stripe_session = stripe.checkout.Session.retrieve(session_id)
-        meta           = dict(stripe_session.get("metadata") or {})
-
-        print(f"[WEBHOOK] 🔍 Metadata: {meta}")
-
-        if not meta.get("package_slug"):
-            return {"status": "missing metadata"}
-
-        package_slug   = meta.get("package_slug", "")
-        full_name      = meta.get("full_name", "")
-        country        = meta.get("country", "")
-        duration       = meta.get("duration", "")
-        gb             = meta.get("gb", "")
-        lang           = meta.get("lang", "en")
-        customer_email = stripe_session.get("customer_email", "")
-
-        qr_code_url  = None
-        iccid        = None
-        smdp_address = ""
-        matching_id  = ""
-        lpa_string   = ""
-        try:
-            esim_result  = order_esim(package_code=package_slug)
-            qr_code_url  = esim_result["qr_code_url"]
-            iccid        = esim_result["iccid"]
-            smdp_address = esim_result.get("smdp_address", "")
-            matching_id  = esim_result.get("matching_id", "")
-            lpa_string   = esim_result.get("lpa_string", "")
-            print(f"[WEBHOOK] ✅ eSIM купен: ICCID={iccid}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при купуване на eSIM: {e}")
-
-        try:
-            save_order(
-                stripe_session_id = session_id,
-                full_name         = full_name,
-                email             = customer_email,
-                package_slug      = package_slug,
-                country           = country,
-                gb                = gb,
-                duration          = duration,
-                iccid             = iccid or "",
-                qr_code_url       = qr_code_url or "",
-                smdp_address      = smdp_address,
-                matching_id       = matching_id,
-                lang              = lang,
-                status            = "completed" if iccid else "esim_failed",
-            )
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при запис в БД: {e}")
-
-        try:
-            from app.utils.mailer import send_esim_email
-            send_esim_email(
-                to_email     = customer_email,
-                full_name    = full_name,
-                country      = country,
-                gb           = gb,
-                duration     = duration,
-                qr_code_url  = qr_code_url,
-                iccid        = iccid,
-                lang         = lang,
-                smdp_address = smdp_address,
-                matching_id  = matching_id,
-                lpa_string   = lpa_string,
-            )
-            print(f"[WEBHOOK] 📧 Имейл 1 изпратен към: {customer_email}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при имейл 1: {e}")
-
-        try:
-            from app.utils.mailer import send_usage_email
-            usage_url = str(request.base_url) + f"usage/{iccid}"
-            send_usage_email(
-                to_email  = customer_email,
-                full_name = full_name,
-                country   = country,
-                iccid     = iccid or "",
-                usage_url = usage_url,
-                lang      = lang,
-            )
-            print(f"[WEBHOOK] 📧 Имейл 2 изпратен към: {customer_email}")
-        except Exception as e:
-            print(f"[WEBHOOK] ❌ Грешка при имейл 2: {e}")
-
-    else:
-        print(f"[WEBHOOK] ℹ️ Игнорирано събитие: {event['type']}")
-
-    return {"status": "ok"}
-
-
 @app.get("/test-email")
 def test_email(secret: str = Query("")):
     if settings.APP_ENV != "development":
@@ -501,11 +517,11 @@ def admin_login(request: Request, lang: str = Cookie(default="en")):
 @app.post("/admin", response_class=HTMLResponse)
 def admin_login_post(
     request: Request,
-    username: str = Form(...),   # ← НОВО
+    username: str = Form(...),
     password: str = Form(...),
 ):
     if (
-        username != settings.ADMIN_USER or      # ← НОВО
+        username != settings.ADMIN_USER or
         password != settings.ADMIN_PASSWORD
     ):
         return templates.TemplateResponse(
@@ -518,8 +534,8 @@ def admin_login_post(
         key="admin_auth",
         value=settings.ADMIN_PASSWORD,
         httponly=True,
-        secure=True,      # ← НОВО: само HTTPS
-        samesite="strict", # ← НОВО: защита от CSRF
+        secure=True,
+        samesite="strict",
     )
     return response
 
