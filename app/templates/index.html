@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.site_title }}</title>
+
+    <!-- 🚀 СУПЕР SEO ОПТИМИЗАЦИЯ СЪС СМЕНА НА ЕЗИКА -->
+    {% if lang == 'bg' %}
+    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути чрез QR код и стабилна връзка без такси за роуминг в Турция, САЩ, Гърция и цял свят.">
+    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, дигитална сим карта">
+    {% else %}
+    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data without roaming fees in Turkey, USA, and worldwide.">
+    <meta name="keywords" content="esim bulgaria, cheap data abroad, esim turkey, travel esim data, cheap roaming worldwide">
+    {% endif %}
+
+    <!-- Оптимизация за споделяне в социалните мрежи (Facebook, Viber) -->
+    <meta property="og:title" content="{{ t.site_title }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bgesim.bg/">
+    <meta property="og:image" content="/static/images/logo.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
@@ -13,6 +29,7 @@
     <div class="flex items-center gap-4">
         <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
         <div>
+            <!-- Главното заглавие на бизнеса -->
             <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
             <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
         </div>
@@ -75,7 +92,7 @@
     </div>
 
 
-        <!-- ── КАКВО Е eSIM ───────────────────────────────────── -->
+    <!-- ── КАКВО Е eSIM ───────────────────────────────────── -->
     {% if groups is none %}
     <div class="mb-8" id="esim-section">
 
@@ -255,11 +272,11 @@
 
 <script>
     function showLoader() {
-    document.getElementById('loader').classList.remove('hidden');
-    document.getElementById('content').classList.add('hidden');
+        document.getElementById('loader').classList.remove('hidden');
+        document.getElementById('content').classList.add('hidden');
         var esim = document.getElementById('esim-section');
         if (esim) esim.classList.add('hidden');
-}
+    }
 
     const ALL_COUNTRIES = [
         {% for code, name in country_suggestions %}
