@@ -21,6 +21,7 @@ import uvicorn
 import pycountry
 import stripe
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 
 init_db()
 
@@ -594,6 +595,29 @@ def usage_page(
         error      = error,
     )
     return templates.TemplateResponse("usage.html", ctx)
+
+@app.get("/sitemap.xml")
+def get_sitemap(request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    
+    # Тук описваме всички основни страници на твоя сайт
+    urls = [
+        f"{base_url}/",
+        f"{base_url}/instructions",
+        f"{base_url}/contacts",
+        f"{base_url}/admin",
+    ]
+    
+    # Сглобяваме специалния XML формат, който Google изисква
+    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    for url in urls:
+        sitemap_xml += f"  <url>\n    <loc>{url}</loc>\n    <changefreq>daily</changefreq>\n  </url>\n"
+        
+    sitemap_xml += "</urlset>"
+    
+    return Response(content=sitemap_xml, media_type="application/xml")
 
 
 if __name__ == "__main__":
