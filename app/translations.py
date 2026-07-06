@@ -226,8 +226,8 @@ def resolve_iso2_from_text(query: str) -> str:
 # ─────────────────────────────────────────────
 UI_TRANSLATIONS = {
     "en": {
-        "site_title": "BG eSIM Portal",
-        "site_subtitle": "Global eSIM packages for travel",
+        "site_title": "BG eSIM | Global Travel eSIM & Prepaid Mobile Data",
+        "site_subtitle": "Instant QR code activation, high-speed internet worldwide",
         "search_title": "Search packages by country",
         "search_placeholder": "E.g.: Bulgaria, BG, Germany, DE, Japan, JP...",
         "search_btn": "Search",
@@ -311,8 +311,8 @@ UI_TRANSLATIONS = {
         "esim_card3_tag":    "No Roaming Fees",
     },
     "bg": {
-        "site_title": "BG eSIM Портал",
-        "site_subtitle": "Глобални eSIM пакети за пътуване",
+        "site_title": "BG eSIM | Мобилен интернет в чужбина без такси за роуминг",
+        "site_subtitle": "Бърза активация за 2 минути, стабилна връзка в цял свят",
         "search_title": "Търси пакети по държава",
         "search_placeholder": "Например: България, BG, Германия, DE, Япония, JP...",
         "search_btn": "Търси", "clear_btn": "Изчисти",
@@ -394,8 +394,8 @@ UI_TRANSLATIONS = {
 
     },
     "de": {
-        "site_title": "BG eSIM Portal",
-        "site_subtitle": "Globale eSIM-Pakete für Reisen",
+        "site_title": "BG eSIM | Globale Reise eSIM & Mobiles Internet im Ausland",
+        "site_subtitle": "Schnelle Aktivierung per QR-Code, günstiges Datenroaming weltweit",
         "search_title": "Pakete nach Land suchen",
         "search_placeholder": "Z.B.: Bulgarien, BG, Deutschland, DE, Japan, JP...",
         "search_btn": "Suchen", "clear_btn": "Löschen",
@@ -477,8 +477,8 @@ UI_TRANSLATIONS = {
         "esim_card3_tag":    "Keine Roaming-Gebühren",
     },
     "tr": {
-        "site_title": "BG eSIM Portalı",
-        "site_subtitle": "Seyahat için global eSIM paketleri",
+        "site_title": "BG eSIM | Seyahat için Global eSIM & Yurt Dışı İnternet Paketleri",
+        "site_subtitle": "Anında QR kod aktivasyonu, tüm dünyada ekonomik veri dolaşımı",
         "search_title": "Ülkeye göre paket ara",
         "search_placeholder": "Örn.: Bulgaristan, BG, Almanya, DE, Japonya, JP...",
         "search_btn": "Ara", "clear_btn": "Temizle",
@@ -560,8 +560,8 @@ UI_TRANSLATIONS = {
         "esim_card3_tag":    "Dolaşım Ücreti Yok",
     },
     "es": {
-        "site_title": "BG eSIM Portal",
-        "site_subtitle": "Paquetes eSIM globales para viajes",
+        "site_title": "BG eSIM | Tarjeta eSIM Internacional & Datos Móviles para Viajar",
+        "site_subtitle": "Activación instantánea con código QR, internet de alta velocidad sin roaming",
         "search_title": "Buscar paquetes por país",
         "search_placeholder": "Ej.: Bulgaria, BG, Alemania, DE, Japón, JP...",
         "search_btn": "Buscar", "clear_btn": "Limpiar",
