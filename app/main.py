@@ -466,6 +466,11 @@ async def pay(
     if rate_limit(ip, max_requests=5, window=60):
         raise HTTPException(status_code=429, detail="Твърде много заявки. Моля, изчакайте една минута.")
 
+    # ── Проверка дали двата имейла съвпадат ──────────────────────────────────
+    if email.strip().lower() != confirm_email.strip().lower():
+        raise HTTPException(status_code=400, detail="Имейл адресите трябва да бъдат еднакви.")
+    # ─────────────────────────────────────────────────────────────────────────
+
     # ── ЗАЩИТА: Цената се изчислява САМО от сървъра — frontend стойността се игнорира ──
     location_code = package_slug.split("_")[0]
     try:
@@ -488,7 +493,7 @@ async def pay(
 
     amount_cents = int(round(server_price * 100))
     print(f"[PAY] ✅ Цена изчислена от сървъра: €{server_price} ({amount_cents} цента) за {package_slug}")
-    # ──────────────────────────────────────────────────────────────────────────────────
+    # ─────────────────────────────────────────────────────────────────────────
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
