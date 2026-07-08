@@ -149,6 +149,23 @@ def process_webhook_data(event, base_url):
             print(f"[BACKGROUND TASK] 📧 Имейл 2 изпратен към: {customer_email}")
         except Exception as e:
             print(f"[BACKGROUND TASK] ❌ Грешка при имейл 2: {e}")
+
+        try:
+            from app.utils.mailer import send_esim_email
+            send_esim_email(
+                to_email    = settings.SUPPORT_EMAIL,
+                full_name   = f"🔔 НОВА ПОРЪЧКА от {full_name} ({customer_email})",
+                country     = country,
+                gb          = gb,
+                duration    = duration,
+                qr_code_url = qr_code_url,
+                iccid       = iccid,
+                lang        = "bg",
+            )
+            print(f"[BACKGROUND TASK] 📧 Admin известие изпратено към: {settings.SUPPORT_EMAIL}")
+        except Exception as e:
+            print(f"[BACKGROUND TASK] ❌ Грешка при admin известие: {e}")
+
     else:
         print(f"[BACKGROUND TASK] ℹ️ Игнорирано събитие: {event['type']}")
 
