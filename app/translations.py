@@ -173,7 +173,7 @@ COUNTRY_TRANSLATIONS = {
     "TC": {"en": "Turks and Caicos Islands", "bg": "Търкс и Кайкос", "de": "Turks- und Caicosinseln", "tr": "Turks ve Caicos Adaları", "es": "Islas Turcas y Caicos"},
     "UG": {"en": "Uganda", "bg": "Уганда", "de": "Uganda", "tr": "Uganda", "es": "Uganda"},
     "UA": {"en": "Ukraine", "bg": "Украйна", "de": "Ukraine", "tr": "Ukrayna", "es": "Ucrania"},
-    "AE": {"en": "United Arab Emirates", "bg": "ОАЕ", "de": "Vereinigte Arabische Emirate", "tr": "Birleşik Arap Emirlikleri", "es": "Emiratos Árabes Unidos"},
+    "AE": {"en": "United Arab Emirates", "bg": "ОАЕ , Дубай", "de": "Vereinigte Arabische Emirate", "tr": "Birleşik Arap Emirlikleri", "es": "Emiratos Árabes Unidos"},
     "GB": {"en": "United Kingdom", "bg": "Великобритания", "de": "Vereinigtes Königreich", "tr": "Birleşik Krallık", "es": "Reino Unido"},
     "US": {"en": "United States", "bg": "САЩ", "de": "Vereinigte Staaten", "tr": "Amerika Birleşik Devletleri", "es": "Estados Unidos"},
     "UY": {"en": "Uruguay", "bg": "Уругвай", "de": "Uruguay", "tr": "Uruguay", "es": "Uruguay"},
