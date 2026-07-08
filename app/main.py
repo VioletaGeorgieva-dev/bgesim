@@ -31,6 +31,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 app = FastAPI(title="BG eSIM Portal")
 
+USD_TO_EUR = 0.95
+MARGIN_COEFFICIENT = 2.0
+
+
+def get_server_side_price(package_slug: str) -> Optional[float]:
+    """
+    Взима официалната цена от eSIM Access API по package_slug.
+    Никога не се доверява на цената от frontend-а.
+    Връща price_eur или None ако пакетът не е намерен.
+    """
+    try:
+        location_code = package_slug.split("_")[0]
+        data = get_packages(location=location_code)
+        packages = data.get("obj", {}).get("packageList", [])
+        for p in packages:
+            if p.get("slug", "").upper() == package_slug.upper():
+                original_price_usd = p["price"] / 10000
+                price_eur = round(original_price_usd * USD_TO_EUR * MARGIN_COEFFICIENT, 2)
+                return price_eur
+    except Exception as e:
+        print(f"[PRICE CHECK] ❌ Грешка при вземане на цена за {package_slug}: {e}")
+    return None
+
 
 def process_webhook_data(event, base_url):
     """Тази функция обработва тежката логика на заден план, без да бави отговора към Stripe."""
@@ -60,7 +83,7 @@ def process_webhook_data(event, base_url):
         smdp_address = ""
         matching_id  = ""
         lpa_string   = ""
-        
+
         try:
             esim_result  = order_esim(package_code=package_slug)
             qr_code_url  = esim_result["qr_code_url"]
@@ -156,8 +179,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         raise HTTPException(status_code=400, detail=f"Invalid signature: {e}")
 
     print(f"[WEBHOOK] ✅ Валидиран event: {event['type']}. Прехвърляне на заден план...")
-    
-    # Стартираме background обработката и освобождаваме Stripe за под 0.1 сек.
+
     base_url = str(request.base_url)
     background_tasks.add_task(process_webhook_data, event, base_url)
 
@@ -208,9 +230,6 @@ REGIONAL_KEYWORDS = {
     "caribbean", "middle east", "oceania", "pacific",
     "balkans", "scandinavia", "nordic", "global",
 }
-
-USD_TO_EUR = 0.95
-MARGIN_COEFFICIENT = 2.0
 
 
 def is_regional_package(name: str) -> bool:
@@ -441,14 +460,35 @@ async def pay(
     country: str = Form(...),
     duration: int = Form(...),
     gb: float = Form(...),
-    price_eur: float = Form(...),
     lang: str = Cookie(default="en"),
 ):
     ip = request.client.host
     if rate_limit(ip, max_requests=5, window=60):
         raise HTTPException(status_code=429, detail="Твърде много заявки. Моля, изчакайте една минута.")
 
-    amount_cents = int(round(price_eur * 100))
+    # ── ЗАЩИТА: Цената се изчислява САМО от сървъра — frontend стойността се игнорира ──
+    location_code = package_slug.split("_")[0]
+    try:
+        data = get_packages(location=location_code)
+        packages = data.get("obj", {}).get("packageList", [])
+    except Exception as e:
+        print(f"[PAY] ❌ Грешка при извличане на пакети за {location_code}: {e}")
+        raise HTTPException(status_code=503, detail="Временна грешка. Моля, опитайте отново.")
+
+    server_price: Optional[float] = None
+    for p in packages:
+        if p.get("slug", "").upper() == package_slug.upper():
+            original_price_usd = p["price"] / 10000
+            server_price = round(original_price_usd * USD_TO_EUR * MARGIN_COEFFICIENT, 2)
+            break
+
+    if server_price is None:
+        print(f"[PAY] ❌ Пакетът не е намерен: {package_slug}")
+        raise HTTPException(status_code=400, detail="Невалиден пакет. Моля, опитайте отново.")
+
+    amount_cents = int(round(server_price * 100))
+    print(f"[PAY] ✅ Цена изчислена от сървъра: €{server_price} ({amount_cents} цента) за {package_slug}")
+    # ──────────────────────────────────────────────────────────────────────────────────
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
@@ -596,27 +636,26 @@ def usage_page(
     )
     return templates.TemplateResponse("usage.html", ctx)
 
+
 @app.get("/sitemap.xml")
 def get_sitemap(request: Request):
     base_url = str(request.base_url).rstrip("/")
-    
-    # Тук описваме всички основни страници на твоя сайт
+
     urls = [
         f"{base_url}/",
         f"{base_url}/instructions",
         f"{base_url}/contacts",
         f"{base_url}/admin",
     ]
-    
-    # Сглобяваме специалния XML формат, който Google изисква
+
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    
+
     for url in urls:
         sitemap_xml += f"  <url>\n    <loc>{url}</loc>\n    <changefreq>daily</changefreq>\n  </url>\n"
-        
+
     sitemap_xml += "</urlset>"
-    
+
     return Response(content=sitemap_xml, media_type="application/xml")
 
 
