@@ -34,6 +34,8 @@ app = FastAPI(title="BG eSIM Portal")
 USD_TO_EUR = 0.95
 MARGIN_COEFFICIENT = 2.0
 
+ADMIN_SESSION_VALUE = "authenticated_admin"
+
 
 def get_server_side_price(package_slug: str) -> Optional[float]:
     """
@@ -582,15 +584,17 @@ def admin_login_post(
             {"request": request, "error": "Грешни данни!"},
             status_code=401,
         )
+    # ── ЗАЩИТА: записваме фиксиран низ в бисквитката, НЕ паролата ────────────
     response = RedirectResponse(url="/admin/orders", status_code=303)
     response.set_cookie(
         key="admin_auth",
-        value=settings.ADMIN_PASSWORD,
+        value=ADMIN_SESSION_VALUE,
         httponly=True,
         secure=True,
         samesite="strict",
     )
     return response
+    # ─────────────────────────────────────────────────────────────────────────
 
 
 @app.get("/admin/orders", response_class=HTMLResponse)
@@ -599,8 +603,10 @@ def admin_orders(
     admin_auth: str = Cookie(default=""),
     status_filter: str = Query(default="all"),
 ):
-    if admin_auth != settings.ADMIN_PASSWORD:
+    # ── Проверяваме спрямо фиксирания низ, НЕ спрямо паролата ───────────────
+    if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
+    # ─────────────────────────────────────────────────────────────────────────
 
     orders = get_all_orders(status_filter=status_filter if status_filter != "all" else None)
 
