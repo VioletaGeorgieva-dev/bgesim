@@ -634,24 +634,44 @@ def admin_orders(
     request: Request,
     admin_auth: str = Cookie(default=""),
     status_filter: str = Query(default="all"),
+    q: Optional[str] = Query(default=None), 
 ):
     if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
 
-    orders = get_all_orders(
-        status_filter=status_filter if status_filter != "all" else None
-    )
+    # 1. Взимаме абсолютно всички поръчки
+    all_orders = get_all_orders(status_filter=None)
 
-    total = len(orders)
-    completed = sum(1 for o in orders if o["status"] == "completed")
-    failed = sum(1 for o in orders if o["status"] == "esim_failed")
+    # 2. Броим ги точно, за да работят квадратчетата най-горе
+    total = len(all_orders)
+    completed = sum(1 for o in all_orders if o.get("status") == "completed")
+    failed = sum(1 for o in all_orders if o.get("status") == "esim_failed")
 
+    # 3. Подготвяме списъка, който реално ще покажем в таблицата
+    orders_to_show = all_orders
+
+    # Ако е избран филтър за статус от падащото меню:
+    if status_filter != "all":
+        orders_to_show = [o for o in orders_to_show if o.get("status") == status_filter]
+
+    # Ако си написал нещо в търсачката:
+    if q and q.strip():
+        search_query = q.strip().lower()
+        orders_to_show = [
+            o for o in orders_to_show
+            if search_query in str(o.get("full_name", "")).lower()
+            or search_query in str(o.get("email", "")).lower()
+            or search_query in str(o.get("iccid", "")).lower()
+        ]
+
+    # 4. Пращаме всичко готово към сайта
     return templates.TemplateResponse(
         "admin.html",
         {
             "request": request,
-            "orders": orders,
+            "orders": orders_to_show,
             "status_filter": status_filter,
+            "q": q,
             "total": total,
             "completed": completed,
             "failed": failed,
