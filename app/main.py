@@ -84,7 +84,7 @@ FAQ_DATA = {
             },
             {
                 "q": "📞 Получавам ли телефонен номер с обаждания и SMS?",
-                "a": "Нашите eSIM пакети са предназначени <strong>само за мобилен интернет (Data-only)</strong>. Те не идват с традиционен телефонен номер, но можете да провеждаte неограничени безплатни разговори през приложения като <strong>WhatsApp, Viber, Messenger, Telegram или FaceTime</strong>, използвайки нашия бърз интернет."
+                "a": "Нашите eSIM пакети са предназначени <strong>само за мобилен интернет (Data-only)</strong>. Те не идват с традиционен телефонен номер, но можете да провеждате неограничени безплатни разговори през приложения като <strong>WhatsApp, Viber, Messenger, Telegram или FaceTime</strong>, използвайки нашия бърз интернет."
             },
             {
                 "q": "📶 Мога ли да споделям интернет (HotSpot) с моята eSIM?",
@@ -93,10 +93,6 @@ FAQ_DATA = {
             {
                 "q": "📴 Ако използвам eSIM, сегашната ми SIM карта ще работи ли?",
                 "a": "<strong>Да, вашата българска SIM карта остава напълно активна.</strong> Телефонът ви преминава в режим 'Dual SIM'. Можете да получавате обаждания и SMS-и на българския си номер, докато eSIM ви осигурява евтиния интернет в чужбина. <em>(Важно: Изберете eSIM за 'Мобилни данни' в настройките си, за да избегнете такси за роуминг от вашия оператор).</em>"
-            },
-            {
-                "q": "🛡️ Какво е KYC и eKYC?",
-                "a": "<strong>KYC (Know Your Customer)</strong> е стандартен процес за идентификация на самоличността. Някои държави (като Турция) изискват регистрация на паспортни данни за активиране на интернет. За повечето дестинации това не се изисква, но ако е необходимо, системата ни ще ви преведе през процеса бързо и сигурно."
             },
             {
                 "q": "📊 Как да видя оставащите си данни?",
@@ -159,10 +155,6 @@ FAQ_DATA = {
                 "a": "<strong>Yes, your local SIM card remains fully active.</strong> Your phone switches to Dual SIM mode. You can receive calls and SMS on your local number, while the eSIM provides cheap internet abroad. <em>(Important: Select eSIM for 'Mobile Data' in your settings to avoid roaming charges from your domestic carrier).</em>"
             },
             {
-                "q": "🛡️ What is KYC and eKYC?",
-                "a": "<strong>KYC (Know Your Customer)</strong> is a standard identity verification process. Some countries (like Turkey) require passport registration by law to activate internet. This is not required for most tourist destinations, but if it is, our system will guide you through it quickly and securely."
-            },
-            {
                 "q": "📊 How can I check my remaining data?",
                 "a": "It's very easy! Right after your purchase, we send you a second email with a link to your personal usage page. With just 1 click, you can see how much data you have left in real-time."
             }
@@ -221,10 +213,6 @@ FAQ_DATA = {
             {
                 "q": "📴 Wenn ich eine eSIM verwende, funktioniert meine physische SIM-Karte weiterhin?",
                 "a": "<strong>Ja, Ihre normale SIM-Karte bleibt voll aktiv.</strong> Ihr Telefon läuft im Dual-SIM-Modus. Sie können weiterhin Anrufe und SMS auf Ihrer normalen Nummer empfangen, während die eSIM für günstiges Internet sorgt."
-            },
-            {
-                "q": "🛡️ Was ist KYC und eKYC?",
-                "a": "<strong>KYC (Know Your Customer)</strong> ist ein gesetzlicher Identitätsnachweis. Einige Länder (wie die Türkei) verlangen eine Registrierung der Passdaten. Für die meisten touristischen Ziele ist dies jedoch nicht erforderlich."
             },
             {
                 "q": "📊 Wie kann ich mein verbleibendes Datenvolumen einsehen?",
@@ -287,10 +275,6 @@ FAQ_DATA = {
                 "a": "<strong>Evet, yerel SIM kartınız tamamen aktif kalır.</strong> Telefonunuz Çift SIM moduna geçer. eSIM size yurt dışında ucuz internet sağlarken, yerel numaranızdan arama almaya devam edersiniz."
             },
             {
-                "q": "🛡️ KYC ve eKYC nedir?",
-                "a": "<strong>KYC (Müşterini Tanı)</strong> standart bir kimlik doğrulama sürecidir. Bazı ülkeler (Türkiye gibi) pasaport bilgilerinin kaydedilmesini gerektirir. Çoğu yer için bu gerekli değildir."
-            },
-            {
                 "q": "📊 Kalan verilerimi nasıl görebilirim?",
                 "a": "Çok kolay! Satın alma işleminden sonra, kişisel kullanım sayfanızın bağlantısını içeren bir e-posta gönderiyoruz. Tek bir tıklamayla kalan verinizi görebilirsiniz."
             }
@@ -349,10 +333,6 @@ FAQ_DATA = {
             {
                 "q": "📴 Si uso eSIM, ¿seguirá funcionando mi tarjeta SIM actual?",
                 "a": "<strong>Sí, tu tarjeta SIM habitual sigue estando totalmente activa.</strong> Tu teléfono pasa al modo 'Dual SIM'. Puedes recibir llamadas y SMS en tu número local mientras la eSIM te proporciona internet barato."
-            },
-            {
-                "q": "🛡️ ¿Qué es KYC y eKYC?",
-                "a": "<strong>KYC (Know Your Customer)</strong> es un proceso estándar de verificación de identidad. Algunos países (como Turquía) exigen el registro de los datos del pasaporte. No es necesario para la mayoría de los destinos."
             },
             {
                 "q": "📊 ¿Cómo puedo ver mis datos restantes?",
