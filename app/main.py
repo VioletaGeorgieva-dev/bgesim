@@ -97,6 +97,16 @@ def process_webhook_data(event, base_url):
         except Exception as e:
             print(f"[BACKGROUND TASK] ❌ Грешка при купуване на eSIM: {e}")
 
+        # 🍏🤖 ── СГЛОБЯВАНЕ НА UNIVERSAL LINKS (С МАЛКИ БУКВИ) ──
+        ios_universal_link = ""
+        android_universal_link = ""
+        if lpa_string:
+            clean_lpa = lpa_string.lower()  # Изискване на Apple за изцяло малки букви
+            encoded_lpa = urllib.parse.quote(clean_lpa)
+            ios_universal_link = f"https://esimsetup.apple.com/esim_qrcode_provisioning?carddata={encoded_lpa}"
+            android_universal_link = f"https://esimsetup.android.com/esim_qrcode_provisioning?carddata={encoded_lpa}"
+        # ────────────────────────────────────────────────────────
+
         try:
             save_order(
                 stripe_session_id = session_id,
@@ -130,6 +140,8 @@ def process_webhook_data(event, base_url):
                 smdp_address = smdp_address,
                 matching_id  = matching_id,
                 lpa_string   = lpa_string,
+                ios_link     = ios_universal_link,      # 🍏 Нов параметър
+                android_link = android_universal_link,  # 🤖 Нов параметър
             )
             print(f"[BACKGROUND TASK] 📧 Имейл 1 изпратен към: {customer_email}")
         except Exception as e:
