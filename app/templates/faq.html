@@ -1,7 +1,44 @@
-{% extends "index.html" %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ faq_title }} - BG eSIM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-{% block content %}
-<div class="max-w-4xl mx-auto px-4 py-12" style="font-family: Arial, sans-serif;">
+<!-- Header (Навигация) -->
+<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+        <img src="/static/images/logo.png" alt="BG eSIM" class="h-12 w-auto object-contain">
+        <div>
+            <h1 class="text-2xl font-bold">BG eSIM</h1>
+            <p class="text-sm opacity-75">Мобилен интернет в чужбина</p>
+        </div>
+    </div>
+    <div class="flex items-center gap-4 flex-wrap">
+        <nav class="flex items-center gap-3">
+            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
+            <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
+            <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+            <a href="/faq" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
+        </nav>
+        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
+        <div class="flex items-center gap-2 flex-wrap">
+            {% for code, label in supported_langs.items() %}
+            <a href="{{ lang_urls[code] }}"
+               class="px-3 py-1 rounded-lg text-sm font-semibold transition
+               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</header>
+
+<!-- Съдържание на FAQ -->
+<div class="max-w-4xl mx-auto px-4 py-12">
     
     <h1 class="text-center text-3xl md:text-4xl font-extrabold text-blue-900 mb-2">{{ faq_title }}</h1>
     <p class="text-center text-gray-500 text-base mb-10">{{ faq_subtitle }}</p>
@@ -15,7 +52,7 @@
         {% endfor %}
     </div>
 
-    <!-- Красив банер за контакти -->
+    <!-- Контакти Банер -->
     <div class="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center mt-12 shadow-sm">
         <h3 class="text-blue-900 font-extrabold text-2xl mb-2">{{ faq_footer_title }}</h3>
         <p class="text-blue-700 text-sm md:text-base mb-6">{{ faq_footer_sub }}</p>
@@ -29,29 +66,32 @@
         {% elif lang == "de" %}
         <p class="text-gray-700 text-sm md:text-base">
             Haben Sie Fragen? Schreiben Sie uns an 
-            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
-            oder kontaktieren Sie uns über unsere Kontaktseite.
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a>.
         </p>
         {% elif lang == "tr" %}
         <p class="text-gray-700 text-sm md:text-base">
-            Başka sorunuz mu var? 
-            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
-            adresinden bize yazın veya iletişim sayfamızdan bizimle iletişime geçin.
+            Başka sorunuz mu var? Bize 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> adresinden yazın.
         </p>
         {% elif lang == "es" %}
         <p class="text-gray-700 text-sm md:text-base">
             ¿Tienes preguntas? Escríbenos a 
-            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
-            o contáctanos a través de nuestra página de contacto.
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a>.
         </p>
         {% else %}
         <p class="text-gray-700 text-sm md:text-base">
             Have more questions? Write to us at 
-            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
-            or contact us on our contact page.
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a>.
         </p>
         {% endif %}
     </div>
 
 </div>
-{% endblock %}
+
+<!-- Footer -->
+<footer class="text-center py-8 text-gray-400 text-sm border-t border-gray-200 mt-8">
+    © 2026 BG eSIM
+</footer>
+
+</body>
+</html>
