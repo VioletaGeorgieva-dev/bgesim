@@ -39,6 +39,7 @@
             <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
             <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
             <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+            <a href="/faq" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
         </nav>
         <div class="w-px h-6 bg-blue-400 opacity-50"></div>
         <div class="flex items-center gap-2 flex-wrap">
