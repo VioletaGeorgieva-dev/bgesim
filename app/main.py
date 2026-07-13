@@ -36,6 +36,332 @@ MARGIN_COEFFICIENT = 2.0
 
 ADMIN_SESSION_VALUE = "authenticated_admin"
 
+ADMIN_SESSION_VALUE = "authenticated_admin"
+
+# ❓ ─── ДАННИ И ПРЕВОДИ ЗА FAQ СТРАНИЦАТА (5 ЕЗИКА) ───
+FAQ_DATA = {
+    "bg": {
+        "title": "❓ Често задавани въпроси (FAQ)",
+        "subtitle": "Всичко, което трябва да знаете за вашите BG eSIM карти на едно място.",
+        "footer_title": "🚀 Вземете eSIM с високоскоростен интернет",
+        "footer_sub": "Пътувайте свободно, без скъп роуминг и без чакане по опашки.",
+        "items": [
+            {
+                "q": "📱 Телефонът ми поддържа ли eSIM?",
+                "a": "Повечето съвременни смартфони поддържат eSIM технология.<br>"
+                     "• <strong>За iPhone:</strong> Всички модели от iPhone XS, XS Max, XR и по-нови.<br>"
+                     "• <strong>За Samsung:</strong> Сериите Galaxy S20, S21, S22, S23, S24, Note 20, Fold и Flip.<br>"
+                     "• <strong>За Google Pixel:</strong> Всички модели от Pixel 3 нагоре.<br>"
+                     "<em>Бърза проверка: Наберете *#06# от телефона си. Ако на екрана видите EID номер, телефонът ви поддържа eSIM.</em>"
+            },
+            {
+                "q": "🌐 Какво е eSIM и QR код?",
+                "a": "<strong>eSIM</strong> е вградена, изцяло дигитална SIM карта. Вече няма нужда да ходите до офис на оператор или да сменяте пластмасови чипове с кламери.<br>"
+                     "<strong>QR кодът</strong> е вашият дигитален ключ. Когато го сканирате с камерата на телефона си, устройството ви автоматично изтегля и инсталира интернет профила от разстояние."
+            },
+            {
+                "q": "📲 Как да инсталирам моята BG eSIM?",
+                "a": "Имате три лесни начина за инсталация:<br>"
+                     "1. <strong>С 1 клик (Най-бързо):</strong> Отворете имейла с потвърждението директно от телефона си и натиснете бутона за вашата операционна система (iOS или Android).<br>"
+                     "2. <strong>Чрез QR код:</strong> Сканирайте QR кода от имейла с камерата на телефона си и следвайте инструкциите на екрана.<br>"
+                     "3. <strong>Ръчно въвеждане:</strong> Ако нямате второ устройство, под бутоните сме ви оставили 'SM-DP+ адрес' и 'Код за активиране', които можете просто да копирате и поставите в настройките на телефона си."
+            },
+            {
+                "q": "🔄 Вече имам инсталирана eSIM карта, мога ли да добавя друга?",
+                "a": "<strong>Да, абсолютно!</strong> Можете да имате инсталирани множество eSIM профили на телефона си (обикновено между 5 и 10, в зависимост от модела). Трябва само да изберете от настройките коя карта да бъде активна в момента."
+            },
+            {
+                "q": "⏳ Кога трябва да закупя eSIM карта?",
+                "a": "Най-добре е да направите покупката <strong>1-2 дни преди вашето пътуване</strong>. Можете спокойно да инсталирате профила, докато все още сте у дома и имате стабилен домашен Wi-Fi. Пакетът няма да започне да се изразходва, докато не пристигнете в чужбина."
+            },
+            {
+                "q": "📅 Кога започва валидността на пакета?",
+                "a": "За по-голямата част от дестинациите валидността (например 7, 15 или 30 дни) започва <strong>едва когато пристигнете в съответната държава и телефонът ви се свърже с местната партньорска мрежа</strong>. Инсталирането на картата у дома не ви отнема от дните за ползване."
+            },
+            {
+                "q": "🗺️ Мога ли да използвам един и същ eSIM план в множество държави?",
+                "a": "Ако закупите пакет за <strong>конкретна държава</strong> (напр. само Гърция), той ще работи само там. Ако пътувате през няколко страни, изберете някой от нашите <strong>Регионални планове</strong> (например 'Европа', който покрива над 30 държави с една-единствена eSIM)."
+            },
+            {
+                "q": "📞 Получавам ли телефонен номер с обаждания и SMS?",
+                "a": "Нашите eSIM пакети са предназначени <strong>само за мобилен интернет (Data-only)</strong>. Те не идват с традиционен телефонен номер, но можете да провеждаte неограничени безплатни разговори през приложения като <strong>WhatsApp, Viber, Messenger, Telegram или FaceTime</strong>, използвайки нашия бърз интернет."
+            },
+            {
+                "q": "📶 Мога ли да споделям интернет (HotSpot) с моята eSIM?",
+                "a": "<strong>Да!</strong> Всички наши eSIM карти поддържат функцията за споделяне на интернет (HotSpot / Tethering). Можете лесно да споделите връзката си с вашия лаптоп, таблет или с телефоните на приятелите ви."
+            },
+            {
+                "q": "📴 Ако използвам eSIM, сегашната ми SIM карта ще работи ли?",
+                "a": "<strong>Да, вашата българска SIM карта остава напълно активна.</strong> Телефонът ви преминава в режим 'Dual SIM'. Можете да получавате обаждания и SMS-и на българския си номер, докато eSIM ви осигурява евтиния интернет в чужбина. <em>(Важно: Изберете eSIM за 'Мобилни данни' в настройките си, за да избегнете такси за роуминг от вашия оператор).</em>"
+            },
+            {
+                "q": "🛡️ Какво е KYC и eKYC?",
+                "a": "<strong>KYC (Know Your Customer)</strong> е стандартен процес за идентификация на самоличността. Някои държави (като Турция) изискват регистрация на паспортни данни за активиране на интернет. За повечето дестинации това не се изисква, но ако е необходимо, системата ни ще ви преведе през процеса бързо и сигурно."
+            },
+            {
+                "q": "📊 Как да видя оставащите си данни?",
+                "a": "Много е лесно! Веднага след покупката ви изпращаме втори имейл с линк към вашата <strong>персонална страница за потребление</strong>. Само с 1 клик върху него можете в реално време да виждате колко интернет ви остава."
+            }
+        ]
+    },
+    "en": {
+        "title": "❓ Frequently Asked Questions (FAQ)",
+        "subtitle": "Everything you need to know about your BG eSIM cards in one place.",
+        "footer_title": "🚀 Get high-speed internet eSIM now",
+        "footer_sub": "Travel freely without expensive roaming and without waiting in lines.",
+        "items": [
+            {
+                "q": "📱 Does my phone support eSIM?",
+                "a": "Most modern smartphones support eSIM technology.<br>"
+                     "• <strong>For iPhone:</strong> All models from iPhone XS, XS Max, XR and newer.<br>"
+                     "• <strong>For Samsung:</strong> Galaxy S20, S21, S22, S23, S24, Note 20, Fold and Flip series.<br>"
+                     "• <strong>For Google Pixel:</strong> All models from Pixel 3 and newer.<br>"
+                     "<em>Quick check: Dial *#06# on your phone. If you see an EID number, your phone supports eSIM.</em>"
+            },
+            {
+                "q": "🌐 What is an eSIM and QR code?",
+                "a": "An <strong>eSIM</strong> is an embedded, entirely digital SIM card. There's no need to visit an operator's office or swap physical plastic chips.<br>"
+                     "The <strong>QR code</strong> is your digital key. When you scan it with your phone's camera, your device automatically downloads and installs the internet profile."
+            },
+            {
+                "q": "📲 How do I install my BG eSIM?",
+                "a": "You have three easy ways to install:<br>"
+                     "1. <strong>One-click (Fastest):</strong> Open the confirmation email directly from your phone and press the button for your OS (iOS or Android).<br>"
+                     "2. <strong>QR Code:</strong> Scan the QR code from the email using your phone's camera and follow the on-screen instructions.<br>"
+                     "3. <strong>Manual Entry:</strong> If you don't have a second device, we've provided the 'SM-DP+ address' and 'Activation Code' below the buttons, which you can simply copy and paste into your phone settings."
+            },
+            {
+                "q": "🔄 Can I add another eSIM if I already have one installed?",
+                "a": "Yes, absolutely! You can have multiple eSIM profiles installed on your phone (usually between 5 and 10, depending on the model). You just need to select which card you want to be active in your settings."
+            },
+            {
+                "q": "⏳ When should I buy an eSIM card?",
+                "a": "It is best to make the purchase <strong>1-2 days before your trip</strong>. You can easily install the profile while you are still at home with a stable Wi-Fi connection. The package won't start consuming data until you arrive abroad."
+            },
+            {
+                "q": "📅 When does the package validity begin?",
+                "a": "For most destinations, the validity (e.g., 7, 15, or 30 days) starts only when you arrive in the destination country and your phone connects to the local partner network. Installing at home does not take away from your package days."
+            },
+            {
+                "q": "🗺️ Can I use the same eSIM plan in multiple countries?",
+                "a": "If you buy a package for a specific country (e.g., Greece only), it will only work there. If you are traveling through multiple countries, choose one of our Regional plans (e.g., 'Europe', which covers over 30 countries with a single eSIM)."
+            },
+            {
+                "q": "📞 Do I get a phone number for calls and SMS?",
+                "a": "Our eSIM packages are designed for mobile data only. They do not come with a traditional phone number. However, you can make unlimited free calls and send messages via apps like WhatsApp, Viber, Messenger, Telegram, or FaceTime using our high-speed internet."
+            },
+            {
+                "q": "📶 Can I share internet (HotSpot) with my eSIM?",
+                "a": "<strong>Yes!</strong> All our eSIM cards support the internet sharing function (HotSpot / Tethering). You can easily share your connection with your laptop, tablet, or your friends' phones."
+            },
+            {
+                "q": "📴 Will my current SIM card still work if I use an eSIM?",
+                "a": "<strong>Yes, your local SIM card remains fully active.</strong> Your phone switches to Dual SIM mode. You can receive calls and SMS on your local number, while the eSIM provides cheap internet abroad. <em>(Important: Select eSIM for 'Mobile Data' in your settings to avoid roaming charges from your domestic carrier).</em>"
+            },
+            {
+                "q": "🛡️ What is KYC and eKYC?",
+                "a": "<strong>KYC (Know Your Customer)</strong> is a standard identity verification process. Some countries (like Turkey) require passport registration by law to activate internet. This is not required for most tourist destinations, but if it is, our system will guide you through it quickly and securely."
+            },
+            {
+                "q": "📊 How can I check my remaining data?",
+                "a": "It's very easy! Right after your purchase, we send you a second email with a link to your personal usage page. With just 1 click, you can see how much data you have left in real-time."
+            }
+        ]
+    },
+    "de": {
+        "title": "❓ Häufig gestellte Fragen (FAQ)",
+        "subtitle": "Alles, was Sie über Ihre BG eSIM-Karten wissen müssen, an einem Ort.",
+        "footer_title": "🚀 Holen Sie sich jetzt die Highspeed-Internet eSIM",
+        "footer_sub": "Reisen Sie frei, ohne teures Roaming und ohne Warteschlangen.",
+        "items": [
+            {
+                "q": "📱 Unterstützt mein Telefon eSIM?",
+                "a": "Die meisten modernen Smartphones unterstützen die eSIM-Technologie.<br>"
+                     "• <strong>Für iPhone:</strong> Alle Modelle ab iPhone XS, XS Max, XR und neuer.<br>"
+                     "• <strong>Für Samsung:</strong> Galaxy S20, S21, S22, S23, S24, Note 20, Fold und Flip Serien.<br>"
+                     "• <strong>Für Google Pixel:</strong> Alle Modelle ab Pixel 3 und neuer.<br>"
+                     "<em>Schnelltest: Wählen Sie *#06# auf Ihrem Telefon. Wenn Sie eine EID-Nummer sehen, unterstützt Ihr Telefon eSIM.</em>"
+            },
+            {
+                "q": "🌐 Was ist eine eSIM und ein QR-Code?",
+                "a": "Eine <strong>eSIM</strong> ist eine integrierte, vollständig digitale SIM-Karte. Sie müssen keinen Mobilfunkshop aufsuchen oder physische SIM-Karten wechseln.<br>"
+                     "Der <strong>QR-Code</strong> ist Ihr digitaler Schlüssel. Wenn Sie ihn mit der Kamera Ihres Telefons scannen, lädt Ihr Gerät das Profil automatisch herunter."
+            },
+            {
+                "q": "📲 Wie installiere ich meine BG eSIM?",
+                "a": "Sie haben drei superleichte Installationsmöglichkeiten:<br>"
+                     "1. <strong>1-Klick (Am schnellsten):</strong> Öffnen Sie die Bestätigungs-E-Mail direkt auf Ihrem Telefon und tippen Sie auf die Schaltfläche für Ihr Betriebssystem (iOS oder Android).<br>"
+                     "2. <strong>Über QR-Code:</strong> Scannen Sie den QR-Code aus der E-Mail mit der Kamera Ihres Telefons und folgen Sie den Anweisungen.<br>"
+                     "3. <strong>Manuelle Eingabe:</strong> Wenn Sie kein zweites Gerät haben, verwenden Sie die 'SM-DP+ Adresse' und den 'Aktivierungscode' unter den Schaltflächen."
+            },
+            {
+                "q": "🔄 Ich habe bereits eine eSIM installiert, kann ich eine weitere hinzufügen?",
+                "a": "Ja, absolut! Sie können mehrere eSIM-Profile auf Ihrem Telefon installieren (je nach Modell meist zwischen 5 und 10). Sie müssen in den Einstellungen lediglich auswählen, welche Karte gerade aktiv sein soll."
+            },
+            {
+                "q": "⏳ Wann sollte ich eine eSIM-Karte kaufen?",
+                "a": "Am besten kaufen Sie die eSIM <strong>1-2 Tage vor Ihrer Reise</strong>. Sie können das Profil bequem zu Hause über ein stabilis WLAN installieren. Das Paket verbraucht erst Daten, wenn Sie im Ausland ankommen."
+            },
+            {
+                "q": "📅 Wann beginnt die Gültigkeit des Pakets?",
+                "a": "Für die meisten Reiseziele beginnt die Gültigkeit erst, wenn Sie im Zielland ankommen und sich Ihr Telefon mit dem lokalen Partnernetzwerk verbindet. Die Installation zu Hause verkürzt Ihre Laufzeit nicht."
+            },
+            {
+                "q": "🗺️ Kann ich denselben eSIM-Tarif in mehreren Ländern nutzen?",
+                "a": "Wenn Sie ein Paket für ein bestimmtes Land kaufen (z. B. nur Griechenland), funktioniert es nur dort. Wenn Sie durch mehrere Länder reisen, wählen Sie einen unserer Regionaltarife (z. B. 'Europa')."
+            },
+            {
+                "q": "📞 Erhalte ich eine Telefonnummer für Anrufe und SMS?",
+                "a": "Unsere eSIM-Pakete sind reine Datentarife (Data-only). Sie enthalten keine herkömmliche Telefonnummer. Sie können jedoch unbegrenzt kostenlose Anrufe über Apps wie WhatsApp, Viber oder Messenger tätigen."
+            },
+            {
+                "q": "📶 Kann ich mit meiner eSIM einen Hotspot einrichten?",
+                "a": "<strong>Ja!</strong> Alle unsere eSIM-Karten unterstützen die Hotspot-Funktion (Tethering). Sie können Ihre Verbindung ganz einfach mit Ihrem Laptop, Tablet oder anderen Telefonen teilen."
+            },
+            {
+                "q": "📴 Wenn ich eine eSIM verwende, funktioniert meine physische SIM-Karte weiterhin?",
+                "a": "<strong>Ja, Ihre normale SIM-Karte bleibt voll aktiv.</strong> Ihr Telefon läuft im Dual-SIM-Modus. Sie können weiterhin Anrufe und SMS auf Ihrer normalen Nummer empfangen, während die eSIM für günstiges Internet sorgt."
+            },
+            {
+                "q": "🛡️ Was ist KYC und eKYC?",
+                "a": "<strong>KYC (Know Your Customer)</strong> ist ein gesetzlicher Identitätsnachweis. Einige Länder (wie die Türkei) verlangen eine Registrierung der Passdaten. Für die meisten touristischen Ziele ist dies jedoch nicht erforderlich."
+            },
+            {
+                "q": "📊 Wie kann ich mein verbleibendes Datenvolumen einsehen?",
+                "a": "Ganz einfach! Direkt nach dem Kauf senden wir Ihnen eine E-Mail mit einem Link zu Ihrer persönlichen Verbrauchseite, auf der Sie Ihr Guthaben in Echtzeit sehen."
+            }
+        ]
+    },
+    "tr": {
+        "title": "❓ Sıkça Sorulan Sorular (FAQ)",
+        "subtitle": "BG eSIM kartlarınız hakkında bilmeniz gereken her şey tek bir yerde.",
+        "footer_title": "🚀 Şimdi yüksek hızlı internet ile eSIM alın",
+        "footer_sub": "Pahalı roaming ücretleri olmadan ve kuyruklarda beklemeden özgürce seyahat edin.",
+        "items": [
+            {
+                "q": "📱 Telefonum eSIM'i destekliyor mu?",
+                "a": "Çoğu modern akıllı telefon eSIM teknolojisini desteklemektedir.<br>"
+                     "• <strong>iPhone için:</strong> iPhone XS, XS Max, XR ve daha yeni tüm modeller.<br>"
+                     "• <strong>Samsung için:</strong> Galaxy S20, S21, S22, S23, S24, Note 20, Fold ve Flip serileri.<br>"
+                     "• <strong>Google Pixel için:</strong> Pixel 3 ve daha yeni tüm modeller.<br>"
+                     "<em>Hızlı kontrol: Telefonunuzdan *#06# tuşlayın. Ekranda EID numarasını görüyorsanız eSIM destekleniyor demektir.</em>"
+            },
+            {
+                "q": "🌐 eSIM ve QR kodu nedir?",
+                "a": "<strong>eSIM</strong> gömülü ve tamamen dijital bir SIM karttır. Operatör ofislerine gitmeye gerek kalmadan çalışır.<br>"
+                     "<strong>QR kodu</strong> dijital anahtarınızdır. Kamerayla tarattığınızda internet profilini otomatik olarak indirir."
+            },
+            {
+                "q": "📲 BG eSIM'imi nasıl kurarım?",
+                "a": "Kurulum için üç kolay yolunuz var:<br>"
+                     "1. <strong>1 Tıkla (En hızlısı):</strong> Onay e-postasını telefonunuzdan açın ve işletim sisteminiz (iOS/Android) için olan düğmeye basın.<br>"
+                     "2. <strong>QR Kod ile:</strong> E-postadaki QR kodunu telefonunuzun kamerasıyla taratın.<br>"
+                     "3. <strong>Manuel Giriş:</strong> Düğmelerin altında bulunan 'SM-DP+ adresi' ve 'Aktivasyon Kodu' bilgilerini kopyalayıp ayarlara yapıştırın."
+            },
+            {
+                "q": "🔄 Zaten bir eSIM yüklüyse başka bir tane ekleyebilir miyim?",
+                "a": "Evet, kesinlikle! Telefonunuza birden fazla eSIM profili yükleyebilirsiniz (genellikle 5 ila 10 adet). Ayarlardan o anda hangi kartın aktif olacağını seçmeniz yeterlidir."
+            },
+            {
+                "q": "⏳ eSIM kartı ne zaman satın almalıyım?",
+                "a": "Satın alma işlemini seyahatinizden <strong>1-2 gün önce</strong> yapmanız en iyisidir. Evinizde Wi-Fi varken profili kurabilirsiniz. Paket, siz yurt dışına varana kadar veri tüketmez."
+            },
+            {
+                "q": "📅 Paket geçerliliği ne zaman başlar?",
+                "a": "Çoğu destinasyon için geçerlilik süresi ancak hedef ülkeye vardığınızda ve telefonunuz yerel ortak ağa bağlandığında başlar. Evde kurulum yapmak paket günlerinizden düşmez."
+            },
+            {
+                "q": "🗺️ Aynı eSIM planını birden fazla ülkede kullanabilir miyim?",
+                "a": "Belirli bir ülke için paket satın alırsanız sadece orada çalışır. Birden fazla ülkeden geçecekseniz, Bölgesel planlarımızdan birini seçin (örneğin 'Avrupa' planı)."
+            },
+            {
+                "q": "📞 Aramalar ve SMS'ler için telefon numarası alıyor muyum?",
+                "a": "eSIM paketlerimiz yalnızca mobil veri (Data-only) amaçlıdır. Geleneksel bir numara içermezler, ancak WhatsApp, Viber veya Telegram üzerinden ücretsiz görüşme yapabilirsiniz."
+            },
+            {
+                "q": "📶 eSIM'im ile internet paylaşımı (HotSpot) yapabilir miyim?",
+                "a": "<strong>Evet!</strong> Tüm eSIM kartlarımız internet paylaşımı (HotSpot / Tethering) işlevini destekler. Bağlantınızı dizüstü bilgisayarınız veya arkadaşlarınızla paylaşabilirsiniz."
+            },
+            {
+                "q": "📴 eSIM kullanırsam mevcut SIM kartım çalışmaya devam edecek mi?",
+                "a": "<strong>Evet, yerel SIM kartınız tamamen aktif kalır.</strong> Telefonunuz Çift SIM moduna geçer. eSIM size yurt dışında ucuz internet sağlarken, yerel numaranızdan arama almaya devam edersiniz."
+            },
+            {
+                "q": "🛡️ KYC ve eKYC nedir?",
+                "a": "<strong>KYC (Müşterini Tanı)</strong> standart bir kimlik doğrulama sürecidir. Bazı ülkeler (Türkiye gibi) pasaport bilgilerinin kaydedilmesini gerektirir. Çoğu yer için bu gerekli değildir."
+            },
+            {
+                "q": "📊 Kalan verilerimi nasıl görebilirim?",
+                "a": "Çok kolay! Satın alma işleminden sonra, kişisel kullanım sayfanızın bağlantısını içeren bir e-posta gönderiyoruz. Tek bir tıklamayla kalan verinizi görebilirsiniz."
+            }
+        ]
+    },
+    "es": {
+        "title": "❓ Preguntas frecuentes (FAQ)",
+        "subtitle": "Todo lo que necesitas saber sobre tus tarjetas eSIM de BG eSIM en un solo lugar.",
+        "footer_title": "🚀 Consigue una eSIM de alta velocidad ahora",
+        "footer_sub": "Viaja libremente sin costoso roaming y sin esperar en colas.",
+        "items": [
+            {
+                "q": "📱 ¿Mi teléfono es compatible con eSIM?",
+                "a": "La mayoría de los smartphones modernos son compatibles con la tecnología eSIM.<br>"
+                     "• <strong>Para iPhone:</strong> Todos los de iPhone XS, XS Max, XR y posteriores.<br>"
+                     "• <strong>Para Samsung:</strong> Series Galaxy S20, S21, S22, S23, S24, Note 20, Fold y Flip.<br>"
+                     "• <strong>Para Google Pixel:</strong> Todos los de Pixel 3 y posteriores.<br>"
+                     "<em>Comprobación rápida: Marca *#06# en tu teléfono. Si ves un número EID, tu teléfono es compatible con eSIM.</em>"
+            },
+            {
+                "q": "🌐 ¿Qué es una eSIM y un código QR?",
+                "a": "Una <strong>eSIM</strong> es una tarjeta SIM integrada y completamente digital. No necesitas visitar una tienda física ni cambiar chips.<br>"
+                     "El <strong>código QR</strong> es tu llave digital. Al escanearlo con la cámara, tu dispositivo descarga el perfil de internet automáticamente."
+            },
+            {
+                "q": "📲 ¿Cómo instalo mi eSIM de BG eSIM?",
+                "a": "Tienes tres formas súper fáciles de instalarla:<br>"
+                     "1. <strong>En 1 clic (La más rápida):</strong> Abre el correo de confirmación directamente desde tu teléfono y pulsa el botón correspondiente (iOS/Android).<br>"
+                     "2. <strong>Mediante código QR:</strong> Escanea el código QR del correo con la cámara de tu teléfono.<br>"
+                     "3. <strong>Entrada manual:</strong> Usa la 'Dirección SM-DP+' y el 'Código de activación' que te dejamos debajo de los botones en los ajustes de tu teléfono."
+            },
+            {
+                "q": "🔄 Ya tengo una eSIM instalada, ¿puedo añadir otra?",
+                "a": "¡Sí, por supuesto! Puedes tener varios perfiles eSIM instalados en tu teléfono (normalmente entre 5 y 10). Solo necesitas seleccionar cuál tarjeta deseas tener activa en cada momento."
+            },
+            {
+                "q": "⏳ ¿Cuándo debo comprar una tarjeta eSIM?",
+                "a": "Lo ideal es realizar la compra <strong>1 o 2 días antes de tu viaje</strong>. Puedes instalar el perfil cómodamente en casa con una conexión Wi-Fi estable. El paquete no consumirá datos hasta que llegues al extranjero."
+            },
+            {
+                "q": "📅 ¿Cuándo empieza la validez del paquete?",
+                "a": "Para la mayoría de los destinos, la validez comienza únicamente cuando llegas al país de destino y tu teléfono se conecta a la red asociada local. Instalarla en casa no reduce los días de tu paquete."
+            },
+            {
+                "q": "🗺️ ¿Puedo usar el mismo plan eSIM en varios países?",
+                "a": "Si compras un paquete para un país específico (por ejemplo, solo Grecia), solo funcionará allí. Si viajas por varios países, elige uno de nuestros planes regionales (como 'Europa')."
+            },
+            {
+                "q": "📞 ¿Recibo un número de teléfono con llamadas y SMS?",
+                "a": "Nuestros paquetes eSIM están diseñados exclusivamente para datos móviles (Data-only). No incluyen un número tradicional. Sin embargo, puedes realizar llamadas gratuitas ilimitadas a través de WhatsApp, Viber o Messenger."
+            },
+            {
+                "q": "📶 ¿Puedo compartir internet (HotSpot) con mi eSIM?",
+                "a": "<strong>¡Sí!</strong> Todas nuestras tarjetas eSIM admiten la función de compartir internet (HotSpot / Tethering). Puedes compartir fácilmente tu conexión con tu portátil o tableta."
+            },
+            {
+                "q": "📴 Si uso eSIM, ¿seguirá funcionando mi tarjeta SIM actual?",
+                "a": "<strong>Sí, tu tarjeta SIM habitual sigue estando totalmente activa.</strong> Tu teléfono pasa al modo 'Dual SIM'. Puedes recibir llamadas y SMS en tu número local mientras la eSIM te proporciona internet barato."
+            },
+            {
+                "q": "🛡️ ¿Qué es KYC y eKYC?",
+                "a": "<strong>KYC (Know Your Customer)</strong> es un proceso estándar de verificación de identidad. Algunos países (como Turquía) exigen el registro de los datos del pasaporte. No es necesario para la mayoría de los destinos."
+            },
+            {
+                "q": "📊 ¿Cómo puedo ver mis datos restantes?",
+                "a": "¡Es muy fácil! Justo después de la compra, te enviamos un segundo correo con un enlace a tu página de consumo personal para ver tus datos en tiempo real."
+            }
+        ]
+    }
+}
+
 
 def get_server_side_price(package_slug: str) -> Optional[float]:
     """
@@ -452,6 +778,22 @@ def contacts(request: Request, lang: str = Cookie(default="en")):
     )
     return templates.TemplateResponse("contacts.html", ctx)
 
+
+@app.get("/faq", response_class=HTMLResponse)
+def faq(request: Request, lang: str = Cookie(default="en")):
+    # Взимаме преводите спрямо активната бисквитка за език
+    faq_content = FAQ_DATA.get(lang, FAQ_DATA["en"])
+    
+    ctx = make_context(
+        request, lang,
+        faq_title=faq_content["title"],
+        faq_subtitle=faq_content["subtitle"],
+        faq_footer_title=faq_content["footer_title"],
+        faq_footer_sub=faq_content["footer_sub"],
+        faq_items=faq_content["items"],
+        support_email=settings.SUPPORT_EMAIL
+    )
+    return templates.TemplateResponse("faq.html", ctx)
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(
