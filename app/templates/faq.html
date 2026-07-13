@@ -1,56 +1,53 @@
-{% extends "base.html" %}
+{% extends "index.html" %}
 
 {% block content %}
-<div class="max-width-container" style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: Arial, sans-serif; color: #1f2937;">
+<div class="max-w-4xl mx-auto px-4 py-12" style="font-family: Arial, sans-serif;">
+    
+    <h1 class="text-center text-3xl md:text-4xl font-extrabold text-blue-900 mb-2">{{ faq_title }}</h1>
+    <p class="text-center text-gray-500 text-base mb-10">{{ faq_subtitle }}</p>
 
-    <!-- Динамично заглавие и подзаглавие от Python -->
-    <h1 style="text-align: center; font-size: 32px; color: #1e40af; margin-bottom: 10px;">{{ faq_title }}</h1>
-    <p style="text-align: center; color: #6b7280; font-size: 16px; margin-bottom: 40px;">{{ faq_subtitle }}</p>
-
-    <!-- FAQ Секция с въпроси и отговори -->
-    <div class="faq-section">
+    <div class="space-y-4">
         {% for item in faq_items %}
-        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-            <h3 style="color: #1e40af; margin-top: 0; font-size: 18px; margin-bottom: 12px;">{{ item.q }}</h3>
-            <p style="line-height: 1.6; margin: 0; font-size: 15px;">{{ item.a | safe }}</p>
+        <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+            <h3 class="text-lg font-bold text-blue-900 mb-3">{{ item.q }}</h3>
+            <p class="text-gray-600 text-sm md:text-base leading-relaxed">{{ item.a | safe }}</p>
         </div>
         {% endfor %}
     </div>
 
-    <!-- Красив контакти банер под въпросите -->
-    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 16px; padding: 32px; text-align: center; margin-top: 40px;">
-        <h3 style="color: #1e40af; margin-top: 0; font-size: 22px;">{{ faq_footer_title }}</h3>
-        <p style="color: #1e40af; font-size: 15px; margin-bottom: 24px;">{{ faq_footer_sub }}</p>
-
-        <!-- Динамични контакти според избрания език -->
+    <!-- Красив банер за контакти -->
+    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-8 text-center mt-12 shadow-sm">
+        <h3 class="text-blue-900 font-extrabold text-2xl mb-2">{{ faq_footer_title }}</h3>
+        <p class="text-blue-700 text-sm md:text-base mb-6">{{ faq_footer_sub }}</p>
+        
         {% if lang == "bg" %}
-        <p style="margin: 0; font-size: 15px; color: #1f2937;">
-            Имате още въпроси? Пишете ни на
-            <a href="mailto:{{ support_email }}" style="color: #2563eb; font-weight: bold; text-decoration: none;">{{ support_email }}</a>
+        <p class="text-gray-700 text-sm md:text-base">
+            Имате още въпроси? Пишете ни на 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
             или се свържете с нас през страницата ни за контакти.
         </p>
         {% elif lang == "de" %}
-        <p style="margin: 0; font-size: 15px; color: #1f2937;">
-            Haben Sie Fragen? Schreiben Sie uns an
-            <a href="mailto:{{ support_email }}" style="color: #2563eb; font-weight: bold; text-decoration: none;">{{ support_email }}</a>
+        <p class="text-gray-700 text-sm md:text-base">
+            Haben Sie Fragen? Schreiben Sie uns an 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
             oder kontaktieren Sie uns über unsere Kontaktseite.
         </p>
         {% elif lang == "tr" %}
-        <p style="margin: 0; font-size: 15px; color: #1f2937;">
-            Başka sorunuz mu var?
-            <a href="mailto:{{ support_email }}" style="color: #2563eb; font-weight: bold; text-decoration: none;">{{ support_email }}</a>
+        <p class="text-gray-700 text-sm md:text-base">
+            Başka sorunuz mu var? 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
             adresinden bize yazın veya iletişim sayfamızdan bizimle iletişime geçin.
         </p>
         {% elif lang == "es" %}
-        <p style="margin: 0; font-size: 15px; color: #1f2937;">
-            ¿Tienes preguntas? Escríbenos a
-            <a href="mailto:{{ support_email }}" style="color: #2563eb; font-weight: bold; text-decoration: none;">{{ support_email }}</a>
+        <p class="text-gray-700 text-sm md:text-base">
+            ¿Tienes preguntas? Escríbenos a 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
             o contáctanos a través de nuestra página de contacto.
         </p>
         {% else %}
-        <p style="margin: 0; font-size: 15px; color: #1f2937;">
-            Have more questions? Write to us at
-            <a href="mailto:{{ support_email }}" style="color: #2563eb; font-weight: bold; text-decoration: none;">{{ support_email }}</a>
+        <p class="text-gray-700 text-sm md:text-base">
+            Have more questions? Write to us at 
+            <a href="mailto:{{ support_email }}" class="text-blue-600 font-bold hover:underline">{{ support_email }}</a> 
             or contact us on our contact page.
         </p>
         {% endif %}
