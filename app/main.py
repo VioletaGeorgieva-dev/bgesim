@@ -98,13 +98,16 @@ def process_webhook_data(event, base_url):
             print(f"[BACKGROUND TASK] ❌ Грешка при купуване на eSIM: {e}")
 
         # 🍏🤖 ── СГЛОБЯВАНЕ НА UNIVERSAL LINKS (С МАЛКИ БУКВИ) ──
+        
         ios_universal_link = ""
         android_universal_link = ""
         if lpa_string:
-            clean_lpa = lpa_string.lower()  # Изискване на Apple за изцяло малки букви
-            encoded_lpa = urllib.parse.quote(clean_lpa)
-            ios_universal_link = f"https://esimsetup.apple.com/esim_qrcode_provisioning?carddata={encoded_lpa}"
-            android_universal_link = f"https://esimsetup.android.com/esim_qrcode_provisioning?carddata={encoded_lpa}"
+            # За Apple: Изискват изцяло малки букви, но оставяме символите $ и : чисти
+            ios_universal_link = f"https://esimsetup.apple.com/esim_qrcode_provisioning?carddata={lpa_string.lower()}"
+            
+            # За Android: Подаваме АБСОЛЮТНО СУРОВИЯ низ (LPA:1$...), с големи букви и без кодиране
+            android_universal_link = f"https://esimsetup.android.com/esim_qrcode_provisioning?carddata={lpa_string}"
+        # ────────────────────────────────────────────────────────
         # ────────────────────────────────────────────────────────
 
         try:
