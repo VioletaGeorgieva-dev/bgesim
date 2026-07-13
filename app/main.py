@@ -635,7 +635,7 @@ def admin_orders(
     admin_auth: str = Cookie(default=""),
     status_filter: str = Query(default="all"),
 ):
-    if admin_auth != settings.ADMIN_PASSWORD:
+    if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
 
     orders = get_all_orders(
