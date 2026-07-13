@@ -781,9 +781,9 @@ def contacts(request: Request, lang: str = Cookie(default="en")):
 
 @app.get("/faq", response_class=HTMLResponse)
 def faq(request: Request, lang: str = Cookie(default="en")):
-    # Взимаме преводите спрямо активната бисквитка за език
     faq_content = FAQ_DATA.get(lang, FAQ_DATA["en"])
     
+    # Подаваме празни стойности за променливите, които index.html изисква
     ctx = make_context(
         request, lang,
         faq_title=faq_content["title"],
@@ -791,7 +791,15 @@ def faq(request: Request, lang: str = Cookie(default="en")):
         faq_footer_title=faq_content["footer_title"],
         faq_footer_sub=faq_content["footer_sub"],
         faq_items=faq_content["items"],
-        support_email=settings.SUPPORT_EMAIL
+        support_email=settings.SUPPORT_EMAIL,
+        
+        # 💡 ТУК Е СПАСЕНИЕТО: Залъгваме index.html, че няма търсени пакети в момента
+        groups=None,
+        selected_country="",
+        resolved_code=None,
+        error=None,
+        total=0,
+        country_suggestions=get_country_suggestions(lang)
     )
     return templates.TemplateResponse("faq.html", ctx)
 
