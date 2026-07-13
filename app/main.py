@@ -635,19 +635,28 @@ def admin_orders(
     admin_auth: str = Cookie(default=""),
     status_filter: str = Query(default="all"),
 ):
-    # ── Проверяваме спрямо фиксирания низ, НЕ спрямо паролата ───────────────
-    if admin_auth != ADMIN_SESSION_VALUE:
+    if admin_auth != settings.ADMIN_PASSWORD:
         return RedirectResponse(url="/admin", status_code=303)
-    # ─────────────────────────────────────────────────────────────────────────
 
-    orders = get_all_orders(status_filter=status_filter if status_filter != "all" else None)
+    orders = get_all_orders(
+        status_filter=status_filter if status_filter != "all" else None
+    )
 
-    return templates.TemplateResponse("admin.html", {
-        "request":       request,
-        "orders":        orders,
-        "status_filter": status_filter,
-        "total":         len(orders),
-    })
+    total = len(orders)
+    completed = sum(1 for o in orders if o["status"] == "completed")
+    failed = sum(1 for o in orders if o["status"] == "esim_failed")
+
+    return templates.TemplateResponse(
+        "admin.html",
+        {
+            "request": request,
+            "orders": orders,
+            "status_filter": status_filter,
+            "total": total,
+            "completed": completed,
+            "failed": failed,
+        },
+    )
 
 
 @app.get("/admin/logout")
