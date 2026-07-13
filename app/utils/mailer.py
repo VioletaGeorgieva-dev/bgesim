@@ -94,7 +94,6 @@ def send_usage_email(
 
     if getattr(settings, "APP_ENV", "production") == "development" and settings.SUPPORT_EMAIL:
         recipient = settings.SUPPORT_EMAIL
-        print(f"[USAGE EMAIL] ⚠️ Dev override: {to_email} → {recipient}")
     else:
         recipient = to_email
 
@@ -118,7 +117,7 @@ def send_usage_email(
           <p style="color:#9ca3af; font-size:12px; margin-top:24px;">ℹ️ {u["note"]}</p>
         </div>
         <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 40px; text-align:center;">
-          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2025 BG eSIM · {u["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
+          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2026 BG eSIM · {u["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
         </div>
       </div>
     </body>
@@ -127,7 +126,6 @@ def send_usage_email(
 
     try:
         _send_via_brevo(recipient, subject, html_body)
-        print(f"[USAGE EMAIL] ✅ Изпратен към {recipient} (lang={lang})")
     except Exception as e:
         print(f"[USAGE EMAIL] ❌ Грешка при изпращане: {e}")
         raise
@@ -146,13 +144,16 @@ EMAIL_TRANSLATIONS = {
         "scan_qr":        "Scan the QR code with your phone:",
         "qr_pending":     "⚠️ The QR code will be sent shortly within a few minutes.",
         "iccid_label":    "ICCID",
+        "one_click_title":"🚀 Easy 1-Click Installation (Open from your phone)",
+        "btn_ios":        "🍏 Install on iPhone",
+        "btn_android":    "🤖 Install on Android",
         "manual_title":   "📲 Manual Installation (without QR code)",
         "manual_smdp":    "SM-DP+ Address",
         "manual_code":    "Activation Code",
         "how_to":         "📋 How to activate your eSIM:",
         "step1":          "Connect to <strong>Wi-Fi</strong>",
         "step2":          "Go to <strong>Settings → Mobile Data → Add eSIM</strong>",
-        "step3":          "Scan the QR code above",
+        "step3":          "Scan the QR code above or use the 1-click links",
         "step4":          "Upon arrival, enable <strong>Data Roaming</strong>",
         "footer":         "Questions?",
     },
@@ -168,13 +169,16 @@ EMAIL_TRANSLATIONS = {
         "scan_qr":        "Сканирайте QR кода с телефона си:",
         "qr_pending":     "⚠️ QR кодът ще бъде изпратен допълнително в рамките на няколко минути.",
         "iccid_label":    "ICCID",
+        "one_click_title":"🚀 Бързо инсталиране с 1 клик (Отворете от телефона си)",
+        "btn_ios":        "🍏 Инсталирай на iPhone",
+        "btn_android":    "🤖 Инсталирай на Android",
         "manual_title":   "📲 Ръчно инсталиране (без QR код)",
         "manual_smdp":    "SM-DP+ Адрес",
         "manual_code":    "Код за активиране",
         "how_to":         "📋 Как да активирате eSIM-а:",
         "step1":          "Свържете се с <strong>Wi-Fi</strong>",
         "step2":          "Отидете в <strong>Настройки → Мобилни данни → Добавяне на eSIM</strong>",
-        "step3":          "Сканирайте QR кода по-горе",
+        "step3":          "Сканирайте QR кода по-горе или използвайте бутоните за 1 клик",
         "step4":          "При пристигане включете <strong>Data Roaming</strong>",
         "footer":         "Въпроси?",
     },
@@ -190,13 +194,16 @@ EMAIL_TRANSLATIONS = {
         "scan_qr":        "Scannen Sie den QR-Code mit Ihrem Telefon:",
         "qr_pending":     "⚠️ Der QR-Code wird in wenigen Minuten nachgesendet.",
         "iccid_label":    "ICCID",
+        "one_click_title":"🚀 1-Klick-Installation (Vom Telefon aus öffnen)",
+        "btn_ios":        "🍏 Auf iPhone installieren",
+        "btn_android":    "🤖 Auf Android installieren",
         "manual_title":   "📲 Manuelle Installation (ohne QR-Code)",
         "manual_smdp":    "SM-DP+ Adresse",
         "manual_code":    "Aktivierungscode",
         "how_to":         "📋 So aktivieren Sie Ihre eSIM:",
         "step1":          "Verbinden Sie sich mit <strong>WLAN</strong>",
         "step2":          "Gehen Sie zu <strong>Einstellungen → Mobile Daten → eSIM hinzufügen</strong>",
-        "step3":          "Scannen Sie den QR-Code oben",
+        "step3":          "Scannen Sie den QR-Code oben oder nutzen Sie die 1-Klick-Links",
         "step4":          "Aktivieren Sie beim Ankommen <strong>Daten-Roaming</strong>",
         "footer":         "Fragen?",
     },
@@ -212,13 +219,16 @@ EMAIL_TRANSLATIONS = {
         "scan_qr":        "Telefonunuzla QR kodunu tarayın:",
         "qr_pending":     "⚠️ QR kodu birkaç dakika içinde gönderilecektir.",
         "iccid_label":    "ICCID",
+        "one_click_title":"🚀 1 Tıklamayla Kolay Kurulum (Telefondan açın)",
+        "btn_ios":        "🍏 iPhone'a Yükle",
+        "btn_android":    "🤖 Android'e Yükle",
         "manual_title":   "📲 Manuel Kurulum (QR kodu olmadan)",
         "manual_smdp":    "SM-DP+ Adresi",
         "manual_code":    "Aktivasyon Kodu",
         "how_to":         "📋 eSIM'inizi nasıl etkinleştirirsiniz:",
         "step1":          "<strong>Wi-Fi</strong>'a bağlanın",
         "step2":          "<strong>Ayarlar → Mobil Veri → eSIM Ekle</strong> bölümüne gidin",
-        "step3":          "Yukarıdaki QR kodunu tarayın",
+        "step3":          "Yukarıdaki QR kodunu tarayın veya 1 tıklamalı bağlantıları kullanın",
         "step4":          "Varışta <strong>Veri Dolaşımı</strong>'nı etkinleştirin",
         "footer":         "Sorularınız mı var?",
     },
@@ -234,13 +244,16 @@ EMAIL_TRANSLATIONS = {
         "scan_qr":        "Escanea el código QR con tu teléfono:",
         "qr_pending":     "⚠️ El código QR se enviará en unos minutos.",
         "iccid_label":    "ICCID",
+        "one_click_title":"🚀 Instalación en 1 clic (Abrir desde el teléfono)",
+        "btn_ios":        "🍏 Instalar en iPhone",
+        "btn_android":    "🤖 Instalar en Android",
         "manual_title":   "📲 Instalación manual (sin código QR)",
         "manual_smdp":    "Dirección SM-DP+",
         "manual_code":    "Código de activación",
         "how_to":         "📋 Cómo activar tu eSIM:",
         "step1":          "Conéctate a <strong>Wi-Fi</strong>",
         "step2":          "Ve a <strong>Ajustes → Datos móviles → Añadir eSIM</strong>",
-        "step3":          "Escanea el código QR de arriba",
+        "step3":          "Escanea el código QR de arriba o usa los enlaces de 1 clic",
         "step4":          "Al llegar, activa el <strong>Roaming de datos</strong>",
         "footer":         "¿Preguntas?",
     },
@@ -263,11 +276,12 @@ def send_esim_email(
     smdp_address: str = "",
     matching_id:  str = "",
     lpa_string:   str = "",
+    ios_link:     str = "",  
+    android_link: str = "",  
 ) -> None:
     t = _get_t(lang)
     if getattr(settings, "APP_ENV", "production") == "development" and settings.SUPPORT_EMAIL:
         recipient = settings.SUPPORT_EMAIL
-        print(f"[EMAIL] ⚠️ Development override: {to_email} → {recipient}")
     else:
         recipient = to_email
 
@@ -290,6 +304,24 @@ def send_esim_email(
     if iccid:
         iccid_section = f"""
         <p style="text-align:center; color:#6b7280; font-size:13px; margin-top:8px;">{t["iccid_label"]}: <strong style="color:#1f2937;">{iccid}</strong></p>
+        """
+
+    # 🍏🤖 ── СЕКЦИЯ ЗА АВТОМАТИЧНА ИНСТАЛАЦИЯ (1 КЛИК ЗА И ДВЕТЕ ОС) ──
+    one_click_section = ""
+    if ios_link and android_link:
+        one_click_section = f"""
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:20px; margin:24px 0; text-align:center;">
+            <p style="color:#166534; font-weight:bold; margin:0 0 16px; font-size:15px;">{t["one_click_title"]}</p>
+            
+            <a href="{ios_link}" style="display:inline-block; background:#000000; color:#ffffff; font-size:14px; font-weight:bold; text-decoration:none; padding:12px 20px; border-radius:8px; margin:4px;">
+                {t["btn_ios"]}
+            </a>
+            
+            <a href="{android_link}" style="display:inline-block; background:#3ddc84; color:#ffffff; font-size:14px; font-weight:bold; text-decoration:none; padding:12px 20px; border-radius:8px; margin:4px;">
+                {t["btn_android"]}
+            </a>
+            <p style="color:#6b7280; font-size:11px; margin-top:10px; margin-bottom:0;">* Отворете имейла от телефона, на който искате да инсталирате пакета.</p>
+        </div>
         """
 
     manual_section = ""
@@ -339,9 +371,12 @@ def send_esim_email(
               </tr>
             </table>
           </div>
+          
+          {one_click_section}
           {qr_section}
           {iccid_section}
           {manual_section}
+          
           <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:20px; margin-top:24px;">
             <p style="color:#1e40af; font-weight:bold; margin:0 0 12px;">{t["how_to"]}</p>
             <ol style="color:#374151; font-size:14px; line-height:1.8; margin:0; padding-left:20px;">
@@ -353,7 +388,7 @@ def send_esim_email(
           </div>
         </div>
         <div style="background:#f9fafb; border-top:1px solid #e5e7eb; padding:20px 40px; text-align:center;">
-          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2025 BG eSIM · {t["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
+          <p style="color:#9ca3af; font-size:12px; margin:0;">© 2026 BG eSIM · {t["footer"]} <a href="mailto:{settings.SUPPORT_EMAIL}" style="color:#2563eb;">{settings.SUPPORT_EMAIL}</a></p>
         </div>
       </div>
     </body>
