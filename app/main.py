@@ -36,8 +36,6 @@ MARGIN_COEFFICIENT = 2.0
 
 ADMIN_SESSION_VALUE = "authenticated_admin"
 
-ADMIN_SESSION_VALUE = "authenticated_admin"
-
 # ❓ ─── ДАННИ И ПРЕВОДИ ЗА FAQ СТРАНИЦАТА (5 ЕЗИКА) ───
 FAQ_DATA = {
     "bg": {
@@ -242,7 +240,7 @@ FAQ_DATA = {
             {
                 "q": "📲 BG eSIM'imi nasıl kurarım?",
                 "a": "Kurulum için üç kolay yolunuz var:<br>"
-                     "1. <strong>1 Tıkla (En hızlısı):</strong> Onay e-postasını telefonunuzdan açın ve işletim sisteminiz (iOS/Android) için olan düğmeye basın.<br>"
+                     "1. <strong>1 Tıkla (En hızlısı):</strong> Onay e-postasını telefonunuzдан açın ve işletim sisteminiz (iOS/Android) için olan düğmeye basın.<br>"
                      "2. <strong>QR Kod ile:</strong> E-postadaki QR kodunu telefonunuzun kamerasıyla taratın.<br>"
                      "3. <strong>Manuel Giriş:</strong> Düğmelerin altında bulunan 'SM-DP+ adresi' ve 'Aktivasyon Kodu' bilgilerini kopyalayıp ayarlara yapıştırın."
             },
@@ -350,7 +348,13 @@ def get_server_side_price(package_slug: str) -> Optional[float]:
     Връща price_eur или None ако пакетът не е намерен.
     """
     try:
-        location_code = package_slug.split("_")[0]
+        # Проверяваме дали става дума за регионален пакет за Европа
+        if package_slug.upper().startswith("EU-"):
+            location_code = "!RG"
+        else:
+            separator = "-" if "-" in package_slug else "_"
+            location_code = package_slug.split(separator)[0]
+        
         data = get_packages(location=location_code)
         packages = data.get("obj", {}).get("packageList", [])
         for p in packages:
@@ -367,10 +371,10 @@ def process_webhook_data(event, base_url):
     """Тази функция обработва тежката логика на заден план, без да бави отговора към Stripe."""
     if event["type"] == "checkout.session.completed":
         raw_session = event["data"]["object"]
-        session_id = raw_session["id"]
+        session_id  = raw_session["id"]
 
         stripe_session = stripe.checkout.Session.retrieve(session_id)
-        meta = dict(stripe_session.get("metadata") or {})
+        meta           = dict(stripe_session.get("metadata") or {})
 
         print(f"[BACKGROUND TASK] 🔍 Metadata: {meta}")
 
@@ -378,59 +382,58 @@ def process_webhook_data(event, base_url):
             print("[BACKGROUND TASK] ⚠️ Липсва package_slug в metadata!")
             return
 
-        package_slug = meta.get("package_slug", "")
-        full_name = meta.get("full_name", "")
-        country = meta.get("country", "")
-        duration = meta.get("duration", "")
-        gb = meta.get("gb", "")
-        lang = meta.get("lang", "en")
+        package_slug   = meta.get("package_slug", "")
+        full_name      = meta.get("full_name", "")
+        country        = meta.get("country", "")
+        duration       = meta.get("duration", "")
+        gb             = meta.get("gb", "")
+        lang           = meta.get("lang", "en")
         customer_email = stripe_session.get("customer_email", "")
 
-        qr_code_url = None
-        iccid = None
+        qr_code_url  = None
+        iccid        = None
         smdp_address = ""
-        matching_id = ""
-        lpa_string = ""
+        matching_id  = ""
+        lpa_string   = ""
 
         try:
-            esim_result = order_esim(package_code=package_slug)
-            qr_code_url = esim_result["qr_code_url"]
-            iccid = esim_result["iccid"]
+            esim_result  = order_esim(package_code=package_slug)
+            qr_code_url  = esim_result["qr_code_url"]
+            iccid        = esim_result["iccid"]
             smdp_address = esim_result.get("smdp_address", "")
-            matching_id = esim_result.get("matching_id", "")
-            lpa_string = esim_result.get("lpa_string", "")
+            matching_id  = esim_result.get("matching_id", "")
+            lpa_string   = esim_result.get("lpa_string", "")
             print(f"[BACKGROUND TASK] ✅ eSIM купен: ICCID={iccid}")
         except Exception as e:
             print(f"[BACKGROUND TASK] ❌ Грешка при купуване на eSIM: {e}")
 
         # 🍏🤖 ── СГЛОБЯВАНЕ НА UNIVERSAL LINKS (С МАЛКИ БУКВИ) ──
-
+        
         ios_universal_link = ""
         android_universal_link = ""
         if lpa_string:
             # За Apple: Изискват изцяло малки букви, но оставяме символите $ и : чисти
             ios_universal_link = f"https://esimsetup.apple.com/esim_qrcode_provisioning?carddata={lpa_string.lower()}"
-
+            
             # За Android: Подаваме АБСОЛЮТНО СУРОВИЯ низ (LPA:1$...), с големи букви и без кодиране
             android_universal_link = f"https://esimsetup.android.com/esim_qrcode_provisioning?carddata={lpa_string}"
-        # ────────────────────────────────────────────────────────
         # ────────────────────────────────────────────────────────
 
         try:
             save_order(
-                stripe_session_id=session_id,
-                full_name=full_name,
-                email=customer_email,
-                package_slug=package_slug,
-                country=country,
-                gb=gb,
-                duration=duration,
-                iccid=iccid or "",
-                qr_code_url=qr_code_url or "",
-                smdp_address=smdp_address,
-                matching_id=matching_id,
-                lang=lang,
-                status="completed" if iccid else "esim_failed",
+                stripe_session_id = session_id,
+                full_name         = full_name,
+                email             = customer_email,
+                package_slug      = package_slug,
+                country           = country,
+                gb                = gb,
+                duration          = duration,
+                iccid             = iccid or "",
+                qr_code_url       = qr_code_url or "",
+                smdp_address      = smdp_address,
+                matching_id       = matching_id,
+                lang              = lang,
+                status            = "completed" if iccid else "esim_failed",
             )
         except Exception as e:
             print(f"[BACKGROUND TASK] ❌ Грешка при запис в БД: {e}")
@@ -438,19 +441,19 @@ def process_webhook_data(event, base_url):
         try:
             from app.utils.mailer import send_esim_email
             send_esim_email(
-                to_email=customer_email,
-                full_name=full_name,
-                country=country,
-                gb=gb,
-                duration=duration,
-                qr_code_url=qr_code_url,
-                iccid=iccid,
-                lang=lang,
-                smdp_address=smdp_address,
-                matching_id=matching_id,
-                lpa_string=lpa_string,
-                ios_link=ios_universal_link,  # 🍏 Нов параметър
-                android_link=android_universal_link,  # 🤖 Нов параметър
+                to_email     = customer_email,
+                full_name    = full_name,
+                country      = country,
+                gb           = gb,
+                duration     = duration,
+                qr_code_url  = qr_code_url,
+                iccid        = iccid,
+                lang         = lang,
+                smdp_address = smdp_address,
+                matching_id  = matching_id,
+                lpa_string   = lpa_string,
+                ios_link     = ios_universal_link,      # 🍏 Нов параметър
+                android_link = android_universal_link,  # 🤖 Нов параметър
             )
             print(f"[BACKGROUND TASK] 📧 Имейл 1 изпратен към: {customer_email}")
         except Exception as e:
@@ -460,12 +463,12 @@ def process_webhook_data(event, base_url):
             from app.utils.mailer import send_usage_email
             usage_url = base_url + f"usage/{iccid}"
             send_usage_email(
-                to_email=customer_email,
-                full_name=full_name,
-                country=country,
-                iccid=iccid or "",
-                usage_url=usage_url,
-                lang=lang,
+                to_email  = customer_email,
+                full_name = full_name,
+                country   = country,
+                iccid     = iccid or "",
+                usage_url = usage_url,
+                lang      = lang,
             )
             print(f"[BACKGROUND TASK] 📧 Имейл 2 изпратен към: {customer_email}")
         except Exception as e:
@@ -474,14 +477,14 @@ def process_webhook_data(event, base_url):
         try:
             from app.utils.mailer import send_esim_email
             send_esim_email(
-                to_email=settings.SUPPORT_EMAIL,
-                full_name=f"🔔 НОВА ПОРЪЧКА от {full_name} ({customer_email})",
-                country=country,
-                gb=gb,
-                duration=duration,
-                qr_code_url=qr_code_url,
-                iccid=iccid,
-                lang="bg",
+                to_email    = settings.SUPPORT_EMAIL,
+                full_name   = f"🔔 НОВА ПОРЪЧКА от {full_name} ({customer_email})",
+                country     = country,
+                gb          = gb,
+                duration    = duration,
+                qr_code_url = qr_code_url,
+                iccid       = iccid,
+                lang        = "bg",
             )
             print(f"[BACKGROUND TASK] 📧 Admin известие изпратено към: {settings.SUPPORT_EMAIL}")
         except Exception as e:
@@ -524,8 +527,6 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     background_tasks.add_task(process_webhook_data, event, base_url)
 
     return {"status": "accepted"}
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -582,19 +583,26 @@ def is_regional_package(name: str) -> bool:
 def resolve_country_code(query: str) -> Optional[str]:
     if not query:
         return None
-    q = query.strip()
-    found = resolve_iso2_from_text(q)
+    q = query.strip().lower()
+    
+    # 🌟 Търсене за Европа и Глобален спрямо спецификациите на eSIM Access за locationCode
+    if q in ["europe", "европа", "europa", "avrupa"]:
+        return "!RG"  # Регионални пакети
+    if q in ["global", "глобален", "küresel", "globalen"]:
+        return "!GL"  # Глобални пакети
+        
+    found = resolve_iso2_from_text(query.strip())
     if found:
         return found
-    if len(q) <= 3:
-        country = pycountry.countries.get(alpha_2=q.upper())
+    if len(query.strip()) <= 3:
+        country = pycountry.countries.get(alpha_2=query.strip().upper())
         if country:
             return country.alpha_2
-        country = pycountry.countries.get(alpha_3=q.upper())
+        country = pycountry.countries.get(alpha_3=query.strip().upper())
         if country:
             return country.alpha_2
     try:
-        results = pycountry.countries.search_fuzzy(q)
+        results = pycountry.countries.search_fuzzy(query.strip())
         if results:
             return results[0].alpha_2
     except LookupError:
@@ -625,7 +633,8 @@ def process_packages(raw: List[Dict[Any, Any]], lang: str = "en") -> Dict[str, L
         if "nonhkip" in slug or "nonhkip" in name.lower():
             continue
 
-        if is_regional_package(name):
+        # 🌟 Твоят оригинален филтър, но изключваме Европа и Глобален от забраната
+        if is_regional_package(name) and "europe" not in name.lower() and "global" not in name.lower():
             continue
 
         original_price_usd = p["price"] / 10000
@@ -693,7 +702,7 @@ def set_lang(lang: str = "en", redirect: str = "/"):
     if lang not in valid:
         lang = "en"
     response = RedirectResponse(url=redirect)
-    response.set_cookie(key="lang", value=lang, max_age=60 * 60 * 24 * 365)
+    response.set_cookie(key="lang", value=lang, max_age=60*60*24*365)
     return response
 
 
@@ -713,9 +722,9 @@ def home(request: Request, lang: str = Cookie(default="en")):
 
 @app.get("/search", response_class=HTMLResponse)
 def search(
-        request: Request,
-        country: str = Query(""),
-        lang: str = Cookie(default="en"),
+    request: Request,
+    country: str = Query(""),
+    lang: str = Cookie(default="en"),
 ):
     groups = None
     error = None
@@ -726,7 +735,7 @@ def search(
         resolved_code = resolve_country_code(country.strip())
         if resolved_code:
             data = get_packages(location=resolved_code)
-            raw_packages = data.get("obj", {}).get("packageList", [])
+            raw_packages = data.get("obj", {}).get("packageList", []) or []
             groups = process_packages(raw_packages, lang=lang)
             total = sum(len(v) for v in groups.values())
         else:
@@ -764,8 +773,7 @@ def contacts(request: Request, lang: str = Cookie(default="en")):
 @app.get("/faq", response_class=HTMLResponse)
 def faq(request: Request, lang: str = Cookie(default="en")):
     faq_content = FAQ_DATA.get(lang, FAQ_DATA["en"])
-
-    # Подаваме празни стойности за променливите, които index.html изисква
+    
     ctx = make_context(
         request, lang,
         faq_title=faq_content["title"],
@@ -774,8 +782,6 @@ def faq(request: Request, lang: str = Cookie(default="en")):
         faq_footer_sub=faq_content["footer_sub"],
         faq_items=faq_content["items"],
         support_email=settings.SUPPORT_EMAIL,
-
-        # 💡 ТУК Е СПАСЕНИЕТО: Залъгваме index.html, че няма търсени пакети в момента
         groups=None,
         selected_country="",
         resolved_code=None,
@@ -788,13 +794,13 @@ def faq(request: Request, lang: str = Cookie(default="en")):
 
 @app.get("/checkout", response_class=HTMLResponse)
 def checkout(
-        request: Request,
-        package_slug: str = Query(""),
-        country: str = Query(""),
-        duration: int = Query(0),
-        gb: float = Query(0.0),
-        price_eur: float = Query(0.0),
-        lang: str = Cookie(default="en"),
+    request: Request,
+    package_slug: str = Query(""),
+    country: str = Query(""),
+    duration: int = Query(0),
+    gb: float = Query(0.0),
+    price_eur: float = Query(0.0),
+    lang: str = Cookie(default="en"),
 ):
     ctx = make_context(
         request, lang,
@@ -819,27 +825,30 @@ def balance():
 
 @app.post("/pay")
 async def pay(
-        request: Request,
-        full_name: str = Form(...),
-        email: str = Form(...),
-        confirm_email: str = Form(...),
-        package_slug: str = Form(...),
-        country: str = Form(...),
-        duration: int = Form(...),
-        gb: float = Form(...),
-        lang: str = Cookie(default="en"),
+    request: Request,
+    full_name: str = Form(...),
+    email: str = Form(...),
+    confirm_email: str = Form(...),
+    package_slug: str = Form(...),
+    country: str = Form(...),
+    duration: int = Form(...),
+    gb: float = Form(...),
+    lang: str = Cookie(default="en"),
 ):
     ip = request.client.host
     if rate_limit(ip, max_requests=5, window=60):
         raise HTTPException(status_code=429, detail="Твърде много заявки. Моля, изчакайте една минута.")
 
-    # ── Проверка дали двата имейла съвпадат ──────────────────────────────────
     if email.strip().lower() != confirm_email.strip().lower():
         raise HTTPException(status_code=400, detail="Имейл адресите трябва да бъдат еднакви.")
-    # ─────────────────────────────────────────────────────────────────────────
 
-    # ── ЗАЩИТА: Цената се изчислява САМО от сървъра — frontend стойността се игнорира ──
-    location_code = package_slug.split("_")[0]
+    # Интелигентно определяне на location_code според изискванията за регионални планове
+    if package_slug.upper().startswith("EU-"):
+        location_code = "!RG"
+    else:
+        separator = "-" if "-" in package_slug else "_"
+        location_code = package_slug.split(separator)[0]
+    
     try:
         data = get_packages(location=location_code)
         packages = data.get("obj", {}).get("packageList", [])
@@ -860,7 +869,6 @@ async def pay(
 
     amount_cents = int(round(server_price * 100))
     print(f"[PAY] ✅ Цена изчислена от сървъра: €{server_price} ({amount_cents} цента) за {package_slug}")
-    # ─────────────────────────────────────────────────────────────────────────
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
@@ -878,12 +886,12 @@ async def pay(
         mode="payment",
         customer_email=email,
         metadata={
-            "full_name": full_name,
+            "full_name":    full_name,
             "package_slug": package_slug,
-            "country": country,
-            "duration": str(duration),
-            "gb": str(gb),
-            "lang": lang,
+            "country":      country,
+            "duration":     str(duration),
+            "gb":           str(gb),
+            "lang":         lang,
         },
         success_url=str(request.base_url) + "success?session_id={CHECKOUT_SESSION_ID}",
         cancel_url=str(request.base_url) + "cancel",
@@ -894,9 +902,9 @@ async def pay(
 
 @app.get("/success", response_class=HTMLResponse)
 def success(
-        request: Request,
-        session_id: str = Query(""),
-        lang: str = Cookie(default="en"),
+    request: Request,
+    session_id: str = Query(""),
+    lang: str = Cookie(default="en"),
 ):
     ctx = make_context(request, lang, session_id=session_id)
     return templates.TemplateResponse("success.html", ctx)
@@ -917,14 +925,14 @@ def test_email(secret: str = Query("")):
 
     from app.utils.mailer import send_esim_email
     send_esim_email(
-        to_email="test@test.com",
-        full_name="Test User",
-        country="Germany",
-        gb="3",
-        duration="7",
-        qr_code_url="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=TestQR",
-        iccid="89359999999999999",
-        lang="bg",
+        to_email    = "test@test.com",
+        full_name   = "Test User",
+        country     = "Germany",
+        gb          = "3",
+        duration    = "7",
+        qr_code_url = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=TestQR",
+        iccid       = "89359999999999999",
+        lang        = "bg",
     )
     return {"status": "✅ Имейлът е изпратен! Провери пощата."}
 
@@ -936,20 +944,19 @@ def admin_login(request: Request, lang: str = Cookie(default="en")):
 
 @app.post("/admin", response_class=HTMLResponse)
 def admin_login_post(
-        request: Request,
-        username: str = Form(...),
-        password: str = Form(...),
+    request: Request,
+    username: str = Form(...),
+    password: str = Form(...),
 ):
     if (
-            username != settings.ADMIN_USER or
-            password != settings.ADMIN_PASSWORD
+        username != settings.ADMIN_USER or
+        password != settings.ADMIN_PASSWORD
     ):
         return templates.TemplateResponse(
             "admin_login.html",
             {"request": request, "error": "Грешни данни!"},
             status_code=401,
         )
-    # ── ЗАЩИТА: записваме фиксиран низ в бисквитката, НЕ паролата ────────────
     response = RedirectResponse(url="/admin/orders", status_code=303)
     response.set_cookie(
         key="admin_auth",
@@ -959,45 +966,38 @@ def admin_login_post(
         samesite="strict",
     )
     return response
-    # ─────────────────────────────────────────────────────────────────────────
 
 
 @app.get("/admin/orders", response_class=HTMLResponse)
 def admin_orders(
-        request: Request,
-        admin_auth: str = Cookie(default=""),
-        status_filter: str = Query(default="all"),
-        q: Optional[str] = Query(default=None),
+    request: Request,
+    admin_auth: str = Cookie(default=""),
+    status_filter: str = Query(default="all"),
+    q: Optional[str] = Query(default=None), 
 ):
     if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
 
-    # 1. Взимаме абсолютно всички поръчки
     all_orders = get_all_orders(status_filter=None)
 
-    # 2. Броим ги точно, за да работят квадратчетата най-горе
     total = len(all_orders)
     completed = sum(1 for o in all_orders if o.get("status") == "completed")
     failed = sum(1 for o in all_orders if o.get("status") == "esim_failed")
 
-    # 3. Подготвяме списъка, който реално ще покажем в таблицата
     orders_to_show = all_orders
 
-    # Ако е избран филтър за статус от падащото меню:
     if status_filter != "all":
         orders_to_show = [o for o in orders_to_show if o.get("status") == status_filter]
 
-    # Ако си написал нещо в търсачката:
     if q and q.strip():
         search_query = q.strip().lower()
         orders_to_show = [
             o for o in orders_to_show
             if search_query in str(o.get("full_name", "")).lower()
-               or search_query in str(o.get("email", "")).lower()
-               or search_query in str(o.get("iccid", "")).lower()
+            or search_query in str(o.get("email", "")).lower()
+            or search_query in str(o.get("iccid", "")).lower()
         ]
 
-    # 4. Пращаме всичко готово към сайта
     return templates.TemplateResponse(
         "admin.html",
         {
@@ -1021,12 +1021,12 @@ def admin_logout():
 
 @app.get("/usage/{iccid}", response_class=HTMLResponse)
 def usage_page(
-        request: Request,
-        iccid: str,
-        lang: str = Cookie(default="en"),
+    request: Request,
+    iccid: str,
+    lang: str = Cookie(default="en"),
 ):
     usage_data = None
-    error = None
+    error      = None
 
     try:
         usage_data = query_esim_usage(iccid=iccid)
@@ -1035,9 +1035,9 @@ def usage_page(
 
     ctx = make_context(
         request, lang,
-        iccid=iccid,
-        usage_data=usage_data,
-        error=error,
+        iccid      = iccid,
+        usage_data = usage_data,
+        error      = error,
     )
     return templates.TemplateResponse("usage.html", ctx)
 
