@@ -34,7 +34,6 @@ app = FastAPI(title="BG eSIM Portal")
 USD_TO_EUR = 0.95
 MARGIN_COEFFICIENT = 2.0
 
-ADMIN_SESSION_VALUE = "authenticated_admin"
 
 ADMIN_SESSION_VALUE = "authenticated_admin"
 
