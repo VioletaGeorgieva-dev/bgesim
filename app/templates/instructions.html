@@ -44,7 +44,7 @@
     <!-- ⚠️ Преди да започнете -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-2xl shadow-sm p-6 mb-6">
         <h2 class="text-lg font-bold text-yellow-800 mb-2">{{ t.before_title }}</h2>
-        <p class="text-yellow-700 text-sm mb-3">{{ t.before_text }}</p>
+        <p class="text-yellow-700 text-sm mb-3">{{ t.before_text | safe }}</p>
         <ul class="list-disc list-inside text-yellow-700 text-sm space-y-1">
             <li>{{ t.before_item1 | safe }}</li>
             <li>{{ t.before_item2 | safe }}</li>
@@ -56,9 +56,9 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">1</div>
         <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step1_title }}</h3>
-            <p class="text-gray-600 leading-relaxed">{{ t.step1_text }}</p>
-            <p class="mt-2 text-blue-600 font-semibold text-sm">⚠️ {{ t.step1_warning }}</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step1_title | safe }}</h3>
+            <p class="text-gray-600 leading-relaxed">{{ t.step1_text | safe }}</p>
+            <p class="mt-2 text-blue-600 font-semibold text-sm">⚠️ {{ t.step1_warning | safe }}</p>
         </div>
     </div>
 
@@ -66,34 +66,34 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">2</div>
         <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step2_title }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-4 text-sm md:text-base">{{ t.step2_text }}</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step2_title | safe }}</h3>
+            <p class="text-gray-600 leading-relaxed mb-4 text-sm md:text-base">{{ t.step2_text | safe }}</p>
             
             <div class="space-y-4">
                 <!-- Опция А -->
                 <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                    <h4 class="font-bold text-blue-900 text-sm mb-1">{{ t.step2_option_a_title }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_a_text }}</p>
+                    <h4 class="font-bold text-blue-900 text-sm mb-1">{{ t.step2_option_a_title | safe }}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_a_text | safe }}</p>
                 </div>
                 
                 <!-- Опция Б -->
                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_b_title }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm mb-2">{{ t.step2_option_b_text }}</p>
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_b_title | safe }}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm mb-2">{{ t.step2_option_b_text | safe }}</p>
                     <div class="space-y-1">
                         <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
-                            🍎 <span class="font-semibold">iPhone:</span> {{ t.step2_iphone }}
+                            🍎 <span class="font-semibold">iPhone:</span> {{ t.step2_iphone | safe }}
                         </div>
                         <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
-                            🤖 <span class="font-semibold">Android:</span> {{ t.step2_android }}
+                            🤖 <span class="font-semibold">Android:</span> {{ t.step2_android | safe }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Опция В -->
                 <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_c_title }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_c_text }}</p>
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_c_title | safe }}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_c_text | safe }}</p>
                 </div>
             </div>
         </div>
@@ -103,23 +103,23 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-xl font-bold">3</div>
         <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step3_title }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-3">{{ t.step3_text }}</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step3_title | safe }}</h3>
+            <p class="text-gray-600 leading-relaxed mb-3">{{ t.step3_text | safe }}</p>
             <div class="space-y-2">
                 <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
-                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step3_iphone }}
+                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step3_iphone | safe }}
                 </div>
                 <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
-                    🤖 <span class="font-semibold">Android:</span> {{ t.step3_android }}
+                    🤖 <span class="font-semibold">Android:</span> {{ t.step3_android | safe }}
                 </div>
             </div>
-            <p class="text-green-600 text-sm font-semibold mt-3">✅ {{ t.step3_success }}</p>
+            <p class="text-green-600 text-sm font-semibold mt-3">✅ {{ t.step3_success | safe }}</p>
         </div>
     </div>
 
     <!-- 💡 Полезни съвети -->
     <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ t.tips_title }}</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ t.tips_title | safe }}</h2>
         <ul class="list-disc list-inside text-gray-700 text-sm space-y-1">
             <li>{{ t.tip1 | safe }}</li>
             <li>{{ t.tip2 | safe }}</li>
@@ -130,7 +130,7 @@
 
     <!-- Помощ -->
     <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center mt-8">
-        <p class="text-gray-600 mb-3">{{ t.instructions_help }}</p>
+        <p class="text-gray-600 mb-3">{{ t.instructions_help | safe }}</p>
         <a href="/contacts" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
             📞 {{ t.nav_contacts }}
         </a>
