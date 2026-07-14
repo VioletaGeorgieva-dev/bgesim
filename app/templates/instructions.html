@@ -21,6 +21,7 @@
             <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
             <a href="/instructions" class="text-sm font-semibold text-white underline">📖 {{ t.nav_instructions }}</a>
             <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts }}</a>
+            <a href="/faq" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
         </nav>
         <div class="w-px h-6 bg-blue-400 opacity-50"></div>
         <div class="flex items-center gap-2 flex-wrap">
@@ -42,12 +43,14 @@
 
     <!-- ⚠️ Преди да започнете -->
     <div class="bg-yellow-50 border border-yellow-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-yellow-800 mb-2">{{ t.before_title }}</h2>
-        <p class="text-yellow-700 text-sm mb-3">{{ t.before_text }}</p>
+        <h2 class="text-lg font-bold text-yellow-800 mb-2">⚠️ {{ t.before_title | default('Преди да започнете') }}</h2>
+        <p class="text-yellow-700 text-sm mb-3">
+            {% if lang == 'bg' %}Моля, проверете следното преди активация на eSIM:{% else %}Please check the following before activating your eSIM:{% endif %}
+        </p>
         <ul class="list-disc list-inside text-yellow-700 text-sm space-y-1">
-            <li>{{ t.before_item1 | safe }}</li>
-            <li>{{ t.before_item2 | safe }}</li>
-            <li>{{ t.before_item3 | safe }}</li>
+            <li>{% if lang == 'bg' %}Телефонът ви трябва да бъде фабрично отключен (да не е заключен към оператор).{% else %}Your phone must be carrier unlocked.{% endif %}</li>
+            <li>{% if lang == 'bg' %}Устройството трябва да поддържа eSIM технология (наберете <strong class="font-bold">*#06#</strong> за бърза проверка за EID).{% else %}Your device must support eSIM technology (dial <strong class="font-bold">*#06#</strong> to check for EID).{% endif %}</li>
+            <li>{% if lang == 'bg' %}За инсталацията ви е необходима стабилна интернет връзка (Wi-Fi).{% else %}A stable Wi-Fi connection is required for installation.{% endif %}</li>
         </ul>
     </div>
 
@@ -55,9 +58,13 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">1</div>
         <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step1_title }}</h3>
-            <p class="text-gray-600 leading-relaxed">{{ t.step1_text }}</p>
-            <p class="mt-2 text-blue-600 font-semibold text-sm">⚠️ {{ t.step1_warning }}</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">
+                {% if lang == 'bg' %}📧 Вземете данните за активация по имейл{% else %}📧 Get activation details by email{% endif %}
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+                {% if lang == 'bg' %}Веднага след успешна поръчка ще получите имейл с всичко необходимо: линкове за инсталация с 1 клик, изображение с QR код и данни за ръчно активиране (SM-DP+ адрес и код).{% else %}Immediately after purchase, you will receive an email with everything you need: 1-click installation links, a QR code image, and manual activation details (SM-DP+ address and code).{% endif %}
+            </p>
+            <p class="mt-2 text-blue-600 font-semibold text-sm">⚠️ {{ t.step1_warning | default('Не изтривайте имейла — той съдържа вашите данни за достъп.') }}</p>
         </div>
     </div>
 
@@ -65,62 +72,85 @@
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">2</div>
         <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step2_title }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-3">{{ t.step2_text }}</p>
-            <div class="space-y-2">
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm">
-                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step2_iphone }}
+            <h3 class="text-lg font-bold text-gray-800 mb-2">
+                {% if lang == 'bg' %}📲 Инсталирайте eSIM (Изберете един от 3-те начина){% else %}📲 Install eSIM (Choose one of 3 ways){% endif %}
+            </h3>
+            <p class="text-gray-600 leading-relaxed mb-4 text-sm md:text-base">
+                {% if lang == 'bg' %}Препоръчваме да инсталирате eSIM <strong>1-2 дни преди пътуването</strong> на домашен Wi-Fi. Пакетът няма да започне да се изразходва, докато не пристигнете в чужбина.{% else %}We recommend installing your eSIM <strong>1-2 days before traveling</strong> on a home Wi-Fi. The data package won't start consuming until you arrive abroad.{% endif %}
+            </p>
+            
+            <div class="space-y-4">
+                <!-- Опция А -->
+                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                    <h4 class="font-bold text-blue-900 text-sm mb-1">🚀 {% if lang == 'bg' %}Вариант А: Инсталация с 1 клик (Най-бързо){% else %}Option A: 1-Click Installation (Fastest){% endif %}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm">
+                        {% if lang == 'bg' %}Отворете имейла директно от вашия телефон и кликнете върху бутона за вашата система (<strong>Install on iPhone</strong> или <strong>Install on Android</strong>). Системата сама ще зареди настройките.{% else %}Open the email directly from your phone and click the button for your OS (<strong>Install on iPhone</strong> or <strong>Install on Android</strong>). The system will automatically load the settings.{% endif %}
+                    </p>
                 </div>
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm">
-                    🤖 <span class="font-semibold">Android:</span> {{ t.step2_android }}
+                
+                <!-- Опция Б -->
+                <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">📸 {% if lang == 'bg' %}Вариант Б: Сканиране на QR код{% else %}Option B: Scan QR Code{% endif %}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm mb-2">
+                        {% if lang == 'bg' %}Ако имате второ устройство (компютър, таблет), отворете кода на него и го сканирайте от настройките на телефона си:{% else %}If you have a second device (computer, tablet), open the code on it and scan it using your phone settings:{% endif %}
+                    </p>
+                    <div class="space-y-1">
+                        <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
+                            🍎 <span class="font-semibold">iPhone:</span> {{ t.step2_iphone | default('Настройки → Мобилни данни → Добавяне на eSIM → Сканиране на QR код') }}
+                        </div>
+                        <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
+                            🤖 <span class="font-semibold">Android:</span> {{ t.step2_android | default('Настройки → Мрежа → SIM карти → Добавяне на eSIM → Сканиране на QR код') }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Опция В -->
+                <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                    <h4 class="font-bold text-gray-800 text-sm mb-1">✍️ {% if lang == 'bg' %}Вариант В: Ръчно въвеждане (Без втори екран){% else %}Option C: Manual Entry (Without second screen){% endif %}</h4>
+                    <p class="text-gray-600 text-xs md:text-sm">
+                        {% if lang == 'bg' %}Отидете в настройките за добавяне на eSIM на телефона си и изберете "Ръчно въвеждане". Копирайте и поставете стойностите за <strong>SM-DP+ адрес</strong> и <strong>Код за активиране</strong> от имейла.{% else %}Go to the eSIM settings on your phone, choose "Enter Details Manually", and copy-paste the <strong>SM-DP+ Address</strong> and <strong>Activation Code</strong> from your email.{% endif %}
+                    </p>
                 </div>
             </div>
-            <p class="text-gray-500 text-sm mt-3">⚠️ {{ t.step2_warning }}</p>
         </div>
-    </div>
-
-    <!-- 📱 Ако купувате от същия телефон -->
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-blue-800 mb-2">{{ t.same_phone_title }}</h2>
-        <p class="text-blue-700 text-sm mb-3">{{ t.same_phone_text }}</p>
-        <ul class="list-disc list-inside text-blue-700 text-sm space-y-1">
-            <li>{{ t.same_phone_item1 | safe }}</li>
-            <li>{{ t.same_phone_item2 | safe }}</li>
-        </ul>
     </div>
 
     <!-- Стъпка 3 -->
     <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
         <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-xl font-bold">3</div>
         <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step3_title }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-3">{{ t.step3_text }}</p>
+            <h3 class="text-lg font-bold text-gray-800 mb-2">
+                {% if lang == 'bg' %}🌍 Включете Data Roaming при пристигане{% else %}🌍 Enable Data Roaming upon arrival{% endif %}
+            </h3>
+            <p class="text-gray-600 leading-relaxed mb-3">
+                {% if lang == 'bg' %}Когато пристигнете в дестинацията, активирайте eSIM картата от настройките и задължително разрешете роуминга за нея:{% else %}When you arrive at your destination, activate the eSIM profile from settings and make sure to turn on data roaming:{% endif %}
+            </p>
             <div class="space-y-2">
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm">
-                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step3_iphone }}
+                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
+                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step3_iphone | default('Настройки → Мобилни данни → изберете eSIM → включете Data Roaming') }}
                 </div>
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm">
-                    🤖 <span class="font-semibold">Android:</span> {{ t.step3_android }}
+                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
+                    🤖 <span class="font-semibold">Android:</span> {{ t.step3_android | default('Настройки → Мрежа → SIM карти → изберете eSIM → включете Роуминг') }}
                 </div>
             </div>
-            <p class="text-green-600 text-sm font-semibold mt-3">✅ {{ t.step3_success }}</p>
+            <p class="text-green-600 text-sm font-semibold mt-3">✅ {{ t.step3_success | default('Готово! Вече имате бърз и надежден интернет без излишни такси.') }}</p>
         </div>
     </div>
 
     <!-- 💡 Полезни съвети -->
     <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ t.tips_title }}</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ t.tips_title | default('💡 Полезни съвети') }}</h2>
         <ul class="list-disc list-inside text-gray-700 text-sm space-y-1">
-            <li>{{ t.tip1 | safe }}</li>
-            <li>{{ t.tip2 | safe }}</li>
-            <li>{{ t.tip3 | safe }}</li>
-            <li>{{ t.tip4 | safe }}</li>
+            <li>{% if lang == 'bg' %}<strong>НИКОГА не трийте eSIM профила</strong> след инсталация — веднъж изтрит, кодът не може да се използва отново.{% else %}<strong>NEVER delete your eSIM profile</strong> after installation — once deleted, it cannot be recovered or scanned again.{% endif %}</li>
+            <li>{{ t.tip1 | default('Инсталирайте eSIM винаги докато сте свързани към стабилен Wi-Fi.') }}</li>
+            <li>{{ t.tip2 | default('Задайте мобилните данни по подразбиране да се използват от новата eSIM карта, когато пристигнете.') }}</li>
+            <li>{% if lang == 'bg' %}<strong>Проверка на баланса:</strong> Използвайте линка от втория имейл, за да виждате потреблението си в реално време.{% else %}<strong>Check consumption:</strong> Use the link from the second email to see your remaining data in real-time.{% endif %}</li>
         </ul>
     </div>
 
     <!-- Помощ -->
     <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center mt-8">
-        <p class="text-gray-600 mb-3">{{ t.instructions_help }}</p>
+        <p class="text-gray-600 mb-3">{{ t.instructions_help | default('Имате въпроси или се нуждаете от съдействие при инсталацията?') }}</p>
         <a href="/contacts" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
             📞 {{ t.nav_contacts }}
         </a>
@@ -128,6 +158,6 @@
 
 </div>
 
-<footer class="text-center py-8 text-gray-400 text-sm">© 2025 {{ t.footer }}</footer>
+<footer class="text-center py-8 text-gray-400 text-sm">© 2026 {{ t.footer }}</footer>
 </body>
 </html>
