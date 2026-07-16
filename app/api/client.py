@@ -123,8 +123,23 @@ def query_esim_usage(iccid: str) -> dict:
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"[USAGE] ❌ Мрежова грешка: {e}")
 
+    # ─── 🛡️ ТУК Е ЗАЩИТАТА СРЕЩУ ПРАЗНИ ТРАНЗАКЦИИ (esimTranNoList) ───
     if not data.get("success"):
-        raise ValueError(f"[USAGE] ❌ {data.get('errorMsg', 'Неизвестна грешка')}")
+        err_msg = data.get('errorMsg', '') or data.get('errorMessage', 'Неизвестна грешка')
+        
+        # Проверяваме дали грешката е заради липса на активирана сесия/транзакция
+        if "esimtrannolist" in err_msg.lower() or "must not be null" in err_msg.lower():
+            # Връщаме празен/подготвен статус, вместо да хвърляме изключение (гърмим)
+            return {
+                "total": "В процес...",
+                "used": "0.00 GB",
+                "remaining": "Пакетът изчаква активиране",
+                "percent": 0,
+                "not_active": True  # Флаг, който да ни каже, че картата още не е стартирана
+            }
+        
+        raise ValueError(f"[USAGE] ❌ {err_msg}")
+    # ─────────────────────────────────────────────────────────────────
 
     obj = data.get("obj") or {}
 
@@ -142,4 +157,5 @@ def query_esim_usage(iccid: str) -> dict:
         "used":      to_gb(used_bytes),
         "remaining": to_gb(remaining),
         "percent":   percent,
+        "not_active": False
     }
