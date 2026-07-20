@@ -77,6 +77,23 @@ def save_order(
     Връща id на новия запис.
     """
     created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    values = {
+        "stripe_session_id": stripe_session_id,
+        "full_name": full_name,
+        "email": email,
+        "package_slug": package_slug,
+        "country": country,
+        "gb": gb,
+        "duration": duration,
+        "iccid": iccid,
+        "esim_tran_no": esim_tran_no,
+        "qr_code_url": qr_code_url,
+        "smdp_address": smdp_address,
+        "matching_id": matching_id,
+        "lang": lang,
+        "status": status,
+        "created_at": created_at,
+    }
 
     with get_connection() as conn:
         cursor = conn.execute("""
@@ -96,24 +113,24 @@ def save_order(
                 lang,
                 status,
                 created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            stripe_session_id,
-            full_name,
-            email,
-            package_slug,
-            country,
-            gb,
-            duration,
-            iccid,
-            esim_tran_no,
-            qr_code_url,
-            smdp_address,
-            matching_id,
-            lang,
-            status,
-            created_at,
-        ))
+            ) VALUES (
+                :stripe_session_id,
+                :full_name,
+                :email,
+                :package_slug,
+                :country,
+                :gb,
+                :duration,
+                :iccid,
+                :esim_tran_no,
+                :qr_code_url,
+                :smdp_address,
+                :matching_id,
+                :lang,
+                :status,
+                :created_at
+            )
+        """, values)
         conn.commit()
 
     print(f"[DB] ✅ Поръчка записана → id={cursor.lastrowid} | ICCID={iccid} | session={stripe_session_id[:20]}...")

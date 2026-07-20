@@ -167,6 +167,7 @@ def _query_esim_profile(order_no: str, max_attempts: int = 10) -> dict:
 
             esim        = esim_list[0]
             iccid       = esim.get("iccid", "")
+            # Някои по-стари/алтернативни отговори връщат tran_no вместо esimTranNo.
             esim_tran_no = esim.get("esimTranNo", "") or esim.get("tran_no", "")
             qr_code_url = esim.get("qrCodeUrl", "")
             ac          = esim.get("ac", "")
