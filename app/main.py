@@ -1001,9 +1001,9 @@ def cancel(request: Request, lang: str = Cookie(default="en")):
 
 @app.get("/test-email")
 def test_email(secret: str = Query("")):
-    if settings.APP_ENV != "development":
+    if getattr(settings, "APP_ENV", "production") != "development":
         raise HTTPException(status_code=404, detail="Not found")
-    if secret != settings.test_secret:
+    if secret != getattr(settings, "test_secret", ""):
         raise HTTPException(status_code=403, detail="Forbidden")
 
     from app.utils.mailer import send_esim_email

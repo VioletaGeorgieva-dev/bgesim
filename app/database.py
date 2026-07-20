@@ -67,17 +67,20 @@ def migrate_db() -> None:
         }
         if "esim_tran_no" not in columns:
             conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
+            conn.commit()
             print("[DB] ✅ Колона esim_tran_no добавена.")
         if "promo_code_used" not in columns:
             conn.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
+            conn.commit()
             print("[DB] ✅ Колона promo_code_used добавена.")
         if "affiliate_commission" not in columns:
             conn.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
+            conn.commit()
             print("[DB] ✅ Колона affiliate_commission добавена.")
         if "order_amount" not in columns:
             conn.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
+            conn.commit()
             print("[DB] ✅ Колона order_amount добавена.")
-        conn.commit()
 
 
 def save_order(

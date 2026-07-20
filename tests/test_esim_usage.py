@@ -128,7 +128,7 @@ class AffiliateFlowTests(unittest.TestCase):
                     "data": {"object": {"id": "cs_test_123"}},
                 }
 
-                with patch("app.main.stripe.checkout.Session.retrieve", return_value=stripe_session):
+                with patch("app.main.stripe.checkout.Session.retrieve", return_value=stripe_session) as retrieve_mock:
                     with patch("app.main.order_esim", return_value={
                         "qr_code_url": "https://example.com/qr.png",
                         "iccid": "8910",
@@ -143,8 +143,10 @@ class AffiliateFlowTests(unittest.TestCase):
                                 main.process_webhook_data(event, "https://bgesim.bg/")
 
                 order_esim_mock.assert_called_once_with(package_code="gr_7days_1gb")
+                retrieve_mock.assert_called_once_with("cs_test_123")
                 order = database.get_order_by_iccid("8910")
                 affiliate = database.get_affiliate_by_id(affiliate_id)
+                self.assertEqual(len(database.get_orders_by_promo_code("PARTNER10")), 1)
 
                 self.assertEqual(order["promo_code_used"], "PARTNER10")
                 self.assertEqual(order["affiliate_commission"], 2.5)
