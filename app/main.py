@@ -1329,20 +1329,9 @@ def partner_forgot_password_post(
         reset_link = f"{base_url}/partner/reset-password/{token}"
         try:
             from app.utils.mailer import _send_via_brevo
-            html_body = f"""
-            <div style="font-family:sans-serif; max-width:500px; margin:0 auto; padding:24px;">
-              <h2 style="color:#1e40af;">🔑 Възстановяване на парола — BG eSIM</h2>
-              <p>Получихме заявка за нулиране на паролата на вашия партньорски акаунт.</p>
-              <p>Кликнете на бутона по-долу, за да зададете нова парола. Линкът е валиден 24 часа.</p>
-              <div style="text-align:center; margin:32px 0;">
-                <a href="{reset_link}" style="background:#2563eb; color:#fff; padding:14px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
-                  Нулиране на парола →
-                </a>
-              </div>
-              <p style="color:#6b7280; font-size:13px;">Ако не сте поискали това, просто игнорирайте имейла.</p>
-            </div>
-            """
-            _send_via_brevo(affiliate["email"], "Нулиране на парола — BG eSIM", html_body)
+            from app.translations import get_password_reset_email
+            subject, html_body = get_password_reset_email(lang, reset_link)
+            _send_via_brevo(affiliate["email"], subject, html_body)
         except Exception as e:
             print(f"[RESET EMAIL] ❌ Грешка при изпращане: {e}")
     return templates.TemplateResponse(
