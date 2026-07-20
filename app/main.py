@@ -1044,7 +1044,7 @@ def usage_page(
             and get_order_by_iccid(iccid)
             and not get_esim_tran_no_by_iccid(iccid)
         ):
-            usage_data["remaining"] = "Моля свържете се с поддръжка за стари поръчки"
+            usage_data["remaining"] = get_ui(lang)["legacy_order_support"]
     except Exception as e:
         error = str(e)
 

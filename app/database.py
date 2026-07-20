@@ -46,12 +46,14 @@ def init_db() -> None:
 def migrate_db() -> None:
     """Добавя нови колони ако липсват."""
     with get_connection() as conn:
-        try:
+        columns = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(orders)").fetchall()
+        }
+        if "esim_tran_no" not in columns:
             conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
             conn.commit()
             print("[DB] ✅ Колона esim_tran_no добавена.")
-        except Exception:
-            pass
 
 
 def save_order(
