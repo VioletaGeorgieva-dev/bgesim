@@ -1003,7 +1003,7 @@ def cancel(request: Request, lang: str = Cookie(default="en")):
 def test_email(secret: str = Query("")):
     if settings.APP_ENV != "development":
         raise HTTPException(status_code=404, detail="Not found")
-    if secret != settings.TEST_EMAIL_SECRET:
+    if secret != settings.test_email_secret:
         raise HTTPException(status_code=403, detail="Forbidden")
 
     from app.utils.mailer import send_esim_email

@@ -226,6 +226,8 @@ class AffiliateFlowTests(unittest.TestCase):
 
                 self.assertEqual(response.status_code, 200)
                 self.assertIn("Общо продажби", response.text)
+                self.assertIn(">1<", response.text)
+                self.assertIn("€2.50", response.text)
                 self.assertIn("€25.00", response.text)
                 self.assertNotIn("Visible Customer", response.text)
                 self.assertNotIn("visible@example.com", response.text)
