@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import datetime
 import time
 from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -40,6 +41,13 @@ from fastapi.responses import Response
 init_db()
 
 stripe.api_key = settings.stripe_secret_key
+APP_ENV = getattr(settings, "APP_ENV", "production")
+PARTNER_SESSION_SECRET = getattr(settings, "partner_session_secret", "")
+if not PARTNER_SESSION_SECRET:
+    if APP_ENV == "development":
+        PARTNER_SESSION_SECRET = "development-partner-session-secret"
+    else:
+        raise RuntimeError("PARTNER_SESSION_SECRET must be configured")
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -405,7 +413,7 @@ def process_webhook_data(event, base_url):
         promo_code_used = meta.get("promo_code_used", "").strip()
         customer_email = stripe_session.get("customer_email", "")
         amount_total = stripe_session.get("amount_total")
-        order_amount = round(amount_total / 100, 2) if amount_total is not None else get_server_side_price(package_slug)
+        order_amount = round(amount_total / 100, 2) if amount_total is not None else None
 
         qr_code_url = None
         iccid = None
@@ -589,10 +597,10 @@ app.add_middleware(
 )
 app.add_middleware(
     SessionMiddleware,
-    secret_key=getattr(settings, "partner_session_secret", "") or settings.stripe_webhook_secret,
+    secret_key=PARTNER_SESSION_SECRET,
     session_cookie="partner_session",
     same_site="strict",
-    https_only=True,
+    https_only=APP_ENV != "development",
 )
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -732,6 +740,15 @@ def get_authenticated_partner(request: Request) -> Optional[dict]:
     if not partner_id:
         return None
     return get_affiliate_by_id(partner_id)
+
+
+def format_order_datetime(value: str) -> str:
+    if not value:
+        return ""
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M")
+    except ValueError:
+        return value
 
 
 def get_country_suggestions(lang: str) -> list:
@@ -928,7 +945,7 @@ async def pay(
             limit=1,
         ).get("data", [])
         if not promotion_codes:
-            raise HTTPException(status_code=400, detail="Невалиден промо код.")
+            raise HTTPException(status_code=400, detail=get_ui(lang)["invalid_promo_code"])
         checkout_discounts = [{"promotion_code": promotion_codes[0]["id"]}]
 
     session_kwargs = dict(
@@ -1125,7 +1142,10 @@ def partner_dashboard(request: Request):
     if not affiliate:
         return RedirectResponse(url="/partner/login", status_code=303)
 
-    orders = get_orders_by_promo_code(affiliate["promo_code"])
+    orders = [
+        {**order, "created_at_display": format_order_datetime(order.get("created_at", ""))}
+        for order in get_orders_by_promo_code(affiliate["promo_code"])
+    ]
     total_earned = float(affiliate.get("total_earned") or 0)
     total_paid = float(affiliate.get("total_paid") or 0)
     payout_due = max(total_earned - total_paid, 0.0)

@@ -65,29 +65,18 @@ def migrate_db() -> None:
             row["name"]
             for row in conn.execute("PRAGMA table_info(orders)").fetchall()
         }
-        missing_columns = {
-            "esim_tran_no": "TEXT",
-            "promo_code_used": "TEXT",
-            "affiliate_commission": "REAL",
-            "order_amount": "REAL",
-        }
-        for column_name, column_type in missing_columns.items():
-            if column_name not in columns:
-                conn.execute(f"ALTER TABLE orders ADD COLUMN {column_name} {column_type}")
-                print(f"[DB] ✅ Колона {column_name} добавена.")
-
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS affiliates (
-                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
-                name               TEXT NOT NULL,
-                email              TEXT NOT NULL UNIQUE,
-                hashed_password    TEXT NOT NULL,
-                promo_code         TEXT NOT NULL UNIQUE,
-                commission_percent REAL NOT NULL,
-                total_earned       REAL NOT NULL DEFAULT 0,
-                total_paid         REAL NOT NULL DEFAULT 0
-            )
-        """)
+        if "esim_tran_no" not in columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
+            print("[DB] ✅ Колона esim_tran_no добавена.")
+        if "promo_code_used" not in columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
+            print("[DB] ✅ Колона promo_code_used добавена.")
+        if "affiliate_commission" not in columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
+            print("[DB] ✅ Колона affiliate_commission добавена.")
+        if "order_amount" not in columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
+            print("[DB] ✅ Колона order_amount добавена.")
         conn.commit()
 
 

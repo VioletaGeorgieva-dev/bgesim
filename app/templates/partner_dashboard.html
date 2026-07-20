@@ -62,7 +62,7 @@
                 <tbody>
                 {% for order in orders %}
                 <tr class="border-b hover:bg-slate-50 transition">
-                    <td class="px-4 py-4 whitespace-nowrap">{{ order.created_at[:16] }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">{{ order.created_at_display }}</td>
                     <td class="px-4 py-4 font-mono text-xs">{{ order.package_slug }}</td>
                     <td class="px-4 py-4 text-center">€{{ "%.2f"|format(order.order_amount or 0) }}</td>
                     <td class="px-4 py-4 text-center">€{{ "%.2f"|format(order.affiliate_commission or 0) }}</td>

@@ -10,6 +10,8 @@ os.environ.setdefault("ESIM_SECRET_KEY", "test-secret-key")
 os.environ.setdefault("STRIPE_PUBLISHABLE_KEY", "pk_test")
 os.environ.setdefault("STRIPE_SECRET_KEY", "sk_test")
 os.environ.setdefault("STRIPE_WEBHOOK_SECRET", "whsec_test")
+os.environ.setdefault("PARTNER_SESSION_SECRET", "test-partner-session-secret")
+os.environ.setdefault("APP_ENV", "development")
 
 from app import database
 from app.api import client
@@ -45,7 +47,7 @@ class DatabaseTests(unittest.TestCase):
                     """)
                     conn.commit()
 
-                database.migrate_db()
+                database.init_db()
 
                 with database.get_connection() as conn:
                     columns = {
