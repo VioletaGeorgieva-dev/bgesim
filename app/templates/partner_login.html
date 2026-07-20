@@ -17,7 +17,7 @@
 
     {% if request.query_params.get('reset') %}
     <div class="bg-green-50 border border-green-200 text-green-700 rounded-xl px-4 py-3 mb-6 text-sm text-center">
-        ✅ Паролата е сменена успешно. Влезте с новата парола.
+        ✅ {{ t.partner_reset_success_login }}
     </div>
     {% endif %}
 

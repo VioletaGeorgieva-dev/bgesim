@@ -1207,9 +1207,10 @@ def partner_login_post(
     stored_password_hash = affiliate["hashed_password"] if affiliate else DUMMY_PASSWORD_HASH
     password_is_valid = PASSWORD_CONTEXT.verify(password, stored_password_hash)
     if not affiliate or not password_is_valid:
+        t = get_ui(lang)
         return templates.TemplateResponse(
             "partner_login.html",
-            {"request": request, "error": "Грешен имейл или парола.", "t": get_ui(lang), "lang": lang},
+            {"request": request, "error": t["partner_login_invalid"], "t": t, "lang": lang},
             status_code=401,
         )
 
@@ -1261,12 +1262,15 @@ def partner_change_password(
         request: Request,
         old_password: str = Form(...),
         new_password: str = Form(...),
+        lang: str = Cookie(default="en"),
 ):
     affiliate = get_authenticated_partner(request)
     if not affiliate:
         return RedirectResponse(url="/partner/login", status_code=303)
 
-    if not PASSWORD_CONTEXT.verify(old_password, affiliate["hashed_password"]):
+    t = get_ui(lang)
+
+    def _dashboard_error(pw_error: str):
         orders = [
             {**order, "created_at_display": format_order_datetime(order.get("created_at", ""))}
             for order in get_orders_by_promo_code(affiliate["promo_code"])
@@ -1283,32 +1287,18 @@ def partner_change_password(
                 "total_sales": len(orders),
                 "total_earned": total_earned,
                 "payout_due": payout_due,
-                "pw_error": "Грешна стара парола.",
+                "pw_error": pw_error,
+                "t": t,
+                "lang": lang,
             },
             status_code=400,
         )
 
+    if not PASSWORD_CONTEXT.verify(old_password, affiliate["hashed_password"]):
+        return _dashboard_error(t["partner_old_password_incorrect"])
+
     if len(new_password) < 8:
-        orders = [
-            {**order, "created_at_display": format_order_datetime(order.get("created_at", ""))}
-            for order in get_orders_by_promo_code(affiliate["promo_code"])
-        ]
-        total_earned = float(affiliate.get("total_earned") or 0)
-        total_paid = float(affiliate.get("total_paid") or 0)
-        payout_due = max(total_earned - total_paid, 0.0)
-        return templates.TemplateResponse(
-            "partner_dashboard.html",
-            {
-                "request": request,
-                "affiliate": affiliate,
-                "orders": orders,
-                "total_sales": len(orders),
-                "total_earned": total_earned,
-                "payout_due": payout_due,
-                "pw_error": "Новата парола трябва да е поне 8 символа.",
-            },
-            status_code=400,
-        )
+        return _dashboard_error(t["partner_password_min_length"])
 
     new_hashed = PASSWORD_CONTEXT.hash(new_password)
     update_affiliate_password(affiliate["id"], new_hashed)
@@ -1403,15 +1393,16 @@ def partner_reset_password_post(
             "partner_reset_password.html",
             {"request": request, "invalid": True, "token": token, "t": get_ui(lang), "lang": lang},
         )
+    t = get_ui(lang)
     if new_password != confirm_password:
         return templates.TemplateResponse(
             "partner_reset_password.html",
-            {"request": request, "token": token, "error": "Паролите не съвпадат.", "t": get_ui(lang), "lang": lang},
+            {"request": request, "token": token, "error": t["partner_passwords_mismatch"], "t": t, "lang": lang},
         )
     if len(new_password) < 8:
         return templates.TemplateResponse(
             "partner_reset_password.html",
-            {"request": request, "token": token, "error": "Паролата трябва да е поне 8 символа.", "t": get_ui(lang), "lang": lang},
+            {"request": request, "token": token, "error": t["partner_password_min_length"], "t": t, "lang": lang},
         )
     new_hashed = PASSWORD_CONTEXT.hash(new_password)
     update_affiliate_password(record["affiliate_id"], new_hashed)
