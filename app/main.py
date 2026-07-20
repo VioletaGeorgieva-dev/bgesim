@@ -4,6 +4,8 @@ from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, Backgr
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from passlib.context import CryptContext
+from starlette.middleware.sessions import SessionMiddleware
 from app.api.client import check_balance, get_packages, query_esim_usage
 from app.services.esim import order_esim
 from app.config import settings
@@ -14,11 +16,17 @@ from app.translations import (
     get_ui,
 )
 from app.database import (
+    get_affiliate_by_email,
+    get_affiliate_by_id,
+    get_affiliate_by_promo_code,
     get_all_orders,
+    get_order_by_session,
+    get_orders_by_promo_code,
     get_esim_tran_no_by_iccid,
     get_order_by_iccid,
     init_db,
     save_order,
+    update_affiliate_totals,
 )
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -42,6 +50,7 @@ MARGIN_COEFFICIENT = 2.0
 
 
 ADMIN_SESSION_VALUE = "authenticated_admin"
+PASSWORD_CONTEXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ❓ ─── ДАННИ И ПРЕВОДИ ЗА FAQ СТРАНИЦАТА (5 ЕЗИКА) ───
 FAQ_DATA = {
@@ -374,6 +383,10 @@ def process_webhook_data(event, base_url):
         raw_session = event["data"]["object"]
         session_id = raw_session["id"]
 
+        if get_order_by_session(session_id):
+            print(f"[BACKGROUND TASK] ℹ️ Сесията вече е обработена: {session_id}")
+            return
+
         stripe_session = stripe.checkout.Session.retrieve(session_id)
         meta = dict(stripe_session.get("metadata") or {})
 
@@ -389,7 +402,10 @@ def process_webhook_data(event, base_url):
         duration = meta.get("duration", "")
         gb = meta.get("gb", "")
         lang = meta.get("lang", "en")
+        promo_code_used = meta.get("promo_code_used", "").strip()
         customer_email = stripe_session.get("customer_email", "")
+        amount_total = stripe_session.get("amount_total")
+        order_amount = round(amount_total / 100, 2) if amount_total is not None else get_server_side_price(package_slug)
 
         qr_code_url = None
         iccid = None
@@ -397,6 +413,16 @@ def process_webhook_data(event, base_url):
         smdp_address = ""
         matching_id = ""
         lpa_string = ""
+        affiliate_commission = None
+        affiliate = None
+
+        if promo_code_used:
+            affiliate = get_affiliate_by_promo_code(promo_code_used)
+            if affiliate and order_amount is not None:
+                affiliate_commission = round(
+                    order_amount * (float(affiliate["commission_percent"]) / 100),
+                    2,
+                )
 
         try:
             esim_result = order_esim(package_code=package_slug)
@@ -438,8 +464,16 @@ def process_webhook_data(event, base_url):
                 smdp_address=smdp_address,
                 matching_id=matching_id,
                 lang=lang,
+                promo_code_used=promo_code_used,
+                affiliate_commission=affiliate_commission,
+                order_amount=order_amount,
                 status="completed" if iccid else "esim_failed",
             )
+            if affiliate and affiliate_commission is not None:
+                update_affiliate_totals(
+                    affiliate_id=affiliate["id"],
+                    earned_delta=affiliate_commission,
+                )
         except Exception as e:
             print(f"[BACKGROUND TASK] ❌ Грешка при запис в БД: {e}")
 
@@ -552,6 +586,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=getattr(settings, "partner_session_secret", "") or settings.stripe_webhook_secret,
+    session_cookie="partner_session",
+    same_site="strict",
+    https_only=True,
 )
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -684,6 +725,13 @@ def make_context(request: Request, lang: str, **kwargs) -> dict:
         "lang_urls": make_lang_urls(request, SUPPORTED_LANGS),
         **kwargs,
     }
+
+
+def get_authenticated_partner(request: Request) -> Optional[dict]:
+    partner_id = request.session.get("partner_id")
+    if not partner_id:
+        return None
+    return get_affiliate_by_id(partner_id)
 
 
 def get_country_suggestions(lang: str) -> list:
@@ -835,6 +883,7 @@ async def pay(
         country: str = Form(...),
         duration: int = Form(...),
         gb: float = Form(...),
+        promo_code: Optional[str] = Form(default=None),
         lang: str = Cookie(default="en"),
 ):
     ip = request.client.host
@@ -870,7 +919,19 @@ async def pay(
     print(f"[PAY] ✅ Цена изчислена от сървъра: €{server_price} ({amount_cents} цента) за {package_slug}")
     # ─────────────────────────────────────────────────────────────────────────
 
-    session = stripe.checkout.Session.create(
+    normalized_promo_code = (promo_code or "").strip().upper()
+    checkout_discounts = None
+    if normalized_promo_code:
+        promotion_codes = stripe.PromotionCode.list(
+            code=normalized_promo_code,
+            active=True,
+            limit=1,
+        ).get("data", [])
+        if not promotion_codes:
+            raise HTTPException(status_code=400, detail="Невалиден промо код.")
+        checkout_discounts = [{"promotion_code": promotion_codes[0]["id"]}]
+
+    session_kwargs = dict(
         payment_method_types=["card"],
         line_items=[{
             "price_data": {
@@ -891,11 +952,16 @@ async def pay(
             "country": country,
             "duration": str(duration),
             "gb": str(gb),
+            "promo_code_used": normalized_promo_code,
             "lang": lang,
         },
         success_url=str(request.base_url) + "success?session_id={CHECKOUT_SESSION_ID}",
         cancel_url=str(request.base_url) + "cancel",
     )
+    if checkout_discounts:
+        session_kwargs["discounts"] = checkout_discounts
+
+    session = stripe.checkout.Session.create(**session_kwargs)
 
     return RedirectResponse(url=session.url, status_code=303)
 
@@ -1025,6 +1091,62 @@ def admin_logout():
     response = RedirectResponse(url="/admin", status_code=303)
     response.delete_cookie("admin_auth")
     return response
+
+
+@app.get("/partner/login", response_class=HTMLResponse)
+def partner_login(request: Request):
+    if get_authenticated_partner(request):
+        return RedirectResponse(url="/partner/dashboard", status_code=303)
+    return templates.TemplateResponse("partner_login.html", {"request": request})
+
+
+@app.post("/partner/login", response_class=HTMLResponse)
+def partner_login_post(
+        request: Request,
+        email: str = Form(...),
+        password: str = Form(...),
+):
+    affiliate = get_affiliate_by_email(email)
+    if not affiliate or not PASSWORD_CONTEXT.verify(password, affiliate["hashed_password"]):
+        return templates.TemplateResponse(
+            "partner_login.html",
+            {"request": request, "error": "Грешен имейл или парола."},
+            status_code=401,
+        )
+
+    request.session.clear()
+    request.session["partner_id"] = affiliate["id"]
+    return RedirectResponse(url="/partner/dashboard", status_code=303)
+
+
+@app.get("/partner/dashboard", response_class=HTMLResponse)
+def partner_dashboard(request: Request):
+    affiliate = get_authenticated_partner(request)
+    if not affiliate:
+        return RedirectResponse(url="/partner/login", status_code=303)
+
+    orders = get_orders_by_promo_code(affiliate["promo_code"])
+    total_earned = float(affiliate.get("total_earned") or 0)
+    total_paid = float(affiliate.get("total_paid") or 0)
+    payout_due = max(total_earned - total_paid, 0.0)
+
+    return templates.TemplateResponse(
+        "partner_dashboard.html",
+        {
+            "request": request,
+            "affiliate": affiliate,
+            "orders": orders,
+            "total_sales": len(orders),
+            "total_earned": total_earned,
+            "payout_due": payout_due,
+        },
+    )
+
+
+@app.post("/partner/logout")
+def partner_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/partner/login", status_code=303)
 
 
 @app.get("/usage/{iccid}", response_class=HTMLResponse)

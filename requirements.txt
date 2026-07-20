@@ -27,4 +27,5 @@ python-multipart==0.0.20
 
 # Сигурност — ЗАМЕНЕН с по-лека версия
 passlib[bcrypt]==1.7.4
+itsdangerous==2.2.0
 pycountry==24.6.1

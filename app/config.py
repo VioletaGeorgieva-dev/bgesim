@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     stripe_publishable_key: str
     stripe_secret_key: str
     stripe_webhook_secret: str
+    partner_session_secret: str = ""
 
     class Config:
         env_file = str(BASE_DIR / ".env")

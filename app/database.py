@@ -16,7 +16,7 @@ def get_connection() -> sqlite3.Connection:
 
 
 def init_db() -> None:
-    """Създава таблицата orders ако не съществува."""
+    """Създава нужните таблици ако не съществуват."""
     with get_connection() as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS orders (
@@ -34,8 +34,23 @@ def init_db() -> None:
                 smdp_address      TEXT,
                 matching_id       TEXT,
                 lang              TEXT,
+                promo_code_used   TEXT,
+                affiliate_commission REAL,
+                order_amount      REAL,
                 status            TEXT     DEFAULT 'completed',
                 created_at        TEXT     NOT NULL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliates (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                name               TEXT NOT NULL,
+                email              TEXT NOT NULL UNIQUE,
+                hashed_password    TEXT NOT NULL,
+                promo_code         TEXT NOT NULL UNIQUE,
+                commission_percent REAL NOT NULL,
+                total_earned       REAL NOT NULL DEFAULT 0,
+                total_paid         REAL NOT NULL DEFAULT 0
             )
         """)
         conn.commit()
@@ -50,10 +65,30 @@ def migrate_db() -> None:
             row["name"]
             for row in conn.execute("PRAGMA table_info(orders)").fetchall()
         }
-        if "esim_tran_no" not in columns:
-            conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
-            conn.commit()
-            print("[DB] ✅ Колона esim_tran_no добавена.")
+        missing_columns = {
+            "esim_tran_no": "TEXT",
+            "promo_code_used": "TEXT",
+            "affiliate_commission": "REAL",
+            "order_amount": "REAL",
+        }
+        for column_name, column_type in missing_columns.items():
+            if column_name not in columns:
+                conn.execute(f"ALTER TABLE orders ADD COLUMN {column_name} {column_type}")
+                print(f"[DB] ✅ Колона {column_name} добавена.")
+
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS affiliates (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                name               TEXT NOT NULL,
+                email              TEXT NOT NULL UNIQUE,
+                hashed_password    TEXT NOT NULL,
+                promo_code         TEXT NOT NULL UNIQUE,
+                commission_percent REAL NOT NULL,
+                total_earned       REAL NOT NULL DEFAULT 0,
+                total_paid         REAL NOT NULL DEFAULT 0
+            )
+        """)
+        conn.commit()
 
 
 def save_order(
@@ -70,6 +105,9 @@ def save_order(
     smdp_address: str = "",
     matching_id: str  = "",
     lang: str         = "en",
+    promo_code_used: str = "",
+    affiliate_commission: Optional[float] = None,
+    order_amount: Optional[float] = None,
     status: str       = "completed",
 ) -> int:
     """
@@ -91,6 +129,9 @@ def save_order(
         "smdp_address": smdp_address,
         "matching_id": matching_id,
         "lang": lang,
+        "promo_code_used": promo_code_used,
+        "affiliate_commission": affiliate_commission,
+        "order_amount": order_amount,
         "status": status,
         "created_at": created_at,
     }
@@ -111,6 +152,9 @@ def save_order(
                 smdp_address,
                 matching_id,
                 lang,
+                promo_code_used,
+                affiliate_commission,
+                order_amount,
                 status,
                 created_at
             ) VALUES (
@@ -127,6 +171,9 @@ def save_order(
                 :smdp_address,
                 :matching_id,
                 :lang,
+                :promo_code_used,
+                :affiliate_commission,
+                :order_amount,
                 :status,
                 :created_at
             )
@@ -169,6 +216,107 @@ def get_all_orders(status_filter: Optional[str] = None) -> List[dict]:
                 "SELECT * FROM orders ORDER BY id DESC"
             ).fetchall()
     return [dict(row) for row in rows]
+
+
+def create_affiliate(
+    name: str,
+    email: str,
+    hashed_password: str,
+    promo_code: str,
+    commission_percent: float,
+    total_earned: float = 0.0,
+    total_paid: float = 0.0,
+) -> int:
+    values = {
+        "name": name,
+        "email": email.strip().lower(),
+        "hashed_password": hashed_password,
+        "promo_code": promo_code.strip(),
+        "commission_percent": commission_percent,
+        "total_earned": total_earned,
+        "total_paid": total_paid,
+    }
+    with get_connection() as conn:
+        cursor = conn.execute("""
+            INSERT INTO affiliates (
+                name,
+                email,
+                hashed_password,
+                promo_code,
+                commission_percent,
+                total_earned,
+                total_paid
+            ) VALUES (
+                :name,
+                :email,
+                :hashed_password,
+                :promo_code,
+                :commission_percent,
+                :total_earned,
+                :total_paid
+            )
+        """, values)
+        conn.commit()
+    return cursor.lastrowid
+
+
+def get_affiliate_by_email(email: str) -> Optional[dict]:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM affiliates WHERE lower(email) = lower(?)",
+            (email.strip(),),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_affiliate_by_id(affiliate_id: int) -> Optional[dict]:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM affiliates WHERE id = ?",
+            (affiliate_id,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_affiliate_by_promo_code(promo_code: str) -> Optional[dict]:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM affiliates WHERE upper(promo_code) = upper(?)",
+            (promo_code.strip(),),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_orders_by_promo_code(promo_code: str) -> List[dict]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM orders
+            WHERE upper(COALESCE(promo_code_used, '')) = upper(?)
+            ORDER BY id DESC
+            """,
+            (promo_code.strip(),),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def update_affiliate_totals(
+    affiliate_id: int,
+    earned_delta: float = 0.0,
+    paid_delta: float = 0.0,
+) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            """
+            UPDATE affiliates
+            SET total_earned = total_earned + ?,
+                total_paid = total_paid + ?
+            WHERE id = ?
+            """,
+            (earned_delta, paid_delta, affiliate_id),
+        )
+        conn.commit()
 
 
 def get_esim_tran_no_by_iccid(iccid: str) -> Optional[str]:
