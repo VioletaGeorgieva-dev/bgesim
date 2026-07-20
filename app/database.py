@@ -1,4 +1,5 @@
 import sqlite3
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
@@ -219,11 +220,19 @@ def create_affiliate(
     total_earned: float = 0.0,
     total_paid: float = 0.0,
 ) -> int:
+    promo_code_clean = promo_code.strip().upper()
+    if not 0 <= commission_percent <= 100:
+        raise ValueError("commission_percent must be between 0 and 100")
+    if not promo_code_clean or len(promo_code_clean) > 50:
+        raise ValueError("promo_code must be between 1 and 50 characters")
+    if not re.fullmatch(r"[A-Z0-9_-]+", promo_code_clean):
+        raise ValueError("promo_code contains invalid characters")
+
     values = {
         "name": name,
         "email": email.strip().lower(),
         "hashed_password": hashed_password,
-        "promo_code": promo_code.strip(),
+        "promo_code": promo_code_clean,
         "commission_percent": commission_percent,
         "total_earned": total_earned,
         "total_paid": total_paid,

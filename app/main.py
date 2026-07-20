@@ -59,6 +59,7 @@ MARGIN_COEFFICIENT = 2.0
 
 ADMIN_SESSION_VALUE = "authenticated_admin"
 PASSWORD_CONTEXT = CryptContext(schemes=["bcrypt"], deprecated="auto")
+DUMMY_PASSWORD_HASH = PASSWORD_CONTEXT.hash("partner-login-placeholder")
 
 # ❓ ─── ДАННИ И ПРЕВОДИ ЗА FAQ СТРАНИЦАТА (5 ЕЗИКА) ───
 FAQ_DATA = {
@@ -936,11 +937,11 @@ async def pay(
     print(f"[PAY] ✅ Цена изчислена от сървъра: €{server_price} ({amount_cents} цента) за {package_slug}")
     # ─────────────────────────────────────────────────────────────────────────
 
-    normalized_promo_code = (promo_code or "").strip().upper()
+    promo_code_normalized = (promo_code or "").strip().upper()
     checkout_discounts = None
-    if normalized_promo_code:
+    if promo_code_normalized:
         promotion_codes = stripe.PromotionCode.list(
-            code=normalized_promo_code,
+            code=promo_code_normalized,
             active=True,
             limit=1,
         ).get("data", [])
@@ -969,7 +970,7 @@ async def pay(
             "country": country,
             "duration": str(duration),
             "gb": str(gb),
-            "promo_code_used": normalized_promo_code,
+            "promo_code_used": promo_code_normalized,
             "lang": lang,
         },
         success_url=str(request.base_url) + "success?session_id={CHECKOUT_SESSION_ID}",
@@ -1124,7 +1125,9 @@ def partner_login_post(
         password: str = Form(...),
 ):
     affiliate = get_affiliate_by_email(email)
-    if not affiliate or not PASSWORD_CONTEXT.verify(password, affiliate["hashed_password"]):
+    stored_password_hash = affiliate["hashed_password"] if affiliate else DUMMY_PASSWORD_HASH
+    password_is_valid = PASSWORD_CONTEXT.verify(password, stored_password_hash)
+    if not affiliate or not password_is_valid:
         return templates.TemplateResponse(
             "partner_login.html",
             {"request": request, "error": "Грешен имейл или парола."},
