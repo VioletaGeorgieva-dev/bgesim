@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 
 # Базата данни се създава в главната папка на проекта
@@ -29,6 +29,7 @@ def init_db() -> None:
                 gb                TEXT,
                 duration          TEXT,
                 iccid             TEXT,
+                esim_tran_no      TEXT,
                 qr_code_url       TEXT,
                 smdp_address      TEXT,
                 matching_id       TEXT,
@@ -38,7 +39,21 @@ def init_db() -> None:
             )
         """)
         conn.commit()
+    migrate_db()
     print(f"[DB] ✅ База данни инициализирана: {DB_PATH}")
+
+
+def migrate_db() -> None:
+    """Add new columns when they are missing."""
+    with get_connection() as conn:
+        columns = {
+            row["name"]
+            for row in conn.execute("PRAGMA table_info(orders)").fetchall()
+        }
+        if "esim_tran_no" not in columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
+            conn.commit()
+            print("[DB] ✅ Колона esim_tran_no добавена.")
 
 
 def save_order(
@@ -51,6 +66,7 @@ def save_order(
     duration: str,
     iccid: str,
     qr_code_url: str,
+    esim_tran_no: str = "",
     smdp_address: str = "",
     matching_id: str  = "",
     lang: str         = "en",
@@ -61,6 +77,23 @@ def save_order(
     Връща id на новия запис.
     """
     created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    values = {
+        "stripe_session_id": stripe_session_id,
+        "full_name": full_name,
+        "email": email,
+        "package_slug": package_slug,
+        "country": country,
+        "gb": gb,
+        "duration": duration,
+        "iccid": iccid,
+        "esim_tran_no": esim_tran_no,
+        "qr_code_url": qr_code_url,
+        "smdp_address": smdp_address,
+        "matching_id": matching_id,
+        "lang": lang,
+        "status": status,
+        "created_at": created_at,
+    }
 
     with get_connection() as conn:
         cursor = conn.execute("""
@@ -73,29 +106,31 @@ def save_order(
                 gb,
                 duration,
                 iccid,
+                esim_tran_no,
                 qr_code_url,
                 smdp_address,
                 matching_id,
                 lang,
                 status,
                 created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            stripe_session_id,
-            full_name,
-            email,
-            package_slug,
-            country,
-            gb,
-            duration,
-            iccid,
-            qr_code_url,
-            smdp_address,
-            matching_id,
-            lang,
-            status,
-            created_at,
-        ))
+            ) VALUES (
+                :stripe_session_id,
+                :full_name,
+                :email,
+                :package_slug,
+                :country,
+                :gb,
+                :duration,
+                :iccid,
+                :esim_tran_no,
+                :qr_code_url,
+                :smdp_address,
+                :matching_id,
+                :lang,
+                :status,
+                :created_at
+            )
+        """, values)
         conn.commit()
 
     print(f"[DB] ✅ Поръчка записана → id={cursor.lastrowid} | ICCID={iccid} | session={stripe_session_id[:20]}...")
@@ -111,8 +146,15 @@ def get_order_by_session(stripe_session_id: str) -> Optional[dict]:
         ).fetchone()
     return dict(row) if row else None
 
-from typing import Optional, List   # ← увери се че е така
 
+def get_order_by_iccid(iccid: str) -> Optional[dict]:
+    """Find an order by ICCID."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM orders WHERE iccid = ?",
+            (iccid,),
+        ).fetchone()
+    return dict(row) if row else None
 
 def get_all_orders(status_filter: Optional[str] = None) -> List[dict]:
     """Връща всички поръчки, сортирани от най-новата."""
@@ -127,3 +169,13 @@ def get_all_orders(status_filter: Optional[str] = None) -> List[dict]:
                 "SELECT * FROM orders ORDER BY id DESC"
             ).fetchall()
     return [dict(row) for row in rows]
+
+
+def get_esim_tran_no_by_iccid(iccid: str) -> Optional[str]:
+    """Return the esim_tran_no for an ICCID."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT esim_tran_no FROM orders WHERE iccid = ?",
+            (iccid,),
+        ).fetchone()
+    return row["esim_tran_no"] if row else None

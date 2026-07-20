@@ -1,6 +1,7 @@
 import urllib.parse
 import requests
 from app.config import get_settings
+from app.translations import get_ui
 
 settings = get_settings()
 
@@ -105,16 +106,30 @@ def _ac_to_qr_url(activation_code: str) -> str:
     return f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded}"
 
 
-def query_esim_usage(iccid: str) -> dict:
+def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     """
     Връща оставащите данни за даден ICCID.
     POST /esim/usage/query
     """
-    url     = f"{BASE_URL}/esim/usage/query"
-    payload = {"iccid": iccid}
+    from app.database import get_esim_tran_no_by_iccid
+
+    ui = get_ui(lang)
+    esim_tran_no = get_esim_tran_no_by_iccid(iccid)
+
+    if not esim_tran_no:
+        return {
+            "total": ui["usage_pending_total"],
+            "used": "0.00 GB",
+            "remaining": ui["usage_pending_activation"],
+            "percent": 0,
+            "not_active": True,
+        }
+
+    url = f"{BASE_URL}/esim/usage/query"
+    payload = {"esimTranNoList": [esim_tran_no]}
 
     try:
-        client   = get_client()
+        client = get_client()
         response = client.post(url, json=payload, timeout=15)
         response.raise_for_status()
         data = response.json()
@@ -123,31 +138,24 @@ def query_esim_usage(iccid: str) -> dict:
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"[USAGE] ❌ Мрежова грешка: {e}")
 
-    # ─── 🛡️ ТУК Е ЗАЩИТАТА СРЕЩУ ПРАЗНИ ТРАНЗАКЦИИ (esimTranNoList) ───
     if not data.get("success"):
         err_msg = data.get('errorMsg', '') or data.get('errorMessage', 'Неизвестна грешка')
-        
-        # Проверяваме дали грешката е заради липса на активирана сесия/транзакция
-        if "esimtrannolist" in err_msg.lower() or "must not be null" in err_msg.lower():
-            # Връщаме празен/подготвен статус, вместо да хвърляме изключение (гърмим)
-            return {
-                "total": "В процес...",
-                "used": "0.00 GB",
-                "remaining": "Пакетът изчаква активиране",
-                "percent": 0,
-                "not_active": True  # Флаг, който да ни каже, че картата още не е стартирана
-            }
-        
         raise ValueError(f"[USAGE] ❌ {err_msg}")
-    # ─────────────────────────────────────────────────────────────────
 
-    obj = data.get("obj") or {}
+    usage_list = (data.get("obj") or {}).get("esimUsageList", [])
+    if not usage_list:
+        return {
+            "total": ui["usage_pending_total"],
+            "used": "0.00 GB",
+            "remaining": ui["usage_no_data"],
+            "percent": 0,
+            "not_active": True,
+        }
 
-    total_bytes = obj.get("totalVolume", 0)
-    # FIX: Правилното поле е 'usageVolume', не 'orderUsage'
-    # 'orderUsage' не се връща от /esim/usage/query — резултатът беше винаги 0
-    used_bytes  = obj.get("usageVolume", 0)
-    remaining   = max(0, total_bytes - used_bytes)
+    item = usage_list[0]
+    total_bytes = item.get("totalData", 0)
+    used_bytes = item.get("dataUsage", 0)
+    remaining = max(0, total_bytes - used_bytes)
 
     def to_gb(b: int) -> str:
         return f"{round(b / (1024 ** 3), 2)} GB"
@@ -159,5 +167,5 @@ def query_esim_usage(iccid: str) -> dict:
         "used":      to_gb(used_bytes),
         "remaining": to_gb(remaining),
         "percent":   percent,
-        "not_active": False
+        "not_active": False,
     }

@@ -167,6 +167,8 @@ def _query_esim_profile(order_no: str, max_attempts: int = 10) -> dict:
 
             esim        = esim_list[0]
             iccid       = esim.get("iccid", "")
+            # Some older/alternative responses return tran_no instead of esimTranNo.
+            esim_tran_no = esim.get("esimTranNo", "") or esim.get("tran_no", "")
             qr_code_url = esim.get("qrCodeUrl", "")
             ac          = esim.get("ac", "")
 
@@ -185,6 +187,7 @@ def _query_esim_profile(order_no: str, max_attempts: int = 10) -> dict:
             return {
                 "qr_code_url":  qr_code_url,
                 "iccid":        iccid,
+                "esim_tran_no": esim_tran_no,
                 "order_no":     order_no,
                 "lpa_string":   manual["lpa_string"],    # LPA:1$...$...
                 "smdp_address": manual["smdp_address"],  # rsp-eu.redteamobile.com
