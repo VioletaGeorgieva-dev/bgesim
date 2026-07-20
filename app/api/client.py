@@ -144,7 +144,9 @@ def query_esim_usage(iccid: str) -> dict:
     obj = data.get("obj") or {}
 
     total_bytes = obj.get("totalVolume", 0)
-    used_bytes  = obj.get("orderUsage",  0)
+    # FIX: Правилното поле е 'usageVolume', не 'orderUsage'
+    # 'orderUsage' не се връща от /esim/usage/query — резултатът беше винаги 0
+    used_bytes  = obj.get("usageVolume", 0)
     remaining   = max(0, total_bytes - used_bytes)
 
     def to_gb(b: int) -> str:
