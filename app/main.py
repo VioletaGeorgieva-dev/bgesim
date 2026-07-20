@@ -13,7 +13,13 @@ from app.translations import (
     resolve_iso2_from_text,
     get_ui,
 )
-from app.database import init_db, save_order, get_all_orders
+from app.database import (
+    get_all_orders,
+    get_esim_tran_no_by_iccid,
+    get_order_by_iccid,
+    init_db,
+    save_order,
+)
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 import urllib.parse
@@ -387,6 +393,7 @@ def process_webhook_data(event, base_url):
 
         qr_code_url = None
         iccid = None
+        esim_tran_no = ""
         smdp_address = ""
         matching_id = ""
         lpa_string = ""
@@ -395,6 +402,7 @@ def process_webhook_data(event, base_url):
             esim_result = order_esim(package_code=package_slug)
             qr_code_url = esim_result["qr_code_url"]
             iccid = esim_result["iccid"]
+            esim_tran_no = esim_result.get("esim_tran_no", "")
             smdp_address = esim_result.get("smdp_address", "")
             matching_id = esim_result.get("matching_id", "")
             lpa_string = esim_result.get("lpa_string", "")
@@ -426,6 +434,7 @@ def process_webhook_data(event, base_url):
                 duration=duration,
                 iccid=iccid or "",
                 qr_code_url=qr_code_url or "",
+                esim_tran_no=esim_tran_no,
                 smdp_address=smdp_address,
                 matching_id=matching_id,
                 lang=lang,
@@ -1029,6 +1038,13 @@ def usage_page(
 
     try:
         usage_data = query_esim_usage(iccid=iccid)
+        if (
+            usage_data
+            and usage_data.get("not_active")
+            and get_order_by_iccid(iccid)
+            and not get_esim_tran_no_by_iccid(iccid)
+        ):
+            usage_data["remaining"] = "Моля свържете се с поддръжка за стари поръчки"
     except Exception as e:
         error = str(e)
 
