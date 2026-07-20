@@ -1,6 +1,7 @@
 import urllib.parse
 import requests
 from app.config import get_settings
+from app.translations import get_ui
 
 settings = get_settings()
 
@@ -105,20 +106,21 @@ def _ac_to_qr_url(activation_code: str) -> str:
     return f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded}"
 
 
-def query_esim_usage(iccid: str) -> dict:
+def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     """
     Връща оставащите данни за даден ICCID.
     POST /esim/usage/query
     """
     from app.database import get_esim_tran_no_by_iccid
 
+    ui = get_ui(lang)
     esim_tran_no = get_esim_tran_no_by_iccid(iccid)
 
     if not esim_tran_no:
         return {
-            "total": "В процес...",
+            "total": ui["usage_pending_total"],
             "used": "0.00 GB",
-            "remaining": "Пакетът изчаква активиране",
+            "remaining": ui["usage_pending_activation"],
             "percent": 0,
             "not_active": True,
         }
@@ -143,9 +145,9 @@ def query_esim_usage(iccid: str) -> dict:
     usage_list = (data.get("obj") or {}).get("esimUsageList", [])
     if not usage_list:
         return {
-            "total": "В процес...",
+            "total": ui["usage_pending_total"],
             "used": "0.00 GB",
-            "remaining": "Няма данни",
+            "remaining": ui["usage_no_data"],
             "percent": 0,
             "not_active": True,
         }

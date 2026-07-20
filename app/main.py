@@ -1037,7 +1037,7 @@ def usage_page(
     error = None
 
     try:
-        usage_data = query_esim_usage(iccid=iccid)
+        usage_data = query_esim_usage(iccid=iccid, lang=lang)
         if (
             usage_data
             and usage_data.get("not_active")

@@ -13,6 +13,7 @@ os.environ.setdefault("STRIPE_WEBHOOK_SECRET", "whsec_test")
 
 from app import database
 from app.api import client
+from app.translations import get_ui
 
 
 class DatabaseTests(unittest.TestCase):
@@ -83,10 +84,11 @@ class DatabaseTests(unittest.TestCase):
 class QueryEsimUsageTests(unittest.TestCase):
     def test_query_esim_usage_returns_pending_when_transaction_number_missing(self):
         with patch("app.database.get_esim_tran_no_by_iccid", return_value=None):
-            result = client.query_esim_usage("8910")
+            result = client.query_esim_usage("8910", lang="bg")
 
         self.assertTrue(result["not_active"])
-        self.assertEqual(result["remaining"], "Пакетът изчаква активиране")
+        self.assertEqual(result["total"], get_ui("bg")["usage_pending_total"])
+        self.assertEqual(result["remaining"], get_ui("bg")["usage_pending_activation"])
 
     def test_query_esim_usage_uses_esim_tran_no_payload_and_parses_usage_list(self):
         response = MagicMock()
@@ -109,7 +111,7 @@ class QueryEsimUsageTests(unittest.TestCase):
 
         with patch("app.database.get_esim_tran_no_by_iccid", return_value="TRAN123"):
             with patch("app.api.client.get_client", return_value=session):
-                result = client.query_esim_usage("8910")
+                result = client.query_esim_usage("8910", lang="en")
 
         session.post.assert_called_once_with(
             "https://api.esimaccess.com/api/v1/open/esim/usage/query",
