@@ -54,6 +54,13 @@ def init_db() -> None:
                 total_paid         REAL NOT NULL DEFAULT 0
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                token        TEXT PRIMARY KEY,
+                affiliate_id INTEGER NOT NULL,
+                expires_at   TEXT NOT NULL
+            )
+        """)
         conn.commit()
     migrate_db()
     print(f"[DB] ✅ База данни инициализирана: {DB_PATH}")
@@ -336,3 +343,47 @@ def get_esim_tran_no_by_iccid(iccid: str) -> Optional[str]:
             (iccid,),
         ).fetchone()
     return row["esim_tran_no"] if row else None
+
+
+def update_affiliate_password(affiliate_id: int, hashed_password: str) -> None:
+    """Update the hashed password for an affiliate."""
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE affiliates SET hashed_password = ? WHERE id = ?",
+            (hashed_password, affiliate_id),
+        )
+        conn.commit()
+
+
+def create_password_reset_token(affiliate_id: int, token: str, expires_at: str) -> None:
+    """Store a password reset token with its expiry."""
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM password_reset_tokens WHERE affiliate_id = ?",
+            (affiliate_id,),
+        )
+        conn.execute(
+            "INSERT INTO password_reset_tokens (token, affiliate_id, expires_at) VALUES (?, ?, ?)",
+            (token, affiliate_id, expires_at),
+        )
+        conn.commit()
+
+
+def get_password_reset_token(token: str) -> Optional[dict]:
+    """Return the reset token record or None if not found."""
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM password_reset_tokens WHERE token = ?",
+            (token,),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def delete_password_reset_token(token: str) -> None:
+    """Delete a password reset token after use."""
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM password_reset_tokens WHERE token = ?",
+            (token,),
+        )
+        conn.commit()

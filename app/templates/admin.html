@@ -910,6 +910,7 @@ rounded-xl">
                         <th class="px-4 py-3 text-right">Комисионна %</th>
                         <th class="px-4 py-3 text-right">Натрупана комисионна</th>
                         <th class="px-4 py-3 text-right">Изплатено</th>
+                        <th class="px-4 py-3 text-center">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -921,10 +922,35 @@ rounded-xl">
                         <td class="px-4 py-3 text-right">{{ "%.1f"|format(affiliate.commission_percent|float) }}%</td>
                         <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_earned|float) }}</td>
                         <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_paid|float) }}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button
+                                onclick="document.getElementById('reset-modal-{{ affiliate.id }}').classList.remove('hidden')"
+                                class="bg-amber-500 hover:bg-amber-600 text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                                🔑 Смени парола
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- Reset password modal for {{ affiliate.name }} -->
+                    <tr id="reset-modal-{{ affiliate.id }}" class="hidden bg-amber-50">
+                        <td colspan="7" class="px-4 py-4">
+                            <form method="POST" action="/admin/affiliates/{{ affiliate.id }}/reset-password" class="flex items-center gap-3 flex-wrap">
+                                <span class="text-sm font-semibold text-gray-700">Нова парола за {{ affiliate.name }}:</span>
+                                <input type="password" name="new_password" minlength="8" required placeholder="Мин. 8 символа"
+                                    class="border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
+                                <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-semibold px-4 py-2 rounded-xl text-sm">
+                                    Запази
+                                </button>
+                                <button type="button"
+                                    onclick="document.getElementById('reset-modal-{{ affiliate.id }}').classList.add('hidden')"
+                                    class="text-gray-500 hover:text-gray-700 text-sm px-3 py-2">
+                                    Откажи
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">Няма създадени партньори.</td>
+                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">Няма създадени партньори.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
