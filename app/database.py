@@ -44,7 +44,7 @@ def init_db() -> None:
 
 
 def migrate_db() -> None:
-    """Добавя нови колони ако липсват."""
+    """Add new columns when they are missing."""
     with get_connection() as conn:
         columns = {
             row["name"]
@@ -148,7 +148,7 @@ def get_order_by_session(stripe_session_id: str) -> Optional[dict]:
 
 
 def get_order_by_iccid(iccid: str) -> Optional[dict]:
-    """Търси поръчка по ICCID."""
+    """Find an order by ICCID."""
     with get_connection() as conn:
         row = conn.execute(
             "SELECT * FROM orders WHERE iccid = ?",
@@ -172,7 +172,7 @@ def get_all_orders(status_filter: Optional[str] = None) -> List[dict]:
 
 
 def get_esim_tran_no_by_iccid(iccid: str) -> Optional[str]:
-    """Връща esim_tran_no по iccid."""
+    """Return the esim_tran_no for an ICCID."""
     with get_connection() as conn:
         row = conn.execute(
             "SELECT esim_tran_no FROM orders WHERE iccid = ?",
