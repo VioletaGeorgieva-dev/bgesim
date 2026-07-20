@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+import sqlite3
 import time
 from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -17,9 +18,11 @@ from app.translations import (
     get_ui,
 )
 from app.database import (
+    create_affiliate,
     get_affiliate_by_email,
     get_affiliate_by_id,
     get_affiliate_by_promo_code,
+    get_all_affiliates,
     get_all_orders,
     get_order_by_session,
     get_orders_by_promo_code,
@@ -1022,8 +1025,23 @@ def test_email(secret: str = Query("")):
 
 
 @app.get("/admin", response_class=HTMLResponse)
-def admin_login(request: Request, lang: str = Cookie(default="en")):
-    return templates.TemplateResponse("admin_login.html", {"request": request})
+def admin_login(
+        request: Request,
+        admin_auth: str = Cookie(default=""),
+        status_filter: str = Query(default="all"),
+        q: Optional[str] = Query(default=None),
+        msg: str = Query(default=""),
+        msg_type: str = Query(default="success"),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return templates.TemplateResponse("admin_login.html", {"request": request})
+    return render_admin_dashboard(
+        request=request,
+        status_filter=status_filter,
+        q=q,
+        msg=msg,
+        msg_type=msg_type,
+    )
 
 
 @app.post("/admin", response_class=HTMLResponse)
@@ -1042,7 +1060,7 @@ def admin_login_post(
             status_code=401,
         )
     # ── ЗАЩИТА: записваме фиксиран низ в бисквитката, НЕ паролата ────────────
-    response = RedirectResponse(url="/admin/orders", status_code=303)
+    response = RedirectResponse(url="/admin", status_code=303)
     response.set_cookie(
         key="admin_auth",
         value=ADMIN_SESSION_VALUE,
@@ -1063,7 +1081,69 @@ def admin_orders(
 ):
     if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
+    return render_admin_dashboard(request=request, status_filter=status_filter, q=q)
 
+
+@app.post("/admin/affiliates/create")
+def admin_create_affiliate(
+        request: Request,
+        admin_auth: str = Cookie(default=""),
+        name: str = Form(...),
+        email: str = Form(...),
+        password: str = Form(...),
+        promo_code: str = Form(...),
+        commission_percent: float = Form(...),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+
+    try:
+        password_clean = password.strip()
+        if len(password_clean) < 8:
+            raise ValueError("password_too_short")
+        hashed_password = PASSWORD_CONTEXT.hash(password_clean)
+        create_affiliate(
+            name=name.strip(),
+            email=email.strip(),
+            hashed_password=hashed_password,
+            promo_code=promo_code.strip(),
+            commission_percent=commission_percent,
+        )
+        message = "✅ Партньорът беше създаден успешно."
+        message_type = "success"
+    except sqlite3.IntegrityError:
+        message = "❌ Този имейл или промо код вече съществува."
+        message_type = "error"
+    except ValueError as exc:
+        if str(exc) == "password_too_short":
+            message = "❌ Паролата трябва да е поне 8 символа."
+        else:
+            message = "❌ Невалидни данни: проверете полетата и комисионната."
+        message_type = "error"
+    except Exception:
+        message = "❌ Възникна неочаквана грешка при създаване на партньор."
+        message_type = "error"
+
+    return RedirectResponse(
+        url=f"/admin?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        status_code=303,
+    )
+
+
+@app.get("/admin/logout")
+def admin_logout():
+    response = RedirectResponse(url="/admin", status_code=303)
+    response.delete_cookie("admin_auth")
+    return response
+
+
+def render_admin_dashboard(
+        request: Request,
+        status_filter: str = "all",
+        q: Optional[str] = None,
+        msg: str = "",
+        msg_type: str = "success",
+):
     # 1. Взимаме абсолютно всички поръчки
     all_orders = get_all_orders(status_filter=None)
 
@@ -1075,11 +1155,9 @@ def admin_orders(
     # 3. Подготвяме списъка, който реално ще покажем в таблицата
     orders_to_show = all_orders
 
-    # Ако е избран филтър за статус от падащото меню:
     if status_filter != "all":
         orders_to_show = [o for o in orders_to_show if o.get("status") == status_filter]
 
-    # Ако си написал нещо в търсачката:
     if q and q.strip():
         search_query = q.strip().lower()
         orders_to_show = [
@@ -1089,7 +1167,6 @@ def admin_orders(
                or search_query in str(o.get("iccid", "")).lower()
         ]
 
-    # 4. Пращаме всичко готово към сайта
     return templates.TemplateResponse(
         "admin.html",
         {
@@ -1100,15 +1177,11 @@ def admin_orders(
             "total": total,
             "completed": completed,
             "failed": failed,
+            "affiliates": get_all_affiliates(),
+            "message": msg,
+            "message_type": msg_type,
         },
     )
-
-
-@app.get("/admin/logout")
-def admin_logout():
-    response = RedirectResponse(url="/admin", status_code=303)
-    response.delete_cookie("admin_auth")
-    return response
 
 
 @app.get("/partner/login", response_class=HTMLResponse)

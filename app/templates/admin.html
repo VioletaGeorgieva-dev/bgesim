@@ -116,6 +116,11 @@ font-semibold">
 </header>
 
 <div class="max-w-7xl mx-auto px-6 py-8">
+{% if message %}
+<div class="mb-6 rounded-2xl px-5 py-4 font-semibold {% if message_type == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+    {{ message }}
+</div>
+{% endif %}
 <!-- ===== Dashboard ===== -->
 
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
@@ -860,6 +865,73 @@ rounded-xl">
 </div>
 
 {% endif %}
+
+<div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+    <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">🤝 Създай партньор</h2>
+        <form method="post" action="/admin/affiliates/create" class="space-y-4">
+            <div>
+                <label class="text-sm text-gray-600">Име</label>
+                <input type="text" name="name" required class="w-full border rounded-xl px-4 py-3 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-gray-600">Имейл</label>
+                <input type="email" name="email" required class="w-full border rounded-xl px-4 py-3 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-gray-600">Парола</label>
+                <input type="password" name="password" required class="w-full border rounded-xl px-4 py-3 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-gray-600">Промо код (пример: MICHI50, SHELL5)</label>
+                <input type="text" name="promo_code" required class="w-full border rounded-xl px-4 py-3 mt-1">
+            </div>
+            <div>
+                <label class="text-sm text-gray-600">Комисионна %</label>
+                <input type="number" name="commission_percent" min="0" max="100" step="0.5" required class="w-full border rounded-xl px-4 py-3 mt-1">
+            </div>
+            <button class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-semibold rounded-xl px-6 py-3">
+                Създай партньор
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+        <div class="px-6 py-5 border-b">
+            <h2 class="text-xl font-bold text-gray-800">📋 Всички партньори</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-slate-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left">Име</th>
+                        <th class="px-4 py-3 text-left">Имейл</th>
+                        <th class="px-4 py-3 text-left">Промо код</th>
+                        <th class="px-4 py-3 text-right">Комисионна %</th>
+                        <th class="px-4 py-3 text-right">Натрупана комисионна</th>
+                        <th class="px-4 py-3 text-right">Изплатено</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for affiliate in affiliates %}
+                    <tr class="border-b last:border-b-0">
+                        <td class="px-4 py-3">{{ affiliate.name }}</td>
+                        <td class="px-4 py-3">{{ affiliate.email }}</td>
+                        <td class="px-4 py-3 font-mono text-xs">{{ affiliate.promo_code }}</td>
+                        <td class="px-4 py-3 text-right">{{ "%.1f"|format(affiliate.commission_percent|float) }}%</td>
+                        <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_earned|float) }}</td>
+                        <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_paid|float) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">Няма създадени партньори.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 </div>
 
