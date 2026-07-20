@@ -825,6 +825,66 @@ UI_TRANSLATIONS = {
 }
 
 
+def get_password_reset_email(lang: str, reset_link: str) -> tuple[str, str]:
+    email_translations = {
+        "bg": {
+            "subject": "Нулиране на парола — BG eSIM",
+            "title": "🔑 Възстановяване на парола — BG eSIM",
+            "intro": "Получихме заявка за нулиране на паролата на вашия партньорски акаунт.",
+            "instructions": "Кликнете на бутона по-долу, за да зададете нова парола. Линкът е валиден 24 часа.",
+            "button": "Нулиране на парола →",
+            "footer": "Ако не сте поискали това, просто игнорирайте имейла.",
+        },
+        "en": {
+            "subject": "Password Reset — BG eSIM",
+            "title": "🔑 Password Reset — BG eSIM",
+            "intro": "We received a request to reset your partner account password.",
+            "instructions": "Click the button below to set a new password. The link is valid for 24 hours.",
+            "button": "Reset Password →",
+            "footer": "If you did not request this, simply ignore this email.",
+        },
+        "de": {
+            "subject": "Passwort zurücksetzen — BG eSIM",
+            "title": "🔑 Passwort zurücksetzen — BG eSIM",
+            "intro": "Wir haben eine Anfrage erhalten, das Passwort Ihres Partnerkontos zurückzusetzen.",
+            "instructions": "Klicken Sie auf die Schaltfläche unten, um ein neues Passwort festzulegen. Der Link ist 24 Stunden gültig.",
+            "button": "Passwort zurücksetzen →",
+            "footer": "Wenn Sie dies nicht angefordert haben, ignorieren Sie diese E-Mail einfach.",
+        },
+        "tr": {
+            "subject": "Şifre Sıfırlama — BG eSIM",
+            "title": "🔑 Şifre Sıfırlama — BG eSIM",
+            "intro": "Ortak hesabınızın şifresini sıfırlama talebini aldık.",
+            "instructions": "Yeni bir şifre belirlemek için aşağıdaki düğmeye tıklayın. Bağlantı 24 saat geçerlidir.",
+            "button": "Şifreyi Sıfırla →",
+            "footer": "Bunu talep etmediyseniz, bu e-postayı görmezden gelin.",
+        },
+        "es": {
+            "subject": "Restablecer contraseña — BG eSIM",
+            "title": "🔑 Restablecer contraseña — BG eSIM",
+            "intro": "Recibimos una solicitud para restablecer la contraseña de tu cuenta de socio.",
+            "instructions": "Haz clic en el botón de abajo para establecer una nueva contraseña. El enlace es válido durante 24 horas.",
+            "button": "Restablecer contraseña →",
+            "footer": "Si no solicitaste esto, simplemente ignora este correo.",
+        },
+    }
+    copy = email_translations.get(lang, email_translations["en"])
+    html_body = f"""
+    <div style="font-family:sans-serif; max-width:500px; margin:0 auto; padding:24px;">
+      <h2 style="color:#1e40af;">{copy["title"]}</h2>
+      <p>{copy["intro"]}</p>
+      <p>{copy["instructions"]}</p>
+      <div style="text-align:center; margin:32px 0;">
+        <a href="{reset_link}" style="background:#2563eb; color:#fff; padding:14px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
+          {copy["button"]}
+        </a>
+      </div>
+      <p style="color:#6b7280; font-size:13px;">{copy["footer"]}</p>
+    </div>
+    """
+    return copy["subject"], html_body
+
+
 def get_ui(lang: str) -> dict:
     """Връща UI речника за избрания език. Fallback към EN."""
     return UI_TRANSLATIONS.get(lang, UI_TRANSLATIONS["en"])
