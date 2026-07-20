@@ -233,6 +233,53 @@ class AffiliateFlowTests(unittest.TestCase):
                 self.assertNotIn("visible@example.com", response.text)
 
 
+class AdminAffiliateTests(unittest.TestCase):
+    def test_admin_affiliate_create_route_saves_affiliate_and_hashes_password(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                client = TestClient(main.app, base_url="https://testserver")
+                client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+
+                response = client.post(
+                    "/admin/affiliates/create",
+                    data={
+                        "name": "Michi Partner",
+                        "email": "partner@example.com",
+                        "password": "StrongPass123!",
+                        "promo_code": "MICHI50",
+                        "commission_percent": "12.5",
+                    },
+                    follow_redirects=True,
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Партньорът беше създаден успешно", response.text)
+                self.assertIn("MICHI50", response.text)
+
+                affiliate = database.get_affiliate_by_email("partner@example.com")
+                self.assertIsNotNone(affiliate)
+                self.assertNotEqual(affiliate["hashed_password"], "StrongPass123!")
+                self.assertTrue(main.PASSWORD_CONTEXT.verify("StrongPass123!", affiliate["hashed_password"]))
+
+    def test_admin_affiliate_create_requires_admin_auth(self):
+        client = TestClient(main.app, base_url="https://testserver")
+        response = client.post(
+            "/admin/affiliates/create",
+            data={
+                "name": "No Access",
+                "email": "noaccess@example.com",
+                "password": "StrongPass123!",
+                "promo_code": "NOACCESS",
+                "commission_percent": "10",
+            },
+            follow_redirects=False,
+        )
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.headers["location"], "/admin")
+
+
 class QueryEsimUsageTests(unittest.TestCase):
     def test_query_esim_usage_returns_pending_when_transaction_number_missing(self):
         with patch("app.database.get_esim_tran_no_by_iccid", return_value=None):

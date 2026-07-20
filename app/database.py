@@ -288,6 +288,14 @@ def get_affiliate_by_promo_code(promo_code: str) -> Optional[dict]:
     return dict(row) if row else None
 
 
+def get_all_affiliates() -> List[dict]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM affiliates ORDER BY id DESC"
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
 def get_orders_by_promo_code(promo_code: str) -> List[dict]:
     with get_connection() as conn:
         rows = conn.execute(
