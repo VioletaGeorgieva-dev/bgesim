@@ -11,11 +11,13 @@ class Settings(BaseSettings):
     esim_secret_key: str
     esim_base_url: str = "https://api.esimaccess.com"
     rate_limit_per_second: int = 8
+    APP_ENV: str = "production"
     SUPPORT_EMAIL: str = ""
     SUPPORT_PHONE: str = ""
     ADMIN_PASSWORD: str = "admin123"
     ADMIN_USER: str = "admin"
     ALLOWED_ORIGINS: str = "https://твоя-домейн.com"
+    test_email_secret: str = ""
 
     # Email (Brevo HTTP API)
     smtp_sender_email: str = "info@bgesim.bg"
@@ -26,6 +28,7 @@ class Settings(BaseSettings):
     stripe_publishable_key: str
     stripe_secret_key: str
     stripe_webhook_secret: str
+    partner_session_secret: str = ""
 
     class Config:
         env_file = str(BASE_DIR / ".env")

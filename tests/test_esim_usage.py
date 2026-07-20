@@ -10,14 +10,18 @@ os.environ.setdefault("ESIM_SECRET_KEY", "test-secret-key")
 os.environ.setdefault("STRIPE_PUBLISHABLE_KEY", "pk_test")
 os.environ.setdefault("STRIPE_SECRET_KEY", "sk_test")
 os.environ.setdefault("STRIPE_WEBHOOK_SECRET", "whsec_test")
+os.environ.setdefault("PARTNER_SESSION_SECRET", "test-partner-session-secret")
+os.environ.setdefault("APP_ENV", "development")
 
 from app import database
 from app.api import client
+from app import main
 from app.translations import get_ui
+from fastapi.testclient import TestClient
 
 
 class DatabaseTests(unittest.TestCase):
-    def test_migrate_db_adds_esim_tran_no_to_existing_orders_table(self):
+    def test_init_db_migrates_existing_orders_table_and_creates_affiliates(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "legacy.db"
             with patch.object(database, "DB_PATH", db_path):
@@ -43,7 +47,7 @@ class DatabaseTests(unittest.TestCase):
                     """)
                     conn.commit()
 
-                database.migrate_db()
+                database.init_db()
 
                 with database.get_connection() as conn:
                     columns = {
@@ -52,6 +56,16 @@ class DatabaseTests(unittest.TestCase):
                     }
 
                 self.assertIn("esim_tran_no", columns)
+                self.assertIn("promo_code_used", columns)
+                self.assertIn("affiliate_commission", columns)
+                self.assertIn("order_amount", columns)
+
+                affiliate_tables = conn.execute("""
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE type = 'table' AND name = 'affiliates'
+                """).fetchall()
+                self.assertTrue(affiliate_tables)
 
     def test_save_order_persists_esim_tran_no(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -69,16 +83,154 @@ class DatabaseTests(unittest.TestCase):
                     iccid="8910",
                     qr_code_url="https://example.com/qr.png",
                     esim_tran_no="TRAN123",
+                    promo_code_used="PARTNER10",
+                    affiliate_commission=2.5,
+                    order_amount=25.0,
                 )
 
-                self.assertEqual(
-                    database.get_esim_tran_no_by_iccid("8910"),
-                    "TRAN123",
+                order = database.get_order_by_iccid("8910")
+                self.assertEqual(database.get_esim_tran_no_by_iccid("8910"), "TRAN123")
+                self.assertEqual(order["stripe_session_id"], "sess_123")
+                self.assertEqual(order["promo_code_used"], "PARTNER10")
+                self.assertEqual(order["affiliate_commission"], 2.5)
+                self.assertEqual(order["order_amount"], 25.0)
+
+
+class AffiliateFlowTests(unittest.TestCase):
+    def test_process_webhook_data_saves_affiliate_commission_once(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                affiliate_id = database.create_affiliate(
+                    name="Partner User",
+                    email="partner@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("secret123"),
+                    promo_code="PARTNER10",
+                    commission_percent=10.0,
                 )
-                self.assertEqual(
-                    database.get_order_by_iccid("8910")["stripe_session_id"],
-                    "sess_123",
+
+                stripe_session = {
+                    "metadata": {
+                        "full_name": "Test Customer",
+                        "package_slug": "gr_7days_1gb",
+                        "country": "Greece",
+                        "duration": "7",
+                        "gb": "1",
+                        "lang": "bg",
+                        "promo_code_used": "PARTNER10",
+                    },
+                    "customer_email": "customer@example.com",
+                    "amount_total": 2500,
+                }
+                event = {
+                    "type": "checkout.session.completed",
+                    "data": {"object": {"id": "cs_test_123"}},
+                }
+
+                with patch("app.main.stripe.checkout.Session.retrieve", return_value=stripe_session) as retrieve_mock:
+                    with patch("app.main.order_esim", return_value={
+                        "qr_code_url": "https://example.com/qr.png",
+                        "iccid": "8910",
+                        "esim_tran_no": "TRAN123",
+                        "smdp_address": "SMDP",
+                        "matching_id": "MATCH",
+                        "lpa_string": "LPA:1$SMDP$MATCH",
+                    }) as order_esim_mock:
+                        with patch("app.utils.mailer.send_esim_email"):
+                            with patch("app.utils.mailer.send_usage_email"):
+                                main.process_webhook_data(event, "https://bgesim.bg/")
+                                main.process_webhook_data(event, "https://bgesim.bg/")
+
+                order_esim_mock.assert_called_once_with(package_code="gr_7days_1gb")
+                retrieve_mock.assert_called_once_with("cs_test_123")
+                order = database.get_order_by_iccid("8910")
+                affiliate = database.get_affiliate_by_id(affiliate_id)
+                self.assertEqual(len(database.get_orders_by_promo_code("PARTNER10")), 1)
+
+                self.assertEqual(order["promo_code_used"], "PARTNER10")
+                self.assertEqual(order["affiliate_commission"], 2.5)
+                self.assertEqual(order["order_amount"], 25.0)
+                self.assertEqual(affiliate["total_earned"], 2.5)
+
+    def test_pay_adds_valid_promo_code_discount_to_checkout(self):
+        client = TestClient(main.app, base_url="https://testserver")
+
+        with patch("app.main.rate_limit", return_value=False):
+            with patch("app.main.get_packages", return_value={
+                "obj": {
+                    "packageList": [
+                        {"slug": "gr_7days_1gb", "price": 100000}
+                    ]
+                }
+            }):
+                with patch("app.main.stripe.PromotionCode.list", return_value={"data": [{"id": "promo_123"}]}) as promo_list_mock:
+                    stripe_session = MagicMock()
+                    stripe_session.url = "https://checkout.stripe.test/session"
+                    with patch("app.main.stripe.checkout.Session.create", return_value=stripe_session) as create_session_mock:
+                        response = client.post(
+                            "/pay",
+                            data={
+                                "full_name": "Test User",
+                                "email": "test@example.com",
+                                "confirm_email": "test@example.com",
+                                "package_slug": "gr_7days_1gb",
+                                "country": "Greece",
+                                "duration": "7",
+                                "gb": "1",
+                                "promo_code": "partner10",
+                            },
+                            follow_redirects=False,
+                        )
+
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(response.headers["location"], "https://checkout.stripe.test/session")
+        promo_list_mock.assert_called_once_with(code="PARTNER10", active=True, limit=1)
+        create_kwargs = create_session_mock.call_args.kwargs
+        self.assertEqual(create_kwargs["discounts"], [{"promotion_code": "promo_123"}])
+        self.assertEqual(create_kwargs["metadata"]["promo_code_used"], "PARTNER10")
+
+    def test_partner_dashboard_hides_customer_personal_data(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                database.create_affiliate(
+                    name="Partner User",
+                    email="partner@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("secret123"),
+                    promo_code="PARTNER10",
+                    commission_percent=10.0,
+                    total_earned=2.5,
                 )
+                database.save_order(
+                    stripe_session_id="sess_123",
+                    full_name="Visible Customer",
+                    email="visible@example.com",
+                    package_slug="gr_7days_1gb",
+                    country="Greece",
+                    gb="1",
+                    duration="7",
+                    iccid="8910",
+                    qr_code_url="https://example.com/qr.png",
+                    promo_code_used="PARTNER10",
+                    affiliate_commission=2.5,
+                    order_amount=25.0,
+                )
+
+                client = TestClient(main.app, base_url="https://testserver")
+                response = client.post(
+                    "/partner/login",
+                    data={"email": "partner@example.com", "password": "secret123"},
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Общо продажби", response.text)
+                self.assertIn(">1<", response.text)
+                self.assertIn("€2.50", response.text)
+                self.assertIn("€25.00", response.text)
+                self.assertNotIn("Visible Customer", response.text)
+                self.assertNotIn("visible@example.com", response.text)
 
 
 class QueryEsimUsageTests(unittest.TestCase):
