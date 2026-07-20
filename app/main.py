@@ -1,5 +1,6 @@
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 import sqlite3
 import time
 from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks
@@ -31,6 +32,10 @@ from app.database import (
     init_db,
     save_order,
     update_affiliate_totals,
+    update_affiliate_password,
+    create_password_reset_token,
+    get_password_reset_token,
+    delete_password_reset_token,
 )
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -1185,10 +1190,10 @@ def render_admin_dashboard(
 
 
 @app.get("/partner/login", response_class=HTMLResponse)
-def partner_login(request: Request):
+def partner_login(request: Request, lang: str = Cookie(default="en")):
     if get_authenticated_partner(request):
         return RedirectResponse(url="/partner/dashboard", status_code=303)
-    return templates.TemplateResponse("partner_login.html", {"request": request})
+    return templates.TemplateResponse("partner_login.html", {"request": request, "t": get_ui(lang), "lang": lang})
 
 
 @app.post("/partner/login", response_class=HTMLResponse)
@@ -1196,14 +1201,16 @@ def partner_login_post(
         request: Request,
         email: str = Form(...),
         password: str = Form(...),
+        lang: str = Cookie(default="en"),
 ):
     affiliate = get_affiliate_by_email(email)
     stored_password_hash = affiliate["hashed_password"] if affiliate else DUMMY_PASSWORD_HASH
     password_is_valid = PASSWORD_CONTEXT.verify(password, stored_password_hash)
     if not affiliate or not password_is_valid:
+        t = get_ui(lang)
         return templates.TemplateResponse(
             "partner_login.html",
-            {"request": request, "error": "Грешен имейл или парола."},
+            {"request": request, "error": t["partner_login_invalid"], "t": t, "lang": lang},
             status_code=401,
         )
 
@@ -1213,7 +1220,7 @@ def partner_login_post(
 
 
 @app.get("/partner/dashboard", response_class=HTMLResponse)
-def partner_dashboard(request: Request):
+def partner_dashboard(request: Request, lang: str = Cookie(default="en")):
     affiliate = get_authenticated_partner(request)
     if not affiliate:
         return RedirectResponse(url="/partner/login", status_code=303)
@@ -1226,6 +1233,8 @@ def partner_dashboard(request: Request):
     total_paid = float(affiliate.get("total_paid") or 0)
     payout_due = max(total_earned - total_paid, 0.0)
 
+    pw_success = request.query_params.get("pw_success") == "1"
+
     return templates.TemplateResponse(
         "partner_dashboard.html",
         {
@@ -1235,6 +1244,9 @@ def partner_dashboard(request: Request):
             "total_sales": len(orders),
             "total_earned": total_earned,
             "payout_due": payout_due,
+            "t": get_ui(lang),
+            "lang": lang,
+            "pw_success": pw_success,
         },
     )
 
@@ -1243,6 +1255,187 @@ def partner_dashboard(request: Request):
 def partner_logout(request: Request):
     request.session.clear()
     return RedirectResponse(url="/partner/login", status_code=303)
+
+
+@app.post("/partner/change-password", response_class=HTMLResponse)
+def partner_change_password(
+        request: Request,
+        old_password: str = Form(...),
+        new_password: str = Form(...),
+        lang: str = Cookie(default="en"),
+):
+    affiliate = get_authenticated_partner(request)
+    if not affiliate:
+        return RedirectResponse(url="/partner/login", status_code=303)
+
+    t = get_ui(lang)
+
+    def _dashboard_error(pw_error: str):
+        orders = [
+            {**order, "created_at_display": format_order_datetime(order.get("created_at", ""))}
+            for order in get_orders_by_promo_code(affiliate["promo_code"])
+        ]
+        total_earned = float(affiliate.get("total_earned") or 0)
+        total_paid = float(affiliate.get("total_paid") or 0)
+        payout_due = max(total_earned - total_paid, 0.0)
+        return templates.TemplateResponse(
+            "partner_dashboard.html",
+            {
+                "request": request,
+                "affiliate": affiliate,
+                "orders": orders,
+                "total_sales": len(orders),
+                "total_earned": total_earned,
+                "payout_due": payout_due,
+                "pw_error": pw_error,
+                "t": t,
+                "lang": lang,
+            },
+            status_code=400,
+        )
+
+    if not PASSWORD_CONTEXT.verify(old_password, affiliate["hashed_password"]):
+        return _dashboard_error(t["partner_old_password_incorrect"])
+
+    if len(new_password) < 8:
+        return _dashboard_error(t["partner_password_min_length"])
+
+    new_hashed = PASSWORD_CONTEXT.hash(new_password)
+    update_affiliate_password(affiliate["id"], new_hashed)
+    return RedirectResponse(
+        url="/partner/dashboard?pw_success=1",
+        status_code=303,
+    )
+
+
+@app.get("/partner/forgot-password", response_class=HTMLResponse)
+def partner_forgot_password_get(request: Request, lang: str = Cookie(default="en")):
+    return templates.TemplateResponse("partner_forgot_password.html", {"request": request, "t": get_ui(lang), "lang": lang})
+
+
+@app.post("/partner/forgot-password", response_class=HTMLResponse)
+def partner_forgot_password_post(
+        request: Request,
+        email: str = Form(...),
+        lang: str = Cookie(default="en"),
+):
+    affiliate = get_affiliate_by_email(email)
+    # Always show success to avoid email enumeration
+    if affiliate:
+        token = secrets.token_urlsafe(32)
+        expires_at = (datetime.utcnow() + timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+        create_password_reset_token(affiliate["id"], token, expires_at)
+        base_url = str(request.base_url).rstrip("/")
+        reset_link = f"{base_url}/partner/reset-password/{token}"
+        try:
+            from app.utils.mailer import _send_via_brevo
+            html_body = f"""
+            <div style="font-family:sans-serif; max-width:500px; margin:0 auto; padding:24px;">
+              <h2 style="color:#1e40af;">🔑 Възстановяване на парола — BG eSIM</h2>
+              <p>Получихме заявка за нулиране на паролата на вашия партньорски акаунт.</p>
+              <p>Кликнете на бутона по-долу, за да зададете нова парола. Линкът е валиден 24 часа.</p>
+              <div style="text-align:center; margin:32px 0;">
+                <a href="{reset_link}" style="background:#2563eb; color:#fff; padding:14px 28px; border-radius:8px; text-decoration:none; font-weight:bold;">
+                  Нулиране на парола →
+                </a>
+              </div>
+              <p style="color:#6b7280; font-size:13px;">Ако не сте поискали това, просто игнорирайте имейла.</p>
+            </div>
+            """
+            _send_via_brevo(affiliate["email"], "Нулиране на парола — BG eSIM", html_body)
+        except Exception as e:
+            print(f"[RESET EMAIL] ❌ Грешка при изпращане: {e}")
+    return templates.TemplateResponse(
+        "partner_forgot_password.html",
+        {"request": request, "success": True, "t": get_ui(lang), "lang": lang},
+    )
+
+
+@app.get("/partner/reset-password/{token}", response_class=HTMLResponse)
+def partner_reset_password_get(request: Request, token: str, lang: str = Cookie(default="en")):
+    record = get_password_reset_token(token)
+    if not record:
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "invalid": True, "token": token, "t": get_ui(lang), "lang": lang},
+        )
+    expires_at = datetime.strptime(record["expires_at"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() > expires_at:
+        delete_password_reset_token(token)
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "invalid": True, "token": token, "t": get_ui(lang), "lang": lang},
+        )
+    return templates.TemplateResponse(
+        "partner_reset_password.html",
+        {"request": request, "token": token, "t": get_ui(lang), "lang": lang},
+    )
+
+
+@app.post("/partner/reset-password/{token}", response_class=HTMLResponse)
+def partner_reset_password_post(
+        request: Request,
+        token: str,
+        new_password: str = Form(...),
+        confirm_password: str = Form(...),
+        lang: str = Cookie(default="en"),
+):
+    record = get_password_reset_token(token)
+    if not record:
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "invalid": True, "token": token, "t": get_ui(lang), "lang": lang},
+        )
+    expires_at = datetime.strptime(record["expires_at"], "%Y-%m-%d %H:%M:%S")
+    if datetime.utcnow() > expires_at:
+        delete_password_reset_token(token)
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "invalid": True, "token": token, "t": get_ui(lang), "lang": lang},
+        )
+    t = get_ui(lang)
+    if new_password != confirm_password:
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "token": token, "error": t["partner_passwords_mismatch"], "t": t, "lang": lang},
+        )
+    if len(new_password) < 8:
+        return templates.TemplateResponse(
+            "partner_reset_password.html",
+            {"request": request, "token": token, "error": t["partner_password_min_length"], "t": t, "lang": lang},
+        )
+    new_hashed = PASSWORD_CONTEXT.hash(new_password)
+    update_affiliate_password(record["affiliate_id"], new_hashed)
+    delete_password_reset_token(token)
+    return RedirectResponse(url="/partner/login?reset=1", status_code=303)
+
+
+@app.post("/admin/affiliates/{affiliate_id}/reset-password")
+def admin_reset_affiliate_password(
+        affiliate_id: int,
+        request: Request,
+        admin_auth: str = Cookie(default=""),
+        new_password: str = Form(...),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+    if len(new_password) < 8:
+        return RedirectResponse(
+            url=f"/admin?msg={urllib.parse.quote('Паролата трябва да е поне 8 символа.')}&msg_type=error",
+            status_code=303,
+        )
+    affiliate = get_affiliate_by_id(affiliate_id)
+    if not affiliate:
+        return RedirectResponse(
+            url=f"/admin?msg={urllib.parse.quote('Партньорът не е намерен.')}&msg_type=error",
+            status_code=303,
+        )
+    new_hashed = PASSWORD_CONTEXT.hash(new_password)
+    update_affiliate_password(affiliate_id, new_hashed)
+    return RedirectResponse(
+        url=f"/admin?msg={urllib.parse.quote('Паролата е сменена успешно.')}&msg_type=success",
+        status_code=303,
+    )
 
 
 @app.get("/usage/{iccid}", response_class=HTMLResponse)
