@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 
 
 class DatabaseTests(unittest.TestCase):
-    def test_migrate_db_adds_esim_tran_no_to_existing_orders_table(self):
+    def test_init_db_migrates_existing_orders_table_and_creates_affiliates(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "legacy.db"
             with patch.object(database, "DB_PATH", db_path):

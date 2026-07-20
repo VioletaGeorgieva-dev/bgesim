@@ -41,8 +41,8 @@ from fastapi.responses import Response
 init_db()
 
 stripe.api_key = settings.stripe_secret_key
-APP_ENV = getattr(settings, "APP_ENV", "production")
-PARTNER_SESSION_SECRET = getattr(settings, "partner_session_secret", "")
+APP_ENV = settings.APP_ENV
+PARTNER_SESSION_SECRET = settings.partner_session_secret
 if not PARTNER_SESSION_SECRET:
     if APP_ENV == "development":
         PARTNER_SESSION_SECRET = "development-partner-session-secret"
@@ -1001,9 +1001,9 @@ def cancel(request: Request, lang: str = Cookie(default="en")):
 
 @app.get("/test-email")
 def test_email(secret: str = Query("")):
-    if getattr(settings, "APP_ENV", "production") != "development":
+    if settings.APP_ENV != "development":
         raise HTTPException(status_code=404, detail="Not found")
-    if secret != getattr(settings, "test_secret", ""):
+    if secret != settings.TEST_EMAIL_SECRET:
         raise HTTPException(status_code=403, detail="Forbidden")
 
     from app.utils.mailer import send_esim_email

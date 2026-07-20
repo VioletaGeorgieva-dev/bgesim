@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "admin123"
     ADMIN_USER: str = "admin"
     ALLOWED_ORIGINS: str = "https://твоя-домейн.com"
+    TEST_EMAIL_SECRET: str = ""
 
     # Email (Brevo HTTP API)
     smtp_sender_email: str = "info@bgesim.bg"
