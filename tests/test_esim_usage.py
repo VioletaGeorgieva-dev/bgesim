@@ -2,6 +2,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from html.parser import HTMLParser
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -245,9 +246,9 @@ class AdminAffiliateTests(unittest.TestCase):
                 response = client.post(
                     "/admin/affiliates/create",
                     data={
-                        "name": "Michi Partner",
-                        "email": "partner@example.com",
-                        "password": "StrongPass123!",
+                        "partner_name": "Michi Partner",
+                        "partner_email": "partner@example.com",
+                        "partner_password": "StrongPass123!",
                         "promo_code": "MICHI50",
                         "commission_percent": "12.5",
                     },
@@ -268,9 +269,9 @@ class AdminAffiliateTests(unittest.TestCase):
         response = client.post(
             "/admin/affiliates/create",
             data={
-                "name": "No Access",
-                "email": "noaccess@example.com",
-                "password": "StrongPass123!",
+                "partner_name": "No Access",
+                "partner_email": "noaccess@example.com",
+                "partner_password": "StrongPass123!",
                 "promo_code": "NOACCESS",
                 "commission_percent": "10",
             },
@@ -278,6 +279,41 @@ class AdminAffiliateTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 303)
         self.assertEqual(response.headers["location"], "/admin")
+
+    def test_admin_form_uses_partner_field_names_and_autocomplete(self):
+        client = TestClient(main.app, base_url="https://testserver")
+        client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+
+        response = client.get("/admin")
+
+        class AdminCreateFormParser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self._inside_create_form = False
+                self.form_attrs = {}
+                self.inputs_by_name = {}
+
+            def handle_starttag(self, tag, attrs):
+                attrs_dict = dict(attrs)
+                if tag == "form" and attrs_dict.get("action") == "/admin/affiliates/create":
+                    self._inside_create_form = True
+                    self.form_attrs = attrs_dict
+                    return
+                if tag == "input" and self._inside_create_form and "name" in attrs_dict:
+                    self.inputs_by_name[attrs_dict["name"]] = attrs_dict
+
+            def handle_endtag(self, tag):
+                if tag == "form" and self._inside_create_form:
+                    self._inside_create_form = False
+
+        parser = AdminCreateFormParser()
+        parser.feed(response.text)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(parser.form_attrs.get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_name"].get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_email"].get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_password"].get("autocomplete"), "new-password")
 
 
 class QueryEsimUsageTests(unittest.TestCase):
