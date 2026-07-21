@@ -107,57 +107,66 @@ def _ac_to_qr_url(activation_code: str) -> str:
     return f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded}"
 
 
-def query_esim_usage(iccid: str, lang: str = "en") -> dict:
+def query_esim_usage(iccid_or_tran: str, lang: str = "en") -> dict:
     """
-    Връща оставащите данни за даден ICCID.
+    Връща оставащите данни за даден ICCID или esim_tran_no.
     POST /esim/usage/query
 
     Поддържа множество формати на полета от API:
     - За обем: totalData, totalVolume, dataTotal, orderUsage
     - За използвано: dataUsage, usage, used
     - За оставащо: dataLeft, remainingData, leftData
+
+    Приема или ICCID (начева с "89", дължина >= 18), или директно esim_tran_no.
     """
     from app.database import get_esim_tran_no_by_iccid
 
     ui = get_ui(lang)
 
-    esim_tran_no = get_esim_tran_no_by_iccid(iccid)
+    is_iccid = iccid_or_tran.startswith("89") and len(iccid_or_tran) >= 18
 
-    if not esim_tran_no:
-        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен в базата, запитваме доставчика")
-        try:
-            client = get_client()
-            query_response = client.post(
-                f"{BASE_URL}/esim/query",
-                json={"iccid": iccid},
-                timeout=15,
-            )
-            query_response.raise_for_status()
-            query_data = query_response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"[USAGE] ❌ Грешка при запитване на esimTranNo от доставчика: {e}")
-            query_data = {}
+    if not is_iccid:
+        # Подадената стойност вече е esim_tran_no – пропускаме базата и /esim/query
+        print(f"[USAGE] ℹ️ Подадената стойност '{iccid_or_tran}' не изглежда като ICCID — третираме я като esim_tran_no")
+        esim_tran_no = iccid_or_tran
+    else:
+        esim_tran_no = get_esim_tran_no_by_iccid(iccid_or_tran)
 
-        if query_data.get("success"):
-            obj = query_data.get("obj") or {}
-            esim_list = obj.get("esimList") or []
-            if esim_list:
-                esim_tran_no = esim_list[0].get("esimTranNo")
+        if not esim_tran_no:
+            print(f"[USAGE] ⚠️ ICCID {iccid_or_tran} – esim_tran_no не е намерен в базата, запитваме доставчика")
+            try:
+                client = get_client()
+                query_response = client.post(
+                    f"{BASE_URL}/esim/query",
+                    json={"iccid": iccid_or_tran},
+                    timeout=15,
+                )
+                query_response.raise_for_status()
+                query_data = query_response.json()
+            except requests.exceptions.RequestException as e:
+                print(f"[USAGE] ❌ Грешка при запитване на esimTranNo от доставчика: {e}")
+                query_data = {}
 
-    if not esim_tran_no:
-        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен (вероятно не е активиран)")
-        return {
-            "total": ui["usage_pending_total"],
-            "used": "0.00 GB",
-            "remaining": ui["usage_pending_activation"],
-            "percent": 0,
-            "not_active": True,
-        }
+            if query_data.get("success"):
+                obj = query_data.get("obj") or {}
+                esim_list = obj.get("esimList") or []
+                if esim_list:
+                    esim_tran_no = esim_list[0].get("esimTranNo")
+
+        if not esim_tran_no:
+            print(f"[USAGE] ⚠️ ICCID {iccid_or_tran} – esim_tran_no не е намерен (вероятно не е активиран)")
+            return {
+                "total": ui["usage_pending_total"],
+                "used": "0.00 GB",
+                "remaining": ui["usage_pending_activation"],
+                "percent": 0,
+                "not_active": True,
+            }
 
     url = f"{BASE_URL}/esim/usage/query"
     payload = {"esimTranNoList": [esim_tran_no]}
 
-    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}, esim_tran_no={esim_tran_no}")
+    print(f"[USAGE] 🔍 Запитване към eSIM Access за вход={iccid_or_tran}, esim_tran_no={esim_tran_no}")
 
     try:
         client = get_client()
@@ -181,7 +190,7 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
 
     usage_list = (data.get("obj") or {}).get("esimUsageList", [])
     if not usage_list:
-        print(f"[USAGE] ⚠️ esimUsageList е празен за {iccid}")
+        print(f"[USAGE] ⚠️ esimUsageList е празен за {iccid_or_tran}")
         return {
             "total": ui["usage_pending_total"],
             "used": "0.00 GB",
