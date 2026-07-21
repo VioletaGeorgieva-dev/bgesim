@@ -245,9 +245,9 @@ class AdminAffiliateTests(unittest.TestCase):
                 response = client.post(
                     "/admin/affiliates/create",
                     data={
-                        "name": "Michi Partner",
-                        "email": "partner@example.com",
-                        "password": "StrongPass123!",
+                        "partner_name": "Michi Partner",
+                        "partner_email": "partner@example.com",
+                        "partner_password": "StrongPass123!",
                         "promo_code": "MICHI50",
                         "commission_percent": "12.5",
                     },
@@ -268,9 +268,9 @@ class AdminAffiliateTests(unittest.TestCase):
         response = client.post(
             "/admin/affiliates/create",
             data={
-                "name": "No Access",
-                "email": "noaccess@example.com",
-                "password": "StrongPass123!",
+                "partner_name": "No Access",
+                "partner_email": "noaccess@example.com",
+                "partner_password": "StrongPass123!",
                 "promo_code": "NOACCESS",
                 "commission_percent": "10",
             },
@@ -278,6 +278,18 @@ class AdminAffiliateTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 303)
         self.assertEqual(response.headers["location"], "/admin")
+
+    def test_admin_form_uses_partner_field_names_and_autocomplete(self):
+        client = TestClient(main.app, base_url="https://testserver")
+        client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+
+        response = client.get("/admin")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('action="/admin/affiliates/create" autocomplete="off"', response.text)
+        self.assertIn('name="partner_name" autocomplete="off"', response.text)
+        self.assertIn('name="partner_email" autocomplete="off"', response.text)
+        self.assertIn('name="partner_password" autocomplete="new-password"', response.text)
 
 
 class QueryEsimUsageTests(unittest.TestCase):

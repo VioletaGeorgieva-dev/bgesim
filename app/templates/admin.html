@@ -869,18 +869,18 @@ rounded-xl">
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
     <div class="bg-white rounded-2xl shadow p-6">
         <h2 class="text-xl font-bold text-gray-800 mb-4">🤝 Създай партньор</h2>
-        <form method="post" action="/admin/affiliates/create" class="space-y-4">
+        <form method="post" action="/admin/affiliates/create" autocomplete="off" class="space-y-4">
             <div>
                 <label class="text-sm text-gray-600">Име</label>
-                <input type="text" name="name" required class="w-full border rounded-xl px-4 py-3 mt-1">
+                <input type="text" name="partner_name" autocomplete="off" required class="w-full border rounded-xl px-4 py-3 mt-1">
             </div>
             <div>
                 <label class="text-sm text-gray-600">Имейл</label>
-                <input type="email" name="email" required class="w-full border rounded-xl px-4 py-3 mt-1">
+                <input type="email" name="partner_email" autocomplete="off" required class="w-full border rounded-xl px-4 py-3 mt-1">
             </div>
             <div>
                 <label class="text-sm text-gray-600">Парола</label>
-                <input type="password" name="password" required class="w-full border rounded-xl px-4 py-3 mt-1">
+                <input type="password" name="partner_password" autocomplete="new-password" required class="w-full border rounded-xl px-4 py-3 mt-1">
             </div>
             <div>
                 <label class="text-sm text-gray-600">Промо код (пример: MICHI50, SHELL5)</label>

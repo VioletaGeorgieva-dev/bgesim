@@ -1093,9 +1093,9 @@ def admin_orders(
 def admin_create_affiliate(
         request: Request,
         admin_auth: str = Cookie(default=""),
-        name: str = Form(...),
-        email: str = Form(...),
-        password: str = Form(...),
+        partner_name: str = Form(...),
+        partner_email: str = Form(...),
+        partner_password: str = Form(...),
         promo_code: str = Form(...),
         commission_percent: float = Form(...),
 ):
@@ -1103,13 +1103,13 @@ def admin_create_affiliate(
         return RedirectResponse(url="/admin", status_code=303)
 
     try:
-        password_clean = password.strip()
+        password_clean = partner_password.strip()
         if len(password_clean) < 8:
             raise ValueError("password_too_short")
         hashed_password = PASSWORD_CONTEXT.hash(password_clean)
         create_affiliate(
-            name=name.strip(),
-            email=email.strip(),
+            name=partner_name.strip(),
+            email=partner_email.strip(),
             hashed_password=hashed_password,
             promo_code=promo_code.strip(),
             commission_percent=commission_percent,
