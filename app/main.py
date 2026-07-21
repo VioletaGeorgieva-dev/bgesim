@@ -43,7 +43,7 @@ def make_context(request: Request, lang: str, **extra):
         "request": request,
         "lang": lang,
         "ui": ui,
-        "support_email": settings.support_email,
+        "support_email": settings.SUPPORT_EMAIL,
     }
     ctx.update(extra)
     return ctx
