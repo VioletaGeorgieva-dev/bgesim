@@ -2,6 +2,7 @@ import urllib.parse
 import requests
 from app.config import get_settings
 from app.translations import get_ui
+import json
 
 settings = get_settings()
 
@@ -110,6 +111,11 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     """
     Връща оставащите данни за даден ICCID.
     POST /esim/usage/query
+    
+    Поддържа множество формати на полета от API:
+    - За обем: totalData, totalVolume, dataTotal, orderUsage
+    - За използвано: dataUsage, usage, used
+    - За оставащо: dataLeft, remainingData, leftData
     """
     from app.database import get_esim_tran_no_by_iccid
 
@@ -117,6 +123,7 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     esim_tran_no = get_esim_tran_no_by_iccid(iccid)
 
     if not esim_tran_no:
+        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен (вероятно не е активиран)")
         return {
             "total": ui["usage_pending_total"],
             "used": "0.00 GB",
@@ -128,22 +135,31 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     url = f"{BASE_URL}/esim/usage/query"
     payload = {"esimTranNoList": [esim_tran_no]}
 
+    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}, esim_tran_no={esim_tran_no}")
+
     try:
         client = get_client()
         response = client.post(url, json=payload, timeout=15)
         response.raise_for_status()
         data = response.json()
     except requests.exceptions.Timeout:
+        print(f"[USAGE] ❌ Timeout при запитване")
         raise RuntimeError("[USAGE] ❌ Timeout — сървърът не отговори.")
     except requests.exceptions.RequestException as e:
+        print(f"[USAGE] ❌ Мрежова грешка: {e}")
         raise RuntimeError(f"[USAGE] ❌ Мрежова грешка: {e}")
+
+    # ЛОГВАНЕ НА СИРИЯ JSON ОТГОВОР
+    print(f"[USAGE] 📊 Сиров отговор от eSIM Access: {json.dumps(data, indent=2)}")
 
     if not data.get("success"):
         err_msg = data.get('errorMsg', '') or data.get('errorMessage', 'Неизвестна грешка')
+        print(f"[USAGE] ❌ API грешка: {err_msg}")
         raise ValueError(f"[USAGE] ❌ {err_msg}")
 
     usage_list = (data.get("obj") or {}).get("esimUsageList", [])
     if not usage_list:
+        print(f"[USAGE] ⚠️ esimUsageList е празен за {iccid}")
         return {
             "total": ui["usage_pending_total"],
             "used": "0.00 GB",
@@ -153,19 +169,62 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
         }
 
     item = usage_list[0]
-    total_bytes = item.get("totalData", 0)
-    used_bytes = item.get("dataUsage", 0)
-    remaining = max(0, total_bytes - used_bytes)
+    print(f"[USAGE] 📋 Елемент от uso_list: {json.dumps(item, indent=2)}")
+
+    # 🔍 ПРОВЕРКА НА ВСИЧКИ ВЪЗМОЖНИ ПОЛЕТА ЗА ОБЕМ
+    total_bytes = (
+        item.get("totalData") or 
+        item.get("totalVolume") or 
+        item.get("dataTotal") or 
+        item.get("orderUsage") or 
+        0
+    )
+    
+    # 🔍 ПРОВЕРКА НА ВСИЧКИ ВЪЗМОЖНИ ПОЛЕТА ЗА ИЗПОЛЗВАНО
+    used_bytes = (
+        item.get("dataUsage") or 
+        item.get("usage") or 
+        item.get("used") or 
+        0
+    )
+    
+    # 🔍 ПРОВЕРКА НА ВСИЧКИ ВЪЗМОЖНИ ПОЛЕТА ЗА ОСТАВАЩО
+    remaining_bytes = (
+        item.get("dataLeft") or 
+        item.get("remainingData") or 
+        item.get("leftData") or 
+        max(0, total_bytes - used_bytes)
+    )
+
+    print(f"[USAGE] 📐 Изчислени стойности:")
+    print(f"       total_bytes={total_bytes}, used_bytes={used_bytes}, remaining_bytes={remaining_bytes}")
 
     def to_gb(b: int) -> str:
-        return f"{round(b / (1024 ** 3), 2)} GB"
+        if b == 0:
+            return "0.00 GB"
+        gb_value = b / (1024 ** 3)
+        return f"{round(gb_value, 2)} GB"
+
+    # ЗАЩИТА: ако total_bytes е 0 или отрицателен, вернем "не е активиран"
+    if total_bytes <= 0:
+        print(f"[USAGE] ⚠️ total_bytes = {total_bytes} (невалиден) — профилът може да не е активиран")
+        return {
+            "total": ui["usage_pending_total"],
+            "used": "0.00 GB",
+            "remaining": ui["usage_no_data"],
+            "percent": 0,
+            "not_active": True,
+        }
 
     percent = round((used_bytes / total_bytes * 100), 1) if total_bytes > 0 else 0
 
-    return {
+    result = {
         "total":     to_gb(total_bytes),
         "used":      to_gb(used_bytes),
-        "remaining": to_gb(remaining),
+        "remaining": to_gb(remaining_bytes),
         "percent":   percent,
         "not_active": False,
     }
+    
+    print(f"[USAGE] ✅ Успешно обработени данни: {result}")
+    return result
