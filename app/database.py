@@ -7,22 +7,21 @@ from typing import List, Optional
 
 
 # ── Backend detection ────────────────────────────────────────────────────────
-_DATABASE_URL = os.environ.get("DATABASE_URL", "")
-# Render/Heroku дават postgres://, psycopg2 иска postgresql://
-if _DATABASE_URL.startswith("postgres://"):
-    _DATABASE_URL = _DATABASE_URL.replace("postgres://", "postgresql://", 1)
+_DATABASE_URL = os.environ.get("DATABASE_URL", "").replace("postgres://", "postgresql://", 1)
 
 USE_POSTGRES = _DATABASE_URL.startswith("postgresql://")
 
 # SQLite path (used only when USE_POSTGRES is False)
 DB_PATH = Path(__file__).resolve().parent.parent / "esim_portal.db"
 
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
+
 
 def get_connection():
     """Връща connection към базата данни (SQLite или PostgreSQL)."""
     if USE_POSTGRES:
-        import psycopg2
-        import psycopg2.extras
         conn = psycopg2.connect(_DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
         return conn
     conn = sqlite3.connect(str(DB_PATH))
@@ -115,6 +114,9 @@ def migrate_db() -> None:
                 WHERE table_name = 'orders'
             """)
             columns = {row["column_name"] for row in cursor.fetchall()}
+            if not columns:
+                # Table doesn't exist yet — skip migration
+                return
         else:
             cursor.execute("PRAGMA table_info(orders)")
             columns = {row["name"] for row in cursor.fetchall()}
@@ -173,7 +175,7 @@ def save_order(
     try:
         cursor = conn.cursor()
         if USE_POSTGRES:
-            ph = _placeholders(18)
+            ph = _placeholders(len(params))
             cursor.execute(f"""
                 INSERT INTO orders (
                     stripe_session_id, full_name, email, package_slug, country,
@@ -286,7 +288,7 @@ def create_affiliate(
     try:
         cursor = conn.cursor()
         if USE_POSTGRES:
-            ph = _placeholders(7)
+            ph = _placeholders(len(params))
             cursor.execute(f"""
                 INSERT INTO affiliates (
                     name, email, hashed_password, promo_code,
