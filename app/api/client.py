@@ -126,7 +126,7 @@ def query_esim_usage(iccid_or_tran: str, lang: str = "en") -> dict:
     is_iccid = iccid_or_tran.startswith("89") and len(iccid_or_tran) >= 18
 
     if not is_iccid:
-        # Подадената стойност вече е esim_tran_no – пропускаме базата и /esim/query
+        # Подадената стойност вече е esim_tran_no – пропускаме базата
         print(f"[USAGE] ℹ️ Подадената стойност '{iccid_or_tran}' не изглежда като ICCID — третираме я като esim_tran_no")
         esim_tran_no = iccid_or_tran
     else:
@@ -137,21 +137,21 @@ def query_esim_usage(iccid_or_tran: str, lang: str = "en") -> dict:
             try:
                 client = get_client()
                 query_response = client.post(
-                    f"{BASE_URL}/esim/query",
+                    f"{BASE_URL}/esim/list",
                     json={"iccid": iccid_or_tran},
                     timeout=15,
                 )
                 query_response.raise_for_status()
                 query_data = query_response.json()
             except requests.exceptions.RequestException as e:
-                print(f"[USAGE] ❌ Грешка при запитване на esimTranNo от доставчика: {e}")
+                print(f"[USAGE] ❌ Грешка при запитване към /esim/list от доставчика: {e}")
                 query_data = {}
 
             if query_data.get("success"):
                 obj = query_data.get("obj") or {}
-                esim_list = obj.get("esimList") or []
+                esim_list = obj.get("esimList") or obj.get("list") or []
                 if esim_list:
-                    esim_tran_no = esim_list[0].get("esimTranNo")
+                    esim_tran_no = esim_list[0].get("esimTranNo") or esim_list[0].get("tranNo")
 
         if not esim_tran_no:
             print(f"[USAGE] ⚠️ ICCID {iccid_or_tran} – esim_tran_no не е намерен (вероятно не е активиран)")
