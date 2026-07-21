@@ -28,5 +28,8 @@ python-multipart==0.0.20
 # Сигурност
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
+
+# PostgreSQL (Supabase)
+psycopg2-binary==2.9.10
 itsdangerous==2.2.0
 pycountry==24.6.1

@@ -1,3 +1,4 @@
+import os
 import sqlite3
 import re
 from pathlib import Path
@@ -5,23 +6,54 @@ from datetime import datetime
 from typing import List, Optional
 
 
-# Базата данни се създава в главната папка на проекта
+# ── Backend detection ────────────────────────────────────────────────────────
+_DATABASE_URL = os.environ.get("DATABASE_URL", "").replace("postgres://", "postgresql://", 1)
+
+USE_POSTGRES = _DATABASE_URL.startswith("postgresql://")
+
+# SQLite path (used only when USE_POSTGRES is False)
 DB_PATH = Path(__file__).resolve().parent.parent / "esim_portal.db"
 
+if USE_POSTGRES:
+    import psycopg2
+    import psycopg2.extras
 
-def get_connection() -> sqlite3.Connection:
-    """Връща connection към SQLite базата."""
+
+def get_connection():
+    """Връща connection към базата данни (SQLite или PostgreSQL)."""
+    if USE_POSTGRES:
+        conn = psycopg2.connect(_DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
+        return conn
     conn = sqlite3.connect(str(DB_PATH))
-    conn.row_factory = sqlite3.Row  # резултатите като речник
+    conn.row_factory = sqlite3.Row
     return conn
+
+
+def _ph() -> str:
+    """Placeholder: '%s' за PostgreSQL, '?' за SQLite."""
+    return "%s" if USE_POSTGRES else "?"
+
+
+def _placeholders(n: int) -> str:
+    ph = "%s" if USE_POSTGRES else "?"
+    return ", ".join([ph] * n)
+
+
+def _rows_to_dicts(rows) -> list:
+    if not rows:
+        return []
+    return [dict(r) for r in rows]
 
 
 def init_db() -> None:
     """Създава нужните таблици ако не съществуват."""
-    with get_connection() as conn:
-        conn.execute("""
+    pk = "SERIAL PRIMARY KEY" if USE_POSTGRES else "INTEGER PRIMARY KEY AUTOINCREMENT"
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS orders (
-                id                INTEGER  PRIMARY KEY AUTOINCREMENT,
+                id                {pk},
                 stripe_session_id TEXT     NOT NULL UNIQUE,
                 full_name         TEXT,
                 email             TEXT,
@@ -42,9 +74,9 @@ def init_db() -> None:
                 created_at        TEXT     NOT NULL
             )
         """)
-        conn.execute("""
+        cursor.execute(f"""
             CREATE TABLE IF NOT EXISTS affiliates (
-                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                id                 {pk},
                 name               TEXT NOT NULL,
                 email              TEXT NOT NULL UNIQUE,
                 hashed_password    TEXT NOT NULL,
@@ -54,7 +86,7 @@ def init_db() -> None:
                 total_paid         REAL NOT NULL DEFAULT 0
             )
         """)
-        conn.execute("""
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS password_reset_tokens (
                 token        TEXT PRIMARY KEY,
                 affiliate_id INTEGER NOT NULL,
@@ -62,33 +94,51 @@ def init_db() -> None:
             )
         """)
         conn.commit()
+    finally:
+        conn.close()
     migrate_db()
-    print(f"[DB] ✅ База данни инициализирана: {DB_PATH}")
+    if USE_POSTGRES:
+        print("[DB] ✅ База данни инициализирана: PostgreSQL")
+    else:
+        print(f"[DB] ✅ База данни инициализирана: {DB_PATH}")
 
 
 def migrate_db() -> None:
     """Add new columns when they are missing."""
-    with get_connection() as conn:
-        columns = {
-            row["name"]
-            for row in conn.execute("PRAGMA table_info(orders)").fetchall()
-        }
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'orders'
+            """)
+            columns = {row["column_name"] for row in cursor.fetchall()}
+            if not columns:
+                # Table doesn't exist yet — skip migration
+                return
+        else:
+            cursor.execute("PRAGMA table_info(orders)")
+            columns = {row["name"] for row in cursor.fetchall()}
+
         if "esim_tran_no" not in columns:
-            conn.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
+            cursor.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
             conn.commit()
             print("[DB] ✅ Колона esim_tran_no добавена.")
         if "promo_code_used" not in columns:
-            conn.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
+            cursor.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
             conn.commit()
             print("[DB] ✅ Колона promo_code_used добавена.")
         if "affiliate_commission" not in columns:
-            conn.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
+            cursor.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
             conn.commit()
             print("[DB] ✅ Колона affiliate_commission добавена.")
         if "order_amount" not in columns:
-            conn.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
+            cursor.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
             conn.commit()
             print("[DB] ✅ Колона order_amount добавена.")
+    finally:
+        conn.close()
 
 
 def save_order(
@@ -115,107 +165,97 @@ def save_order(
     Връща id на новия запис.
     """
     created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-    values = {
-        "stripe_session_id": stripe_session_id,
-        "full_name": full_name,
-        "email": email,
-        "package_slug": package_slug,
-        "country": country,
-        "gb": gb,
-        "duration": duration,
-        "iccid": iccid,
-        "esim_tran_no": esim_tran_no,
-        "qr_code_url": qr_code_url,
-        "smdp_address": smdp_address,
-        "matching_id": matching_id,
-        "lang": lang,
-        "promo_code_used": promo_code_used,
-        "affiliate_commission": affiliate_commission,
-        "order_amount": order_amount,
-        "status": status,
-        "created_at": created_at,
-    }
+    params = (
+        stripe_session_id, full_name, email, package_slug, country,
+        gb, duration, iccid, esim_tran_no, qr_code_url, smdp_address,
+        matching_id, lang, promo_code_used, affiliate_commission,
+        order_amount, status, created_at,
+    )
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            ph = _placeholders(len(params))
+            cursor.execute(f"""
+                INSERT INTO orders (
+                    stripe_session_id, full_name, email, package_slug, country,
+                    gb, duration, iccid, esim_tran_no, qr_code_url, smdp_address,
+                    matching_id, lang, promo_code_used, affiliate_commission,
+                    order_amount, status, created_at
+                ) VALUES ({ph})
+                ON CONFLICT (stripe_session_id) DO NOTHING
+                RETURNING id
+            """, params)
+            conn.commit()
+            result = cursor.fetchone()
+            row_id = result["id"] if result else None
+        else:
+            cursor.execute("""
+                INSERT OR IGNORE INTO orders (
+                    stripe_session_id, full_name, email, package_slug, country,
+                    gb, duration, iccid, esim_tran_no, qr_code_url, smdp_address,
+                    matching_id, lang, promo_code_used, affiliate_commission,
+                    order_amount, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, params)
+            conn.commit()
+            row_id = cursor.lastrowid
+    finally:
+        conn.close()
 
-    with get_connection() as conn:
-        cursor = conn.execute("""
-            INSERT OR IGNORE INTO orders (
-                stripe_session_id,
-                full_name,
-                email,
-                package_slug,
-                country,
-                gb,
-                duration,
-                iccid,
-                esim_tran_no,
-                qr_code_url,
-                smdp_address,
-                matching_id,
-                lang,
-                promo_code_used,
-                affiliate_commission,
-                order_amount,
-                status,
-                created_at
-            ) VALUES (
-                :stripe_session_id,
-                :full_name,
-                :email,
-                :package_slug,
-                :country,
-                :gb,
-                :duration,
-                :iccid,
-                :esim_tran_no,
-                :qr_code_url,
-                :smdp_address,
-                :matching_id,
-                :lang,
-                :promo_code_used,
-                :affiliate_commission,
-                :order_amount,
-                :status,
-                :created_at
-            )
-        """, values)
-        conn.commit()
-
-    print(f"[DB] ✅ Поръчка записана → id={cursor.lastrowid} | ICCID={iccid} | session={stripe_session_id[:20]}...")
-    return cursor.lastrowid
+    print(f"[DB] ✅ Поръчка записана → id={row_id} | ICCID={iccid} | session={stripe_session_id[:20]}...")
+    return row_id
 
 
 def get_order_by_session(stripe_session_id: str) -> Optional[dict]:
     """Търси поръчка по Stripe session ID."""
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM orders WHERE stripe_session_id = ?",
-            (stripe_session_id,)
-        ).fetchone()
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM orders WHERE stripe_session_id = {ph}",
+            (stripe_session_id,),
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
 
 
 def get_order_by_iccid(iccid: str) -> Optional[dict]:
     """Find an order by ICCID."""
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM orders WHERE iccid = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM orders WHERE iccid = {ph}",
             (iccid,),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
+
 
 def get_all_orders(status_filter: Optional[str] = None) -> List[dict]:
     """Връща всички поръчки, сортирани от най-новата."""
-    with get_connection() as conn:
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
         if status_filter:
-            rows = conn.execute(
-                "SELECT * FROM orders WHERE status = ? ORDER BY id DESC",
-                (status_filter,)
-            ).fetchall()
+            cursor.execute(
+                f"SELECT * FROM orders WHERE status = {ph} ORDER BY id DESC",
+                (status_filter,),
+            )
         else:
-            rows = conn.execute(
-                "SELECT * FROM orders ORDER BY id DESC"
-            ).fetchall()
-    return [dict(row) for row in rows]
+            cursor.execute("SELECT * FROM orders ORDER BY id DESC")
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+    return _rows_to_dicts(rows)
 
 
 def create_affiliate(
@@ -235,86 +275,117 @@ def create_affiliate(
     if not re.fullmatch(r"[A-Z0-9_-]+", promo_code_clean):
         raise ValueError("promo_code contains invalid characters")
 
-    values = {
-        "name": name,
-        "email": email.strip().lower(),
-        "hashed_password": hashed_password,
-        "promo_code": promo_code_clean,
-        "commission_percent": commission_percent,
-        "total_earned": total_earned,
-        "total_paid": total_paid,
-    }
-    with get_connection() as conn:
-        cursor = conn.execute("""
-            INSERT INTO affiliates (
-                name,
-                email,
-                hashed_password,
-                promo_code,
-                commission_percent,
-                total_earned,
-                total_paid
-            ) VALUES (
-                :name,
-                :email,
-                :hashed_password,
-                :promo_code,
-                :commission_percent,
-                :total_earned,
-                :total_paid
-            )
-        """, values)
-        conn.commit()
-    return cursor.lastrowid
+    params = (
+        name,
+        email.strip().lower(),
+        hashed_password,
+        promo_code_clean,
+        commission_percent,
+        total_earned,
+        total_paid,
+    )
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            ph = _placeholders(len(params))
+            cursor.execute(f"""
+                INSERT INTO affiliates (
+                    name, email, hashed_password, promo_code,
+                    commission_percent, total_earned, total_paid
+                ) VALUES ({ph})
+                RETURNING id
+            """, params)
+            conn.commit()
+            row_id = cursor.fetchone()["id"]
+        else:
+            cursor.execute("""
+                INSERT INTO affiliates (
+                    name, email, hashed_password, promo_code,
+                    commission_percent, total_earned, total_paid
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, params)
+            conn.commit()
+            row_id = cursor.lastrowid
+    finally:
+        conn.close()
+    return row_id
 
 
 def get_affiliate_by_email(email: str) -> Optional[dict]:
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM affiliates WHERE lower(email) = lower(?)",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM affiliates WHERE lower(email) = lower({ph})",
             (email.strip(),),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
 
 
 def get_affiliate_by_id(affiliate_id: int) -> Optional[dict]:
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM affiliates WHERE id = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM affiliates WHERE id = {ph}",
             (affiliate_id,),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
 
 
 def get_affiliate_by_promo_code(promo_code: str) -> Optional[dict]:
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM affiliates WHERE upper(promo_code) = upper(?)",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM affiliates WHERE upper(promo_code) = upper({ph})",
             (promo_code.strip(),),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
 
 
 def get_all_affiliates() -> List[dict]:
-    with get_connection() as conn:
-        rows = conn.execute(
-            "SELECT * FROM affiliates ORDER BY id DESC"
-        ).fetchall()
-    return [dict(row) for row in rows]
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM affiliates ORDER BY id DESC")
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+    return _rows_to_dicts(rows)
 
 
 def get_orders_by_promo_code(promo_code: str) -> List[dict]:
-    with get_connection() as conn:
-        rows = conn.execute(
-            """
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
             SELECT *
             FROM orders
-            WHERE upper(COALESCE(promo_code_used, '')) = upper(?)
+            WHERE upper(COALESCE(promo_code_used, '')) = upper({ph})
             ORDER BY id DESC
             """,
             (promo_code.strip(),),
-        ).fetchall()
-    return [dict(row) for row in rows]
+        )
+        rows = cursor.fetchall()
+    finally:
+        conn.close()
+    return _rows_to_dicts(rows)
 
 
 def update_affiliate_totals(
@@ -322,68 +393,100 @@ def update_affiliate_totals(
     earned_delta: float = 0.0,
     paid_delta: float = 0.0,
 ) -> None:
-    with get_connection() as conn:
-        conn.execute(
-            """
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"""
             UPDATE affiliates
-            SET total_earned = total_earned + ?,
-                total_paid = total_paid + ?
-            WHERE id = ?
+            SET total_earned = total_earned + {ph},
+                total_paid = total_paid + {ph}
+            WHERE id = {ph}
             """,
             (earned_delta, paid_delta, affiliate_id),
         )
         conn.commit()
+    finally:
+        conn.close()
 
 
 def get_esim_tran_no_by_iccid(iccid: str) -> Optional[str]:
     """Return the esim_tran_no for an ICCID."""
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT esim_tran_no FROM orders WHERE iccid = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT esim_tran_no FROM orders WHERE iccid = {ph}",
             (iccid,),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return row["esim_tran_no"] if row else None
 
 
 def update_affiliate_password(affiliate_id: int, hashed_password: str) -> None:
     """Update the hashed password for an affiliate."""
-    with get_connection() as conn:
-        conn.execute(
-            "UPDATE affiliates SET hashed_password = ? WHERE id = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"UPDATE affiliates SET hashed_password = {ph} WHERE id = {ph}",
             (hashed_password, affiliate_id),
         )
         conn.commit()
+    finally:
+        conn.close()
 
 
 def create_password_reset_token(affiliate_id: int, token: str, expires_at: str) -> None:
     """Store a password reset token with its expiry."""
-    with get_connection() as conn:
-        conn.execute(
-            "DELETE FROM password_reset_tokens WHERE affiliate_id = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"DELETE FROM password_reset_tokens WHERE affiliate_id = {ph}",
             (affiliate_id,),
         )
-        conn.execute(
-            "INSERT INTO password_reset_tokens (token, affiliate_id, expires_at) VALUES (?, ?, ?)",
+        cursor.execute(
+            f"INSERT INTO password_reset_tokens (token, affiliate_id, expires_at) VALUES ({_placeholders(3)})",
             (token, affiliate_id, expires_at),
         )
         conn.commit()
+    finally:
+        conn.close()
 
 
 def get_password_reset_token(token: str) -> Optional[dict]:
     """Return the reset token record or None if not found."""
-    with get_connection() as conn:
-        row = conn.execute(
-            "SELECT * FROM password_reset_tokens WHERE token = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM password_reset_tokens WHERE token = {ph}",
             (token,),
-        ).fetchone()
+        )
+        row = cursor.fetchone()
+    finally:
+        conn.close()
     return dict(row) if row else None
 
 
 def delete_password_reset_token(token: str) -> None:
     """Delete a password reset token after use."""
-    with get_connection() as conn:
-        conn.execute(
-            "DELETE FROM password_reset_tokens WHERE token = ?",
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"DELETE FROM password_reset_tokens WHERE token = {ph}",
             (token,),
         )
         conn.commit()
+    finally:
+        conn.close()
