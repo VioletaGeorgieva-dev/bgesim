@@ -117,25 +117,12 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     - За използвано: dataUsage, usage, used
     - За оставащо: dataLeft, remainingData, leftData
     """
-    from app.database import get_esim_tran_no_by_iccid
-
     ui = get_ui(lang)
-    esim_tran_no = get_esim_tran_no_by_iccid(iccid)
-
-    if not esim_tran_no:
-        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен (вероятно не е активиран)")
-        return {
-            "total": ui["usage_pending_total"],
-            "used": "0.00 GB",
-            "remaining": ui["usage_pending_activation"],
-            "percent": 0,
-            "not_active": True,
-        }
 
     url = f"{BASE_URL}/esim/usage/query"
-    payload = {"esimTranNoList": [esim_tran_no]}
+    payload = {"iccid": iccid}
 
-    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}, esim_tran_no={esim_tran_no}")
+    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}")
 
     try:
         client = get_client()
