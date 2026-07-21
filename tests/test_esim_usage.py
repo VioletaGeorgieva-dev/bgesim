@@ -2,6 +2,7 @@ import os
 import sqlite3
 import tempfile
 import unittest
+from html.parser import HTMLParser
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -285,11 +286,34 @@ class AdminAffiliateTests(unittest.TestCase):
 
         response = client.get("/admin")
 
+        class AdminCreateFormParser(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self._inside_create_form = False
+                self.form_attrs = {}
+                self.inputs_by_name = {}
+
+            def handle_starttag(self, tag, attrs):
+                attrs_dict = dict(attrs)
+                if tag == "form" and attrs_dict.get("action") == "/admin/affiliates/create":
+                    self._inside_create_form = True
+                    self.form_attrs = attrs_dict
+                    return
+                if tag == "input" and self._inside_create_form and "name" in attrs_dict:
+                    self.inputs_by_name[attrs_dict["name"]] = attrs_dict
+
+            def handle_endtag(self, tag):
+                if tag == "form" and self._inside_create_form:
+                    self._inside_create_form = False
+
+        parser = AdminCreateFormParser()
+        parser.feed(response.text)
+
         self.assertEqual(response.status_code, 200)
-        self.assertIn('action="/admin/affiliates/create" autocomplete="off"', response.text)
-        self.assertIn('name="partner_name" autocomplete="off"', response.text)
-        self.assertIn('name="partner_email" autocomplete="off"', response.text)
-        self.assertIn('name="partner_password" autocomplete="new-password"', response.text)
+        self.assertEqual(parser.form_attrs.get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_name"].get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_email"].get("autocomplete"), "off")
+        self.assertEqual(parser.inputs_by_name["partner_password"].get("autocomplete"), "new-password")
 
 
 class QueryEsimUsageTests(unittest.TestCase):
