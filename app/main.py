@@ -1083,10 +1083,18 @@ def admin_orders(
         admin_auth: str = Cookie(default=""),
         status_filter: str = Query(default="all"),
         q: Optional[str] = Query(default=None),
+        msg: str = Query(default=""),
+        msg_type: str = Query(default="success"),
 ):
     if admin_auth != ADMIN_SESSION_VALUE:
         return RedirectResponse(url="/admin", status_code=303)
-    return render_admin_dashboard(request=request, status_filter=status_filter, q=q)
+    return render_admin_dashboard(
+        request=request,
+        status_filter=status_filter,
+        q=q,
+        msg=msg,
+        msg_type=msg_type,
+    )
 
 
 @app.post("/admin/affiliates/create")
@@ -1130,7 +1138,7 @@ def admin_create_affiliate(
         message_type = "error"
 
     return RedirectResponse(
-        url=f"/admin?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        url=f"/admin/orders?msg={urllib.parse.quote(message)}&msg_type={message_type}",
         status_code=303,
     )
 
@@ -1410,19 +1418,19 @@ def admin_reset_affiliate_password(
         return RedirectResponse(url="/admin", status_code=303)
     if len(new_password) < 8:
         return RedirectResponse(
-            url=f"/admin?msg={urllib.parse.quote('Паролата трябва да е поне 8 символа.')}&msg_type=error",
+            url=f"/admin/orders?msg={urllib.parse.quote('Паролата трябва да е поне 8 символа.')}&msg_type=error",
             status_code=303,
         )
     affiliate = get_affiliate_by_id(affiliate_id)
     if not affiliate:
         return RedirectResponse(
-            url=f"/admin?msg={urllib.parse.quote('Партньорът не е намерен.')}&msg_type=error",
+            url=f"/admin/orders?msg={urllib.parse.quote('Партньорът не е намерен.')}&msg_type=error",
             status_code=303,
         )
     new_hashed = PASSWORD_CONTEXT.hash(new_password)
     update_affiliate_password(affiliate_id, new_hashed)
     return RedirectResponse(
-        url=f"/admin?msg={urllib.parse.quote('Паролата е сменена успешно.')}&msg_type=success",
+        url=f"/admin/orders?msg={urllib.parse.quote('Паролата е сменена успешно.')}&msg_type=success",
         status_code=303,
     )
 
