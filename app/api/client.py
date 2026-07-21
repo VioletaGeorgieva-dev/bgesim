@@ -111,18 +111,53 @@ def query_esim_usage(iccid: str, lang: str = "en") -> dict:
     """
     Връща оставащите данни за даден ICCID.
     POST /esim/usage/query
-    
+
     Поддържа множество формати на полета от API:
     - За обем: totalData, totalVolume, dataTotal, orderUsage
     - За използвано: dataUsage, usage, used
     - За оставащо: dataLeft, remainingData, leftData
     """
+    from app.database import get_esim_tran_no_by_iccid
+
     ui = get_ui(lang)
 
-    url = f"{BASE_URL}/esim/usage/query"
-    payload = {"iccid": iccid}
+    esim_tran_no = get_esim_tran_no_by_iccid(iccid)
 
-    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}")
+    if not esim_tran_no:
+        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен в базата, запитваме доставчика")
+        try:
+            client = get_client()
+            query_response = client.post(
+                f"{BASE_URL}/esim/query",
+                json={"iccid": iccid},
+                timeout=15,
+            )
+            query_response.raise_for_status()
+            query_data = query_response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"[USAGE] ❌ Грешка при запитване на esimTranNo от доставчика: {e}")
+            query_data = {}
+
+        if query_data.get("success"):
+            obj = query_data.get("obj") or {}
+            esim_list = obj.get("esimList") or []
+            if esim_list:
+                esim_tran_no = esim_list[0].get("esimTranNo")
+
+    if not esim_tran_no:
+        print(f"[USAGE] ⚠️ ICCID {iccid} – esim_tran_no не е намерен (вероятно не е активиран)")
+        return {
+            "total": ui["usage_pending_total"],
+            "used": "0.00 GB",
+            "remaining": ui["usage_pending_activation"],
+            "percent": 0,
+            "not_active": True,
+        }
+
+    url = f"{BASE_URL}/esim/usage/query"
+    payload = {"esimTranNoList": [esim_tran_no]}
+
+    print(f"[USAGE] 🔍 Запитване към eSIM Access за ICCID={iccid}, esim_tran_no={esim_tran_no}")
 
     try:
         client = get_client()
