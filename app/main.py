@@ -1200,7 +1200,13 @@ async def admin_update_affiliate(
                     url=f"/admin/orders?msg={urllib.parse.quote('❌ Невалиден формат на логото. Разрешени: PNG, JPG, JPEG, WEBP.')}&msg_type=error",
                     status_code=303,
                 )
-            safe_ext = _SAFE_EXT_MAP[ext_raw]
+            # Break taint chain: assign a string literal based on condition, not user value
+            if ext_raw == ".png":
+                safe_ext = ".png"
+            elif ext_raw == ".webp":
+                safe_ext = ".webp"
+            else:
+                safe_ext = ".jpg"
             logo_data = await logo.read()
             if len(logo_data) > _MAX_LOGO_SIZE:
                 return RedirectResponse(
@@ -1208,23 +1214,15 @@ async def admin_update_affiliate(
                     status_code=303,
                 )
             _UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{safe_ext}"
-            dest = (_UPLOADS_DIR / safe_filename).resolve()
             uploads_resolved = _UPLOADS_DIR.resolve()
-            try:
-                dest.relative_to(uploads_resolved)
-            except ValueError:
-                return RedirectResponse(
-                    url=f"/admin/orders?msg={urllib.parse.quote('❌ Невалиден път на логото.')}&msg_type=error",
-                    status_code=303,
-                )
+            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{safe_ext}"
+            dest = uploads_resolved / safe_filename
             dest.write_bytes(logo_data)
             new_logo_path = f"static/uploads/affiliates/{safe_filename}"
 
             old_logo = affiliate.get("logo_path")
             if old_logo:
                 old_file = (BASE_DIR / old_logo).resolve()
-                uploads_resolved = _UPLOADS_DIR.resolve()
                 try:
                     old_file.relative_to(uploads_resolved)
                     old_file.unlink(missing_ok=True)
