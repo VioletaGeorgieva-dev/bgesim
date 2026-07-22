@@ -900,18 +900,29 @@ rounded-xl">
             <table class="min-w-full text-sm">
                 <thead class="bg-slate-100">
                     <tr>
+                        <th class="px-4 py-3 text-left">Лого</th>
                         <th class="px-4 py-3 text-left">Име</th>
                         <th class="px-4 py-3 text-left">Имейл</th>
                         <th class="px-4 py-3 text-left">Промо код</th>
                         <th class="px-4 py-3 text-right">Комисионна %</th>
                         <th class="px-4 py-3 text-right">Натрупана комисионна</th>
                         <th class="px-4 py-3 text-right">Изплатено</th>
+                        <th class="px-4 py-3 text-center">Статус</th>
                         <th class="px-4 py-3 text-center">Действия</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for affiliate in affiliates %}
                     <tr class="border-b last:border-b-0">
+                        <td class="px-4 py-3">
+                            {% if affiliate.logo_path %}
+                            <img src="/{{ affiliate.logo_path }}" alt="Лого" class="w-10 h-10 rounded-full object-cover border border-gray-200">
+                            {% else %}
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">
+                                {{ affiliate.name[:1] | upper }}
+                            </div>
+                            {% endif %}
+                        </td>
                         <td class="px-4 py-3">{{ affiliate.name }}</td>
                         <td class="px-4 py-3">{{ affiliate.email }}</td>
                         <td class="px-4 py-3 font-mono text-xs">{{ affiliate.promo_code }}</td>
@@ -919,16 +930,37 @@ rounded-xl">
                         <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_earned|float) }}</td>
                         <td class="px-4 py-3 text-right">€{{ "%.2f"|format(affiliate.total_paid|float) }}</td>
                         <td class="px-4 py-3 text-center">
-                            <button
-                                onclick="document.getElementById('reset-modal-{{ affiliate.id }}').classList.remove('hidden')"
-                                class="bg-amber-500 hover:bg-amber-600 text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-lg">
-                                🔑 Смени парола
-                            </button>
+                            {% if affiliate.status == 'active' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">Активен</span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-200 text-gray-600">Неактивен</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <div class="flex items-center justify-center gap-2 flex-wrap">
+                                <button
+                                    onclick="document.getElementById('reset-modal-{{ affiliate.id }}').classList.remove('hidden')"
+                                    class="bg-amber-500 hover:bg-amber-600 text-gray-900 text-xs font-semibold px-3 py-1.5 rounded-lg">
+                                    🔑 Смени парола
+                                </button>
+                                <button
+                                    type="button"
+                                    onclick="openEditModal({{ affiliate.id }})"
+                                    class="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                                    ✏️ Редакция
+                                </button>
+                                <form method="POST" action="/admin/affiliates/{{ affiliate.id }}/delete" class="inline"
+                                      onsubmit="return confirm('Сигурни ли сте, че искате да изтриете партньора {{ affiliate.name }}? Това действие е необратимо.');">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg">
+                                        🗑️ Изтрий
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <!-- Reset password modal for {{ affiliate.name }} -->
                     <tr id="reset-modal-{{ affiliate.id }}" class="hidden bg-amber-50">
-                        <td colspan="7" class="px-4 py-4">
+                        <td colspan="9" class="px-4 py-4">
                             <form method="POST" action="/admin/affiliates/{{ affiliate.id }}/reset-password" class="flex items-center gap-3 flex-wrap">
                                 <span class="text-sm font-semibold text-gray-700">Нова парола за {{ affiliate.name }}:</span>
                                 <input type="password" name="new_password" minlength="8" required placeholder="Мин. 8 символа"
@@ -946,12 +978,79 @@ rounded-xl">
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">Няма създадени партньори.</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">Няма създадени партньори.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+
+<!-- Edit Affiliate Modal -->
+<div id="edit-affiliate-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="if(event.target===this)closeEditModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 z-10 max-h-screen overflow-y-auto">
+        <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-bold text-gray-800">✏️ Редакция на партньор</h3>
+            <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <form id="edit-affiliate-form" method="POST" enctype="multipart/form-data" class="space-y-4">
+            <div id="edit-logo-preview" class="flex justify-center mb-2"></div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Лого (PNG, JPG, WEBP, макс. 2MB)</label>
+                <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Име</label>
+                <input type="text" name="partner_name" id="edit-partner-name" required
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Имейл</label>
+                <input type="email" name="partner_email" id="edit-partner-email" required
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Промо код</label>
+                <input type="text" name="promo_code" id="edit-promo-code" required
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Комисионна %</label>
+                <input type="number" name="commission_percent" id="edit-commission" min="0" max="100" step="0.5" required
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+                <textarea name="description" id="edit-description" rows="3"
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Уебсайт</label>
+                <input type="text" name="website" id="edit-website"
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                <select name="status" id="edit-status"
+                    class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                    <option value="active">Активен</option>
+                    <option value="inactive">Неактивен</option>
+                </select>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl px-4 py-2.5 text-sm">
+                    Запази
+                </button>
+                <button type="button" onclick="closeEditModal()"
+                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl px-4 py-2.5 text-sm">
+                    Отказ
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1059,6 +1158,49 @@ function refreshOrders(){
 
 window.location.reload(true);
 
+}
+
+function openEditModal(affiliateId) {
+    fetch('/admin/affiliates/' + affiliateId)
+        .then(function(res) {
+            if (res.status === 401 || res.status === 403) {
+                window.location.href = '/admin';
+                return null;
+            }
+            if (!res.ok) {
+                return res.json().then(function(data) { throw new Error(data.error || 'Грешка при зареждане.'); });
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            if (!data) return;
+            document.getElementById('edit-partner-name').value = data.name || '';
+            document.getElementById('edit-partner-email').value = data.email || '';
+            document.getElementById('edit-promo-code').value = data.promo_code || '';
+            document.getElementById('edit-commission').value = data.commission_percent != null ? data.commission_percent : '';
+            document.getElementById('edit-description').value = data.description || '';
+            document.getElementById('edit-website').value = data.website || '';
+            var statusEl = document.getElementById('edit-status');
+            statusEl.value = data.status === 'inactive' ? 'inactive' : 'active';
+            var preview = document.getElementById('edit-logo-preview');
+            if (data.logo_path) {
+                preview.innerHTML = '<img src="/' + data.logo_path + '" alt="Лого" class="w-20 h-20 rounded-full object-cover border-2 border-indigo-200 shadow">';
+            } else {
+                var initial = (data.name || '?').charAt(0).toUpperCase();
+                preview.innerHTML = '<div class="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-2xl border-2 border-indigo-200">' + initial + '</div>';
+            }
+            document.getElementById('edit-affiliate-form').action = '/admin/affiliates/' + affiliateId + '/update';
+            document.getElementById('edit-affiliate-modal').classList.remove('hidden');
+        })
+        .catch(function(err) {
+            alert('Грешка: ' + err.message);
+        });
+}
+
+function closeEditModal() {
+    document.getElementById('edit-affiliate-modal').classList.add('hidden');
+    document.getElementById('edit-affiliate-form').reset();
+    document.getElementById('edit-logo-preview').innerHTML = '';
 }
 
 </script>

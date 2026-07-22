@@ -83,7 +83,11 @@ def init_db() -> None:
                 promo_code         TEXT NOT NULL UNIQUE,
                 commission_percent REAL NOT NULL,
                 total_earned       REAL NOT NULL DEFAULT 0,
-                total_paid         REAL NOT NULL DEFAULT 0
+                total_paid         REAL NOT NULL DEFAULT 0,
+                description        TEXT DEFAULT '',
+                website            TEXT DEFAULT '',
+                status             TEXT NOT NULL DEFAULT 'active',
+                logo_path          TEXT
             )
         """)
         cursor.execute("""
@@ -113,30 +117,55 @@ def migrate_db() -> None:
                 SELECT column_name FROM information_schema.columns
                 WHERE table_name = 'orders'
             """)
-            columns = {row["column_name"] for row in cursor.fetchall()}
-            if not columns:
+            orders_columns = {row["column_name"] for row in cursor.fetchall()}
+            if not orders_columns:
                 # Table doesn't exist yet — skip migration
                 return
+            cursor.execute("""
+                SELECT column_name FROM information_schema.columns
+                WHERE table_name = 'affiliates'
+            """)
+            affiliates_columns = {row["column_name"] for row in cursor.fetchall()}
         else:
             cursor.execute("PRAGMA table_info(orders)")
-            columns = {row["name"] for row in cursor.fetchall()}
+            orders_columns = {row["name"] for row in cursor.fetchall()}
+            cursor.execute("PRAGMA table_info(affiliates)")
+            affiliates_columns = {row["name"] for row in cursor.fetchall()}
 
-        if "esim_tran_no" not in columns:
+        if "esim_tran_no" not in orders_columns:
             cursor.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
             conn.commit()
             print("[DB] ✅ Колона esim_tran_no добавена.")
-        if "promo_code_used" not in columns:
+        if "promo_code_used" not in orders_columns:
             cursor.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
             conn.commit()
             print("[DB] ✅ Колона promo_code_used добавена.")
-        if "affiliate_commission" not in columns:
+        if "affiliate_commission" not in orders_columns:
             cursor.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
             conn.commit()
             print("[DB] ✅ Колона affiliate_commission добавена.")
-        if "order_amount" not in columns:
+        if "order_amount" not in orders_columns:
             cursor.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
             conn.commit()
             print("[DB] ✅ Колона order_amount добавена.")
+
+        if affiliates_columns:
+            if "description" not in affiliates_columns:
+                cursor.execute("ALTER TABLE affiliates ADD COLUMN description TEXT DEFAULT ''")
+                conn.commit()
+                print("[DB] ✅ Колона description добавена към affiliates.")
+            if "website" not in affiliates_columns:
+                cursor.execute("ALTER TABLE affiliates ADD COLUMN website TEXT DEFAULT ''")
+                conn.commit()
+                print("[DB] ✅ Колона website добавена към affiliates.")
+            if "status" not in affiliates_columns:
+                cursor.execute("ALTER TABLE affiliates ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+                conn.commit()
+                print("[DB] ✅ Колона status добавена към affiliates.")
+            if "logo_path" not in affiliates_columns:
+                cursor.execute("ALTER TABLE affiliates ADD COLUMN logo_path TEXT")
+                conn.commit()
+                print("[DB] ✅ Колона logo_path добавена към affiliates.")
     finally:
         conn.close()
 
@@ -487,6 +516,111 @@ def delete_password_reset_token(token: str) -> None:
             f"DELETE FROM password_reset_tokens WHERE token = {ph}",
             (token,),
         )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_affiliate(affiliate_id: int) -> Optional[dict]:
+    """Изтрива партньор по affiliate_id. Връща изтрития запис или None ако не съществува."""
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT * FROM affiliates WHERE id = {ph}",
+            (affiliate_id,),
+        )
+        row = cursor.fetchone()
+        if row is None:
+            return None
+        deleted = dict(row)
+        cursor.execute(
+            f"DELETE FROM affiliates WHERE id = {ph}",
+            (affiliate_id,),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+    return deleted
+
+
+def update_affiliate_details(
+    affiliate_id: int,
+    name: str,
+    email: str,
+    promo_code: str,
+    commission_percent: float,
+    description: str = "",
+    website: str = "",
+    status: str = "active",
+    logo_path: Optional[str] = None,
+) -> None:
+    """Обновява данните на партньор. Ако logo_path е None, не презаписва съществуващото лого."""
+    promo_code_clean = promo_code.strip().upper()
+    if not 0 <= commission_percent <= 100:
+        raise ValueError("commission_percent must be between 0 and 100")
+    if not promo_code_clean or len(promo_code_clean) > 50:
+        raise ValueError("promo_code must be between 1 and 50 characters")
+    if not re.fullmatch(r"[A-Z0-9_-]+", promo_code_clean):
+        raise ValueError("promo_code contains invalid characters")
+    if status not in ("active", "inactive"):
+        raise ValueError("status must be 'active' or 'inactive'")
+
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        if logo_path is not None:
+            cursor.execute(
+                f"""
+                UPDATE affiliates
+                SET name = {ph},
+                    email = {ph},
+                    promo_code = {ph},
+                    commission_percent = {ph},
+                    description = {ph},
+                    website = {ph},
+                    status = {ph},
+                    logo_path = {ph}
+                WHERE id = {ph}
+                """,
+                (
+                    name.strip(),
+                    email.strip().lower(),
+                    promo_code_clean,
+                    commission_percent,
+                    description or "",
+                    website or "",
+                    status,
+                    logo_path,
+                    affiliate_id,
+                ),
+            )
+        else:
+            cursor.execute(
+                f"""
+                UPDATE affiliates
+                SET name = {ph},
+                    email = {ph},
+                    promo_code = {ph},
+                    commission_percent = {ph},
+                    description = {ph},
+                    website = {ph},
+                    status = {ph}
+                WHERE id = {ph}
+                """,
+                (
+                    name.strip(),
+                    email.strip().lower(),
+                    promo_code_clean,
+                    commission_percent,
+                    description or "",
+                    website or "",
+                    status,
+                    affiliate_id,
+                ),
+            )
         conn.commit()
     finally:
         conn.close()

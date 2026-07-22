@@ -3,8 +3,8 @@ from datetime import datetime, timedelta
 import secrets
 import sqlite3
 import time
-from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks, UploadFile, File
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
@@ -36,6 +36,8 @@ from app.database import (
     create_password_reset_token,
     get_password_reset_token,
     delete_password_reset_token,
+    delete_affiliate,
+    update_affiliate_details,
 )
 from pathlib import Path
 from typing import Optional, List, Dict, Any
@@ -1143,7 +1145,155 @@ def admin_create_affiliate(
     )
 
 
-@app.get("/admin/logout")
+_UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "affiliates"
+_ALLOWED_LOGO_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
+_MAX_LOGO_SIZE = 2 * 1024 * 1024  # 2 MB
+
+
+@app.get("/admin/affiliates/{affiliate_id}")
+def admin_get_affiliate(
+        affiliate_id: int,
+        admin_auth: str = Cookie(default=""),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return JSONResponse(status_code=401, content={"error": "Не сте влезли като администратор."})
+    affiliate = get_affiliate_by_id(affiliate_id)
+    if not affiliate:
+        return JSONResponse(status_code=404, content={"error": "Партньорът не е намерен."})
+    safe = {k: v for k, v in affiliate.items() if k != "hashed_password"}
+    return JSONResponse(content=safe)
+
+
+@app.post("/admin/affiliates/{affiliate_id}/update")
+async def admin_update_affiliate(
+        affiliate_id: int,
+        request: Request,
+        admin_auth: str = Cookie(default=""),
+        partner_name: str = Form(...),
+        partner_email: str = Form(...),
+        promo_code: str = Form(...),
+        commission_percent: float = Form(...),
+        description: str = Form(default=""),
+        website: str = Form(default=""),
+        status: str = Form(default="active"),
+        logo: Optional[UploadFile] = File(default=None),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+
+    try:
+        affiliate = get_affiliate_by_id(affiliate_id)
+        if not affiliate:
+            return RedirectResponse(
+                url=f"/admin/orders?msg={urllib.parse.quote('❌ Партньорът не е намерен.')}&msg_type=error",
+                status_code=303,
+            )
+
+        new_logo_path: Optional[str] = None
+
+        if logo and logo.filename:
+            ext = Path(logo.filename).suffix.lower()
+            if ext not in _ALLOWED_LOGO_EXTENSIONS:
+                return RedirectResponse(
+                    url=f"/admin/orders?msg={urllib.parse.quote('❌ Невалиден формат на логото. Разрешени: PNG, JPG, JPEG, WEBP.')}&msg_type=error",
+                    status_code=303,
+                )
+            logo_data = await logo.read()
+            if len(logo_data) > _MAX_LOGO_SIZE:
+                return RedirectResponse(
+                    url=f"/admin/orders?msg={urllib.parse.quote('❌ Логото е прекалено голямо. Максимален размер: 2MB.')}&msg_type=error",
+                    status_code=303,
+                )
+            _UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+            safe_filename = f"{affiliate_id}_{int(time.time())}{ext}"
+            dest = _UPLOADS_DIR / safe_filename
+            dest.write_bytes(logo_data)
+            new_logo_path = f"static/uploads/affiliates/{safe_filename}"
+
+            old_logo = affiliate.get("logo_path")
+            if old_logo:
+                old_file = (BASE_DIR / old_logo).resolve()
+                uploads_resolved = _UPLOADS_DIR.resolve()
+                try:
+                    old_file.relative_to(uploads_resolved)
+                    old_file.unlink(missing_ok=True)
+                except (ValueError, OSError):
+                    pass
+
+        update_affiliate_details(
+            affiliate_id=affiliate_id,
+            name=partner_name,
+            email=partner_email,
+            promo_code=promo_code,
+            commission_percent=commission_percent,
+            description=description,
+            website=website,
+            status=status,
+            logo_path=new_logo_path,
+        )
+        message = "✅ Данните на партньора бяха обновени успешно."
+        message_type = "success"
+    except sqlite3.IntegrityError:
+        message = "❌ Този имейл или промо код вече съществува при друг партньор."
+        message_type = "error"
+    except ValueError as exc:
+        err_text = str(exc)
+        if "commission_percent" in err_text:
+            message = "❌ Невалидна комисионна: стойността трябва да е между 0 и 100."
+        elif "promo_code" in err_text:
+            message = "❌ Невалиден промо код: само главни букви, цифри, '_' и '-', до 50 символа."
+        elif "status" in err_text:
+            message = "❌ Невалиден статус: позволени стойности са 'active' и 'inactive'."
+        else:
+            message = "❌ Невалидни данни: проверете полетата."
+        message_type = "error"
+    except Exception:
+        message = "❌ Възникна неочаквана грешка при обновяване на партньор."
+        message_type = "error"
+
+    return RedirectResponse(
+        url=f"/admin/orders?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        status_code=303,
+    )
+
+
+@app.post("/admin/affiliates/{affiliate_id}/delete")
+def admin_delete_affiliate(
+        affiliate_id: int,
+        request: Request,
+        admin_auth: str = Cookie(default=""),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+
+    try:
+        affiliate = get_affiliate_by_id(affiliate_id)
+        if not affiliate:
+            return RedirectResponse(
+                url=f"/admin/orders?msg={urllib.parse.quote('❌ Партньорът не е намерен.')}&msg_type=error",
+                status_code=303,
+            )
+        deleted = delete_affiliate(affiliate_id)
+        if deleted:
+            old_logo = deleted.get("logo_path")
+            if old_logo:
+                old_file = (BASE_DIR / old_logo).resolve()
+                uploads_resolved = _UPLOADS_DIR.resolve()
+                try:
+                    old_file.relative_to(uploads_resolved)
+                    old_file.unlink(missing_ok=True)
+                except (ValueError, OSError):
+                    pass
+        message = "✅ Партньорът беше изтрит успешно."
+        message_type = "success"
+    except Exception:
+        message = "❌ Възникна неочаквана грешка при изтриване на партньор."
+        message_type = "error"
+
+    return RedirectResponse(
+        url=f"/admin/orders?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        status_code=303,
+    )
 def admin_logout():
     response = RedirectResponse(url="/admin", status_code=303)
     response.delete_cookie("admin_auth")
