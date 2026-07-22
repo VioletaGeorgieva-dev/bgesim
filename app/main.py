@@ -1215,7 +1215,7 @@ async def admin_update_affiliate(
                 )
             _UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
             uploads_resolved = _UPLOADS_DIR.resolve()
-            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{safe_ext}"
+            safe_filename = f"{int(time.time())}_{secrets.token_hex(16)}{safe_ext}"
             dest = uploads_resolved / safe_filename
             dest.write_bytes(logo_data)
             new_logo_path = f"static/uploads/affiliates/{safe_filename}"
