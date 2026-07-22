@@ -1205,8 +1205,16 @@ async def admin_update_affiliate(
                     status_code=303,
                 )
             _UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-            safe_filename = f"{affiliate_id}_{int(time.time())}{ext}"
-            dest = _UPLOADS_DIR / safe_filename
+            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{ext}"
+            dest = (_UPLOADS_DIR / safe_filename).resolve()
+            uploads_resolved = _UPLOADS_DIR.resolve()
+            try:
+                dest.relative_to(uploads_resolved)
+            except ValueError:
+                return RedirectResponse(
+                    url=f"/admin/orders?msg={urllib.parse.quote('❌ Невалиден път на логото.')}&msg_type=error",
+                    status_code=303,
+                )
             dest.write_bytes(logo_data)
             new_logo_path = f"static/uploads/affiliates/{safe_filename}"
 
@@ -1294,6 +1302,9 @@ def admin_delete_affiliate(
         url=f"/admin/orders?msg={urllib.parse.quote(message)}&msg_type={message_type}",
         status_code=303,
     )
+
+
+@app.get("/admin/logout")
 def admin_logout():
     response = RedirectResponse(url="/admin", status_code=303)
     response.delete_cookie("admin_auth")

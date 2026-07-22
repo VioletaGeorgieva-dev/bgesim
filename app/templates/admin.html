@@ -919,7 +919,7 @@ rounded-xl">
                             <img src="/{{ affiliate.logo_path }}" alt="Лого" class="w-10 h-10 rounded-full object-cover border border-gray-200">
                             {% else %}
                             <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-sm border border-indigo-200">
-                                {{ affiliate.name[:1] | upper }}
+                                {{ (affiliate.name or '?')[:1] | upper }}
                             </div>
                             {% endif %}
                         </td>
@@ -1177,7 +1177,7 @@ function openEditModal(affiliateId) {
             document.getElementById('edit-partner-name').value = data.name || '';
             document.getElementById('edit-partner-email').value = data.email || '';
             document.getElementById('edit-promo-code').value = data.promo_code || '';
-            document.getElementById('edit-commission').value = data.commission_percent != null ? data.commission_percent : '';
+            document.getElementById('edit-commission').value = data.commission_percent !== null && data.commission_percent !== undefined ? data.commission_percent : '';
             document.getElementById('edit-description').value = data.description || '';
             document.getElementById('edit-website').value = data.website || '';
             var statusEl = document.getElementById('edit-status');

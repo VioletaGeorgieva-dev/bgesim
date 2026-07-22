@@ -118,9 +118,6 @@ def migrate_db() -> None:
                 WHERE table_name = 'orders'
             """)
             orders_columns = {row["column_name"] for row in cursor.fetchall()}
-            if not orders_columns:
-                # Table doesn't exist yet — skip migration
-                return
             cursor.execute("""
                 SELECT column_name FROM information_schema.columns
                 WHERE table_name = 'affiliates'
@@ -132,22 +129,23 @@ def migrate_db() -> None:
             cursor.execute("PRAGMA table_info(affiliates)")
             affiliates_columns = {row["name"] for row in cursor.fetchall()}
 
-        if "esim_tran_no" not in orders_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
-            conn.commit()
-            print("[DB] ✅ Колона esim_tran_no добавена.")
-        if "promo_code_used" not in orders_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
-            conn.commit()
-            print("[DB] ✅ Колона promo_code_used добавена.")
-        if "affiliate_commission" not in orders_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
-            conn.commit()
-            print("[DB] ✅ Колона affiliate_commission добавена.")
-        if "order_amount" not in orders_columns:
-            cursor.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
-            conn.commit()
-            print("[DB] ✅ Колона order_amount добавена.")
+        if orders_columns:
+            if "esim_tran_no" not in orders_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN esim_tran_no TEXT")
+                conn.commit()
+                print("[DB] ✅ Колона esim_tran_no добавена.")
+            if "promo_code_used" not in orders_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN promo_code_used TEXT")
+                conn.commit()
+                print("[DB] ✅ Колона promo_code_used добавена.")
+            if "affiliate_commission" not in orders_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN affiliate_commission REAL")
+                conn.commit()
+                print("[DB] ✅ Колона affiliate_commission добавена.")
+            if "order_amount" not in orders_columns:
+                cursor.execute("ALTER TABLE orders ADD COLUMN order_amount REAL")
+                conn.commit()
+                print("[DB] ✅ Колона order_amount добавена.")
 
         if affiliates_columns:
             if "description" not in affiliates_columns:
