@@ -1205,6 +1205,8 @@ async def admin_update_affiliate(
                 safe_ext = ".png"
             elif ext_raw == ".webp":
                 safe_ext = ".webp"
+            elif ext_raw == ".jpeg":
+                safe_ext = ".jpeg"
             else:
                 safe_ext = ".jpg"
             logo_data = await logo.read()

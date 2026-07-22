@@ -989,7 +989,7 @@ rounded-xl">
 
 <!-- Edit Affiliate Modal -->
 <div id="edit-affiliate-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="if(event.target===this)closeEditModal()"></div>
+    <div class="absolute inset-0 bg-black bg-opacity-50" onclick="handleOverlayClick(event)"></div>
     <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 z-10 max-h-screen overflow-y-auto">
         <div class="flex items-center justify-between mb-5">
             <h3 class="text-lg font-bold text-gray-800">✏️ Редакция на партньор</h3>
@@ -1201,6 +1201,12 @@ function closeEditModal() {
     document.getElementById('edit-affiliate-modal').classList.add('hidden');
     document.getElementById('edit-affiliate-form').reset();
     document.getElementById('edit-logo-preview').innerHTML = '';
+}
+
+function handleOverlayClick(event) {
+    if (event.target === event.currentTarget) {
+        closeEditModal();
+    }
 }
 
 </script>
