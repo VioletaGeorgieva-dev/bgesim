@@ -368,6 +368,108 @@ def get_all_affiliates() -> List[dict]:
     return _rows_to_dicts(rows)
 
 
+def _validate_affiliate_inputs(email: str, promo_code: str, commission_percent: float) -> tuple[str, str]:
+    email_clean = email.strip().lower()
+    promo_code_clean = promo_code.strip().upper()
+    if not 0 <= commission_percent <= 100:
+        raise ValueError("commission_percent must be between 0 and 100")
+    if not email_clean or len(email_clean) > 255:
+        raise ValueError("email must be between 1 and 255 characters")
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email_clean):
+        raise ValueError("email is invalid")
+    if not promo_code_clean or len(promo_code_clean) > 50:
+        raise ValueError("promo_code must be between 1 and 50 characters")
+    if not re.fullmatch(r"[A-Z0-9_-]+", promo_code_clean):
+        raise ValueError("promo_code contains invalid characters")
+    return email_clean, promo_code_clean
+
+
+def update_affiliate(
+    affiliate_id: int,
+    name: str,
+    email: str,
+    promo_code: str,
+    commission_percent: float,
+) -> None:
+    email_clean, promo_code_clean = _validate_affiliate_inputs(email, promo_code, commission_percent)
+    ph = _ph()
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT id FROM affiliates WHERE id = {ph}", (affiliate_id,))
+        if not cursor.fetchone():
+            raise LookupError("affiliate_not_found")
+
+        cursor.execute(
+            f"SELECT id FROM affiliates WHERE lower(email) = lower({ph}) AND id <> {ph}",
+            (email_clean, affiliate_id),
+        )
+        if cursor.fetchone():
+            raise ValueError("email_already_exists")
+
+        cursor.execute(
+            f"SELECT id FROM affiliates WHERE upper(promo_code) = upper({ph}) AND id <> {ph}",
+            (promo_code_clean, affiliate_id),
+        )
+        if cursor.fetchone():
+            raise ValueError("promo_code_already_exists")
+
+        cursor.execute(
+            f"""
+            UPDATE affiliates
+            SET name = {ph},
+                email = {ph},
+                promo_code = {ph},
+                commission_percent = {ph}
+            WHERE id = {ph}
+            """,
+            (name.strip(), email_clean, promo_code_clean, commission_percent, affiliate_id),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def _safe_delete_affiliate_file(file_path: Optional[str]) -> None:
+    if not file_path:
+        return
+    candidate = Path(file_path)
+    base_dir = Path(__file__).resolve().parent.parent
+    if not candidate.is_absolute():
+        candidate = base_dir / candidate
+    try:
+        resolved = candidate.resolve(strict=False)
+    except Exception:
+        return
+    try:
+        resolved.relative_to(base_dir)
+    except ValueError:
+        return
+    if resolved.exists() and resolved.is_file():
+        resolved.unlink()
+
+
+def delete_affiliate(affiliate_id: int) -> None:
+    ph = _ph()
+    conn = get_connection()
+    affiliate = None
+    try:
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM affiliates WHERE id = {ph}", (affiliate_id,))
+        affiliate = cursor.fetchone()
+        if not affiliate:
+            raise LookupError("affiliate_not_found")
+
+        cursor.execute(f"DELETE FROM affiliates WHERE id = {ph}", (affiliate_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+    affiliate_data = dict(affiliate)
+    for field_name in ("logo_path", "logo_file", "logo", "document_path", "document_file", "file_path"):
+        _safe_delete_affiliate_file(affiliate_data.get(field_name))
+
+
 def get_orders_by_promo_code(promo_code: str) -> List[dict]:
     ph = _ph()
     conn = get_connection()
