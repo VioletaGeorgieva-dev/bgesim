@@ -19,7 +19,11 @@ from app.translations import (
     get_ui,
 )
 from app.database import (
+    AffiliateNotFoundError,
+    DuplicateAffiliateEmailError,
+    DuplicateAffiliatePromoCodeError,
     create_affiliate,
+    delete_affiliate,
     get_affiliate_by_email,
     get_affiliate_by_id,
     get_affiliate_by_promo_code,
@@ -31,6 +35,7 @@ from app.database import (
     get_order_by_iccid,
     init_db,
     save_order,
+    update_affiliate,
     update_affiliate_totals,
     update_affiliate_password,
     create_password_reset_token,
@@ -1139,6 +1144,75 @@ def admin_create_affiliate(
 
     return RedirectResponse(
         url=f"/admin/orders?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        status_code=303,
+    )
+
+
+@app.post("/admin/affiliates/{affiliate_id}/update")
+def admin_update_affiliate(
+        affiliate_id: int,
+        admin_auth: str = Cookie(default=""),
+        partner_name: str = Form(...),
+        partner_email: str = Form(...),
+        promo_code: str = Form(...),
+        commission_percent: float = Form(...),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+
+    try:
+        update_affiliate(
+            affiliate_id=affiliate_id,
+            name=partner_name,
+            email=partner_email,
+            promo_code=promo_code,
+            commission_percent=commission_percent,
+        )
+        message = "✅ Партньорът беше обновен успешно."
+        message_type = "success"
+    except AffiliateNotFoundError:
+        message = "❌ Партньорът не е намерен."
+        message_type = "error"
+    except DuplicateAffiliateEmailError:
+        message = "❌ Този имейл вече се използва от друг партньор."
+        message_type = "error"
+    except DuplicateAffiliatePromoCodeError:
+        message = "❌ Този промо код вече се използва от друг партньор."
+        message_type = "error"
+    except ValueError:
+        message = "❌ Невалидни данни: проверете имейл, промо код и комисионна."
+        message_type = "error"
+    except Exception:
+        message = "❌ Възникна неочаквана грешка при редактиране на партньор."
+        message_type = "error"
+
+    return RedirectResponse(
+        url=f"/admin?msg={urllib.parse.quote(message)}&msg_type={message_type}",
+        status_code=303,
+    )
+
+
+@app.post("/admin/affiliates/{affiliate_id}/delete")
+def admin_delete_affiliate(
+        affiliate_id: int,
+        admin_auth: str = Cookie(default=""),
+):
+    if admin_auth != ADMIN_SESSION_VALUE:
+        return RedirectResponse(url="/admin", status_code=303)
+
+    try:
+        delete_affiliate(affiliate_id=affiliate_id)
+        message = "✅ Партньорът беше изтрит успешно."
+        message_type = "success"
+    except AffiliateNotFoundError:
+        message = "❌ Партньорът не е намерен."
+        message_type = "error"
+    except Exception:
+        message = "❌ Възникна неочаквана грешка при изтриване на партньор."
+        message_type = "error"
+
+    return RedirectResponse(
+        url=f"/admin?msg={urllib.parse.quote(message)}&msg_type={message_type}",
         status_code=303,
     )
 

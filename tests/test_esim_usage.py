@@ -315,6 +315,147 @@ class AdminAffiliateTests(unittest.TestCase):
         self.assertEqual(parser.inputs_by_name["partner_email"].get("autocomplete"), "off")
         self.assertEqual(parser.inputs_by_name["partner_password"].get("autocomplete"), "new-password")
 
+    def test_admin_affiliate_update_route_updates_fields(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                affiliate_id = database.create_affiliate(
+                    name="Old Name",
+                    email="old@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("StrongPass123!"),
+                    promo_code="OLDCODE",
+                    commission_percent=10.0,
+                )
+
+                client = TestClient(main.app, base_url="https://testserver")
+                client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+                response = client.post(
+                    f"/admin/affiliates/{affiliate_id}/update",
+                    data={
+                        "partner_name": "New Name",
+                        "partner_email": "new@example.com",
+                        "promo_code": "NEWCODE",
+                        "commission_percent": "12.5",
+                    },
+                    follow_redirects=True,
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Партньорът беше обновен успешно", response.text)
+                updated = database.get_affiliate_by_id(affiliate_id)
+                self.assertEqual(updated["name"], "New Name")
+                self.assertEqual(updated["email"], "new@example.com")
+                self.assertEqual(updated["promo_code"], "NEWCODE")
+                self.assertEqual(updated["commission_percent"], 12.5)
+
+    def test_admin_affiliate_delete_route_removes_affiliate_and_keeps_orders(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                affiliate_id = database.create_affiliate(
+                    name="Delete Me",
+                    email="deleteme@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("StrongPass123!"),
+                    promo_code="DELCODE",
+                    commission_percent=8.0,
+                )
+                database.save_order(
+                    stripe_session_id="sess_delete_1",
+                    full_name="Order User",
+                    email="order@example.com",
+                    package_slug="gr_7days_1gb",
+                    country="Greece",
+                    gb="1",
+                    duration="7",
+                    iccid="delete-iccid-1",
+                    qr_code_url="https://example.com/qr.png",
+                    promo_code_used="DELCODE",
+                )
+
+                client = TestClient(main.app, base_url="https://testserver")
+                client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+                response = client.post(
+                    f"/admin/affiliates/{affiliate_id}/delete",
+                    follow_redirects=True,
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Партньорът беше изтрит успешно", response.text)
+                self.assertIsNone(database.get_affiliate_by_id(affiliate_id))
+                self.assertIsNotNone(database.get_order_by_session("sess_delete_1"))
+
+    def test_admin_affiliate_update_requires_admin_auth(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                affiliate_id = database.create_affiliate(
+                    name="No Access",
+                    email="noaccess-update@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("StrongPass123!"),
+                    promo_code="NOACCESS1",
+                    commission_percent=10.0,
+                )
+                client = TestClient(main.app, base_url="https://testserver")
+                response = client.post(
+                    f"/admin/affiliates/{affiliate_id}/update",
+                    data={
+                        "partner_name": "Blocked",
+                        "partner_email": "blocked@example.com",
+                        "promo_code": "BLOCKED",
+                        "commission_percent": "15",
+                    },
+                    follow_redirects=False,
+                )
+                self.assertEqual(response.status_code, 303)
+                self.assertEqual(response.headers["location"], "/admin")
+
+    def test_admin_affiliate_update_rejects_invalid_email(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                affiliate_id = database.create_affiliate(
+                    name="Invalid Email",
+                    email="valid@example.com",
+                    hashed_password=main.PASSWORD_CONTEXT.hash("StrongPass123!"),
+                    promo_code="VALIDCODE",
+                    commission_percent=10.0,
+                )
+                client = TestClient(main.app, base_url="https://testserver")
+                client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+                response = client.post(
+                    f"/admin/affiliates/{affiliate_id}/update",
+                    data={
+                        "partner_name": "Invalid Email",
+                        "partner_email": "not-an-email",
+                        "promo_code": "VALIDCODE",
+                        "commission_percent": "10",
+                    },
+                    follow_redirects=True,
+                )
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Невалидни данни", response.text)
+                unchanged = database.get_affiliate_by_id(affiliate_id)
+                self.assertEqual(unchanged["email"], "valid@example.com")
+
+    def test_admin_affiliate_delete_missing_returns_error_message(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "orders.db"
+            with patch.object(database, "DB_PATH", db_path):
+                database.init_db()
+                client = TestClient(main.app, base_url="https://testserver")
+                client.cookies.set("admin_auth", main.ADMIN_SESSION_VALUE)
+                response = client.post(
+                    "/admin/affiliates/99999/delete",
+                    follow_redirects=True,
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("Партньорът не е намерен", response.text)
+
 
 class QueryEsimUsageTests(unittest.TestCase):
     def test_query_esim_usage_returns_pending_when_transaction_number_missing(self):
