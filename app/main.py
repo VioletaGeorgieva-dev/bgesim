@@ -1148,6 +1148,8 @@ def admin_create_affiliate(
 _UPLOADS_DIR = BASE_DIR / "static" / "uploads" / "affiliates"
 _ALLOWED_LOGO_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
 _MAX_LOGO_SIZE = 2 * 1024 * 1024  # 2 MB
+# Maps validated user extension → safe literal (breaks taint chain for static analysis)
+_SAFE_EXT_MAP: dict = {".png": ".png", ".jpg": ".jpg", ".jpeg": ".jpeg", ".webp": ".webp"}
 
 
 @app.get("/admin/affiliates/{affiliate_id}")
@@ -1192,12 +1194,13 @@ async def admin_update_affiliate(
         new_logo_path: Optional[str] = None
 
         if logo and logo.filename:
-            ext = Path(logo.filename).suffix.lower()
-            if ext not in _ALLOWED_LOGO_EXTENSIONS:
+            ext_raw = Path(logo.filename).suffix.lower()
+            if ext_raw not in _ALLOWED_LOGO_EXTENSIONS:
                 return RedirectResponse(
                     url=f"/admin/orders?msg={urllib.parse.quote('❌ Невалиден формат на логото. Разрешени: PNG, JPG, JPEG, WEBP.')}&msg_type=error",
                     status_code=303,
                 )
+            safe_ext = _SAFE_EXT_MAP[ext_raw]
             logo_data = await logo.read()
             if len(logo_data) > _MAX_LOGO_SIZE:
                 return RedirectResponse(
@@ -1205,7 +1208,7 @@ async def admin_update_affiliate(
                     status_code=303,
                 )
             _UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{ext}"
+            safe_filename = f"{affiliate_id}_{int(time.time())}_{secrets.token_hex(8)}{safe_ext}"
             dest = (_UPLOADS_DIR / safe_filename).resolve()
             uploads_resolved = _UPLOADS_DIR.resolve()
             try:
