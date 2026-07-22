@@ -19,6 +19,9 @@ from app.translations import (
     get_ui,
 )
 from app.database import (
+    AffiliateNotFoundError,
+    DuplicateAffiliateEmailError,
+    DuplicateAffiliatePromoCodeError,
     create_affiliate,
     delete_affiliate,
     get_affiliate_by_email,
@@ -1148,7 +1151,6 @@ def admin_create_affiliate(
 @app.post("/admin/affiliates/{affiliate_id}/update")
 def admin_update_affiliate(
         affiliate_id: int,
-        request: Request,
         admin_auth: str = Cookie(default=""),
         partner_name: str = Form(...),
         partner_email: str = Form(...),
@@ -1168,17 +1170,17 @@ def admin_update_affiliate(
         )
         message = "✅ Партньорът беше обновен успешно."
         message_type = "success"
-    except LookupError:
+    except AffiliateNotFoundError:
         message = "❌ Партньорът не е намерен."
         message_type = "error"
-    except ValueError as exc:
-        code = str(exc)
-        if code == "email_already_exists":
-            message = "❌ Този имейл вече се използва от друг партньор."
-        elif code == "promo_code_already_exists":
-            message = "❌ Този промо код вече се използва от друг партньор."
-        else:
-            message = "❌ Невалидни данни: проверете имейл, промо код и комисионна."
+    except DuplicateAffiliateEmailError:
+        message = "❌ Този имейл вече се използва от друг партньор."
+        message_type = "error"
+    except DuplicateAffiliatePromoCodeError:
+        message = "❌ Този промо код вече се използва от друг партньор."
+        message_type = "error"
+    except ValueError:
+        message = "❌ Невалидни данни: проверете имейл, промо код и комисионна."
         message_type = "error"
     except Exception:
         message = "❌ Възникна неочаквана грешка при редактиране на партньор."
@@ -1193,7 +1195,6 @@ def admin_update_affiliate(
 @app.post("/admin/affiliates/{affiliate_id}/delete")
 def admin_delete_affiliate(
         affiliate_id: int,
-        request: Request,
         admin_auth: str = Cookie(default=""),
 ):
     if admin_auth != ADMIN_SESSION_VALUE:
@@ -1203,7 +1204,7 @@ def admin_delete_affiliate(
         delete_affiliate(affiliate_id=affiliate_id)
         message = "✅ Партньорът беше изтрит успешно."
         message_type = "success"
-    except LookupError:
+    except AffiliateNotFoundError:
         message = "❌ Партньорът не е намерен."
         message_type = "error"
     except Exception:
