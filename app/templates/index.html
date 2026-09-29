@@ -7,10 +7,10 @@
 
     <!-- 🚀 СУПЕР SEO ОПТИМИЗАЦИЯ СЪС СМЕНА НА ЕЗИКА -->
     {% if lang == 'bg' %}
-    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути чрез QR код и стабилна връзка без такси за роуминг в Турция, САЩ, Гърция и цял свят.">
-    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, дигитална сим карта">
+    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути чрез QR код, надежден мобилен интернет без роуминг такси.">
+    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, интернет при пътуване">
     {% else %}
-    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data without roaming fees in Turkey, USA, and worldwide.">
+    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data without roaming fees.">
     <meta name="keywords" content="esim bulgaria, cheap data abroad, esim turkey, travel esim data, cheap roaming worldwide">
     {% endif %}
 
@@ -24,7 +24,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-<!-- Header -->
+<!-- Header with Prominent Europe CTA -->
 <header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
     <div class="flex items-center gap-4">
         <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
@@ -35,9 +35,15 @@
         </div>
     </div>
     <div class="flex items-center gap-4 flex-wrap">
-        <nav class="flex items-center gap-3">
+        <nav class="flex items-center gap-2 sm:gap-3">
             <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
-            <a href="/europe" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🇪🇺 {% if lang == 'bg' %}Европа{% else %}Europe{% endif %}</a>
+            
+            <!-- 🌟 PROMINENT EUROPE CTA BUTTON -->
+            <a href="/europe" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition transform duration-200">
+                🇪🇺 <span>Europe</span>
+                <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">35+</span>
+            </a>
+            
             <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
             <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
             <a href="/faq" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
@@ -94,6 +100,61 @@
         <p class="mt-3 text-xs text-gray-400">💡 {{ t.search_hint }}</p>
     </div>
 
+    <!-- 🌍 REGION QUICK-LINKS CARDS (NEW) -->
+    <div class="mb-8">
+        <h3 class="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Popular Regions</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <!-- Europe Primary Card - HIGHLIGHTED -->
+            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 rounded-2xl p-6 hover:shadow-xl hover:-translate-y-1 transition transform duration-200">
+                <div class="absolute top-3 right-3">
+                    <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-xs font-bold px-3 py-1 rounded-full">⭐ Best Value</span>
+                </div>
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <p class="text-4xl mb-2">🇪🇺</p>
+                        <h4 class="text-xl font-bold text-gray-800 group-hover:text-amber-700 transition">Europe</h4>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-700 mb-4 font-semibold">35+ Countries</p>
+                <p class="text-xs text-gray-600 mb-4">EU, UK, Switzerland & more</p>
+                <div class="flex items-center gap-2 text-amber-600 font-semibold text-sm group-hover:gap-3 transition-all">
+                    Explore <span>→</span>
+                </div>
+            </a>
+
+            <!-- Asia Card -->
+            <a href="/search?country=Thailand" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+                <p class="text-4xl mb-2">🌏</p>
+                <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Asia</h4>
+                <p class="text-sm text-gray-600 mt-2">Thailand, Vietnam, Japan</p>
+                <div class="flex items-center gap-2 text-blue-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+                    Explore <span>→</span>
+                </div>
+            </a>
+
+            <!-- Middle East Card -->
+            <a href="/search?country=Turkey" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+                <p class="text-4xl mb-2">🌍</p>
+                <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Middle East</h4>
+                <p class="text-sm text-gray-600 mt-2">Turkey, UAE, Saudi Arabia</p>
+                <div class="flex items-center gap-2 text-blue-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+                    Explore <span>→</span>
+                </div>
+            </a>
+
+            <!-- Americas Card -->
+            <a href="/search?country=USA" class="group bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-1 transition transform duration-200">
+                <p class="text-4xl mb-2">🌎</p>
+                <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Americas</h4>
+                <p class="text-sm text-gray-600 mt-2">USA, Canada, Mexico</p>
+                <div class="flex items-center gap-2 text-blue-600 font-semibold text-sm mt-4 group-hover:gap-3 transition-all">
+                    Explore <span>→</span>
+                </div>
+            </a>
+
+        </div>
+    </div>
 
     <!-- ── КАКВО Е eSIM ───────────────────────────────────── -->
     {% if groups is none %}
@@ -123,7 +184,7 @@
                     {{ t.esim_card1_title | default('Дигитална технология') }}
                 </h3>
                 <p class="text-gray-500 text-sm leading-relaxed">
-                    {{ t.esim_card1_text | default('eSIM е дигитална СИМ карта, вградена директно в телефона. Без физически пластики и без досадни иглички за отваряне.') }}
+                    {{ t.esim_card1_text | default('eSIM е дигитална СИМ карта, вградена директно в телефона. Без физически пластики.') }}
                 </p>
                 <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-blue-400"></span>
@@ -144,7 +205,7 @@
                     {{ t.esim_card2_title | default('Две карти едновременно') }}
                 </h3>
                 <p class="text-gray-500 text-sm leading-relaxed">
-                    {{ t.esim_card2_text | default('Вашият личен номер остава активен за разговори и съобщения (WhatsApp/Viber). eSIM се използва само за данни в чужбина.') }}
+                    {{ t.esim_card2_text | default('Вашият личен номер остава активен за разговори и съобщения (WhatsApp/Viber). eSIM се използва за данни.') }}
                 </p>
                 <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-400"></span>
@@ -165,7 +226,7 @@
                     {{ t.esim_card3_title | default('Спестява време и пари') }}
                 </h3>
                 <p class="text-gray-500 text-sm leading-relaxed">
-                    {{ t.esim_card3_text | default('Спирате скъпия роуминг. Без търсене на магазини по летищата — имате интернет веднага след кацане.') }}
+                    {{ t.esim_card3_text | default('Спирате скъпия роуминг. Без търсене на магазини по летищата — имате интернет моментално.') }}
                 </p>
                 <div class="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-purple-400"></span>
@@ -271,7 +332,7 @@
 
 <footer class="text-center py-8 text-gray-400 text-sm">
     <div class="mb-4">
-        <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-yellow-700 via-yellow-500 to-yellow-300 text-gray-900 font-bold shadow-md hover:shadow-lg hover:brightness-105 transition">
+        <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-yellow-700 via-yellow-500 to-yellow-300 text-gray-900 font-bold shadow-md hover:shadow-lg transition">
             🤝 <span>{{ t.partner_area_btn }}</span>
         </a>
     </div>
