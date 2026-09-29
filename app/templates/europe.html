@@ -43,9 +43,15 @@
         </div>
     </div>
     <div class="flex items-center gap-4 flex-wrap">
-        <nav class="flex items-center gap-3">
+        <nav class="flex items-center gap-2 sm:gap-3">
             <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
-            <a href="/europe" class="text-sm font-semibold text-white hover:opacity-100 transition">🇪🇺 {% if lang == 'bg' %}Европа{% else %}Europe{% endif %}</a>
+            
+            <!-- 🌟 ACTIVE EUROPE BUTTON (Highlighted State) -->
+            <a href="/europe" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-gray-900 font-bold shadow-lg">
+                🇪🇺 <span>Europe</span>
+                <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">35+</span>
+            </a>
+            
             <a href="/instructions" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
             <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
         </nav>
