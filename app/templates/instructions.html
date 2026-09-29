@@ -5,242 +5,196 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ t.nav_instructions }} — {{ t.site_title }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-blue-500 selection:text-white">
 
-<header class="bg-gradient-to-r from-blue-600 to-blue-900 text-white px-8 py-5 flex justify-between items-center shadow-md flex-wrap gap-3">
-    <div class="flex items-center gap-4">
-        <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-12 w-auto object-contain">
-        <div>
-            <h1 class="text-2xl font-bold">{{ t.site_title }}</h1>
-            <p class="text-sm opacity-75">{{ t.site_subtitle }}</p>
-        </div>
-    </div>
-    <div class="flex items-center gap-4 flex-wrap">
-        <nav class="flex items-center gap-3">
-            <a href="/" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">🏠 Home</a>
-            <a href="/instructions" class="text-sm font-semibold text-white underline">📖 {{ t.nav_instructions }}</a>
-            <a href="/contacts" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">📞 {{ t.nav_contacts }}</a>
-            <a href="/faq" class="text-sm font-semibold text-white opacity-80 hover:opacity-100 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
-            <a href="/partner/login" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-br from-yellow-600 via-yellow-400 to-amber-300 text-gray-900 text-xs sm:text-sm font-bold shadow-md hover:shadow-lg hover:brightness-105 transition">🤝 <span>{{ t.partner_area_btn }}</span></a>
-        </nav>
-        <div class="w-px h-6 bg-blue-400 opacity-50"></div>
-        <div class="flex items-center gap-2 flex-wrap">
-            {% for code, label in supported_langs.items() %}
-            <a href="{{ lang_urls[code] }}"
-               class="px-3 py-1 rounded-lg text-sm font-semibold transition
-               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
-                {{ label }}
+<!-- 🌟 Sticky Glassmorphism Header -->
+<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 transition-all">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+        <a href="/" class="flex items-center gap-3 group">
+            <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-10 w-auto object-contain transition group-hover:scale-105">
+            <div>
+                <h1 class="text-lg font-bold text-slate-900 leading-tight">{{ t.site_title }}</h1>
+                <p class="text-xs text-slate-500 font-medium">{{ t.site_subtitle }}</p>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-6">
+            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+                <a href="/" class="hover:text-blue-600 transition">🏠 Home</a>
+                <a href="/instructions" class="text-blue-600 font-bold">📖 {{ t.nav_instructions }}</a>
+                <a href="/contacts" class="hover:text-blue-600 transition">📞 {{ t.nav_contacts }}</a>
+                <a href="/faq" class="hover:text-blue-600 transition">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
+            </nav>
+
+            <a href="/partner/login" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-semibold shadow-lg shadow-slate-900/10 hover:bg-blue-600 transition-all transform active:scale-95">
+                <span>🤝 {{ t.partner_area_btn }}</span>
             </a>
-            {% endfor %}
+
+            <!-- Езици -->
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-full border border-slate-200/80">
+                {% for code, label in supported_langs.items() %}
+                <a href="{{ lang_urls[code] }}"
+                   class="px-2.5 py-1 rounded-full text-xs font-bold transition-all
+                   {% if lang == code %}bg-white text-blue-600 shadow-sm{% else %}text-slate-500 hover:text-slate-900{% endif %}">
+                    {{ code | upper }}
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </header>
 
-<div class="max-w-3xl mx-auto px-4 py-12">
+<main class="max-w-3xl mx-auto px-4 py-12">
 
-    <h2 class="text-3xl font-bold text-gray-800 mb-2">📖 {{ t.instructions_title }}</h2>
-    <p class="text-gray-500 mb-10">{{ t.instructions_subtitle }}</p>
-
-    <!-- ⚠️ Преди да започнете -->
-    <div class="bg-yellow-50 border border-yellow-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-yellow-800 mb-2">{{ t.before_title }}</h2>
-        <p class="text-yellow-700 text-sm mb-3">{{ t.before_text | safe }}</p>
-        <ul class="list-disc list-inside text-yellow-700 text-sm space-y-1">
-            <li>{{ t.before_item1 | safe }}</li>
-            <li>{{ t.before_item2 | safe }}</li>
-            <li>{{ t.before_item3 | safe }}</li>
-        </ul>
+    <!-- Заглавие -->
+    <div class="text-center mb-12">
+        <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-bold text-xs mb-3">Г Р А Ф И Ч Н О  Р Ъ К О В О Д С Т В О</span>
+        <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">📖 {{ t.instructions_title }}</h2>
+        <p class="text-slate-500 text-base max-w-lg mx-auto">{{ t.instructions_subtitle }}</p>
     </div>
 
     <!-- 🔍 ИНТЕРАКТИВНА ТЪРСАЧКА ЗА СЪВМЕСТИМОСТ -->
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-blue-800 mb-1">🔍 Проверка на вашето устройство</h2>
-        <p class="text-blue-700 text-sm mb-4">Напишете марката или модела на телефона си (напр. <i>iPhone 13</i>, <i>Galaxy A52</i>, <i>Pixel 6</i>), за да проверите дали поддържа eSIM:</p>
-        
-        <div class="relative mb-4">
-            <input
-                type="text"
-                id="device-search"
-                placeholder="Въведете модел телефон..."
-                class="w-full px-4 py-3 border-2 border-blue-300 rounded-xl focus:outline-none focus:border-blue-500 transition shadow-sm text-base"
-                autocomplete="off"
-            >
-            <div id="device-results" class="absolute z-50 w-full bg-white border border-blue-200 rounded-xl shadow-lg mt-1 max-h-60 overflow-y-auto hidden"></div>
-        </div>
+    <div class="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-slate-900 rounded-3xl p-8 text-white shadow-2xl shadow-blue-500/20 mb-10 overflow-hidden">
+        <!-- Декоративен фонов градиентен кръг -->
+        <div class="absolute -top-24 -right-24 w-60 h-60 bg-blue-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
-        <!-- Резултат от търсенето -->
-        <div id="device-info" class="hidden bg-white rounded-xl p-5 border border-blue-200 shadow-sm transition-all">
-            <div id="device-status"></div>
-        </div>
-    </div>
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="p-2 bg-white/10 rounded-xl backdrop-blur-md">📱</span>
+                <h3 class="text-xl font-bold">Проверете телефон за eSIM</h3>
+            </div>
+            <p class="text-blue-100 text-sm mb-6 opacity-90">Въведете модел (напр. <i>iPhone 13</i>, <i>Galaxy A52</i>, <i>Pixel 7</i>) за мигновена проверка:</p>
 
-    <!-- Стъпка 1 -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
-        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">1</div>
-        <div>
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step1_title | safe }}</h3>
-            <p class="text-gray-600 leading-relaxed">{{ t.step1_text | safe }}</p>
-            <p class="mt-2 text-blue-600 font-semibold text-sm">⚠️ {{ t.step1_warning | safe }}</p>
-        </div>
-    </div>
-
-    <!-- Стъпка 2 -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
-        <div class="flex-shrink-0 w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold">2</div>
-        <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step2_title | safe }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-4 text-sm md:text-base">{{ t.step2_text | safe }}</p>
-            
-            <div class="space-y-4">
-                <!-- Опция А -->
-                <div class="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                    <h4 class="font-bold text-blue-900 text-sm mb-1">{{ t.step2_option_a_title | safe }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_a_text | safe }}</p>
-                </div>
+            <div class="relative">
+                <input
+                    type="text"
+                    id="device-search"
+                    placeholder="Напишете модел тук..."
+                    class="w-full px-5 py-4 pl-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-blue-200/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:bg-white/20 transition text-base shadow-inner"
+                    autocomplete="off"
+                >
+                <svg class="w-5 h-5 absolute left-4 top-4 text-blue-200/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="2" stroke-width="2" d="21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 
-                <!-- Опция Б -->
-                <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_b_title | safe }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm mb-2">{{ t.step2_option_b_text | safe }}</p>
-                    <div class="space-y-1">
-                        <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
-                            🍎 <span class="font-semibold">iPhone:</span> {{ t.step2_iphone | safe }}
-                        </div>
-                        <div class="bg-white rounded px-3 py-1.5 text-xs text-gray-700">
-                            🤖 <span class="font-semibold">Android:</span> {{ t.step2_android | safe }}
-                        </div>
-                    </div>
-                </div>
+                <!-- Падащ панел с резултати -->
+                <div id="device-results" class="absolute z-50 w-full bg-white text-slate-800 rounded-2xl shadow-2xl mt-2 max-h-60 overflow-y-auto hidden border border-slate-100 divide-y divide-slate-100"></div>
+            </div>
 
-                <!-- Опция В -->
-                <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1">{{ t.step2_option_c_title | safe }}</h4>
-                    <p class="text-gray-600 text-xs md:text-sm">{{ t.step2_option_c_text | safe }}</p>
-                </div>
+            <!-- Карта с резултат -->
+            <div id="device-info" class="hidden mt-4 bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 transition-all">
+                <div id="device-status"></div>
             </div>
         </div>
     </div>
 
-    <!-- Стъпка 3 -->
-    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6 flex gap-5 items-start">
-        <div class="flex-shrink-0 w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center text-xl font-bold">3</div>
-        <div class="w-full">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">{{ t.step3_title | safe }}</h3>
-            <p class="text-gray-600 leading-relaxed mb-3">{{ t.step3_text | safe }}</p>
-            <div class="space-y-2">
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
-                    🍎 <span class="font-semibold">iPhone:</span> {{ t.step3_iphone | safe }}
-                </div>
-                <div class="bg-gray-50 rounded-lg px-4 py-2 text-sm text-gray-700">
-                    🤖 <span class="font-semibold">Android:</span> {{ t.step3_android | safe }}
-                </div>
-            </div>
-            <p class="text-green-600 text-sm font-semibold mt-3">✅ {{ t.step3_success | safe }}</p>
+    <!-- ⚠️ Преди да започнете -->
+    <div class="bg-amber-50/60 border border-amber-200/60 rounded-3xl p-6 mb-8 backdrop-blur-sm">
+        <div class="flex items-center gap-3 mb-3">
+            <span class="text-xl">⚠️</span>
+            <h3 class="text-base font-bold text-amber-900">{{ t.before_title }}</h3>
         </div>
-    </div>
-
-    <!-- 💡 Полезни съвети -->
-    <div class="bg-gray-50 border border-gray-200 rounded-2xl shadow-sm p-6 mb-6">
-        <h2 class="text-lg font-bold text-gray-800 mb-2">{{ t.tips_title | safe }}</h2>
-        <ul class="list-disc list-inside text-gray-700 text-sm space-y-1">
-            <li>{{ t.tip1 | safe }}</li>
-            <li>{{ t.tip2 | safe }}</li>
-            <li>{{ t.tip3 | safe }}</li>
-            <li>{{ t.tip4 | safe }}</li>
+        <p class="text-amber-800 text-sm mb-3 leading-relaxed">{{ t.before_text | safe }}</p>
+        <ul class="space-y-1.5 text-xs font-medium text-amber-900/80">
+            <li class="flex items-center gap-2"><span>•</span> {{ t.before_item1 | safe }}</li>
+            <li class="flex items-center gap-2"><span>•</span> {{ t.before_item2 | safe }}</li>
+            <li class="flex items-center gap-2"><span>•</span> {{ t.before_item3 | safe }}</li>
         </ul>
     </div>
 
+    <!-- СТЪПКИ ЗА АКТИВАЦИЯ -->
+    <div class="space-y-6">
+
+        <!-- Стъпка 1 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-xl shadow-slate-100 hover:border-blue-200 transition-all">
+            <div class="flex gap-5 items-start">
+                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center flex-shrink-0 text-base">01</div>
+                <div>
+                    <h3 class="text-base font-bold text-slate-900 mb-1">{{ t.step1_title | safe }}</h3>
+                    <p class="text-slate-600 text-sm leading-relaxed">{{ t.step1_text | safe }}</p>
+                    <p class="mt-3 text-xs font-semibold text-blue-600 bg-blue-50 inline-block px-3 py-1 rounded-full">⚠️ {{ t.step1_warning | safe }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Стъпка 2 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-xl shadow-slate-100 hover:border-blue-200 transition-all">
+            <div class="flex gap-5 items-start">
+                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center flex-shrink-0 text-base">02</div>
+                <div class="w-full">
+                    <h3 class="text-base font-bold text-slate-900 mb-1">{{ t.step2_title | safe }}</h3>
+                    <p class="text-slate-600 text-sm mb-4 leading-relaxed">{{ t.step2_text | safe }}</p>
+                    
+                    <div class="grid gap-3">
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-1">{{ t.step2_option_a_title | safe }}</h4>
+                            <p class="text-slate-600 text-xs">{{ t.step2_option_a_text | safe }}</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-1">{{ t.step2_option_b_title | safe }}</h4>
+                            <p class="text-slate-600 text-xs mb-2">{{ t.step2_option_b_text | safe }}</p>
+                            <div class="space-y-1 text-xs">
+                                <div class="bg-white p-2 rounded-xl text-slate-700 font-medium border border-slate-100">🍎 iPhone: {{ t.step2_iphone | safe }}</div>
+                                <div class="bg-white p-2 rounded-xl text-slate-700 font-medium border border-slate-100">🤖 Android: {{ t.step2_android | safe }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Стъпка 3 -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-xl shadow-slate-100 hover:border-emerald-200 transition-all">
+            <div class="flex gap-5 items-start">
+                <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 font-extrabold flex items-center justify-center flex-shrink-0 text-base">03</div>
+                <div class="w-full">
+                    <h3 class="text-base font-bold text-slate-900 mb-1">{{ t.step3_title | safe }}</h3>
+                    <p class="text-slate-600 text-sm mb-3 leading-relaxed">{{ t.step3_text | safe }}</p>
+                    <div class="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full w-fit">
+                        <span>✅</span> {{ t.step3_success | safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <!-- Помощ -->
-    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center mt-8">
-        <p class="text-gray-600 mb-3">{{ t.instructions_help | safe }}</p>
-        <a href="/contacts" class="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">
+    <div class="mt-12 text-center p-8 bg-slate-900 text-white rounded-3xl shadow-2xl relative overflow-hidden">
+        <h3 class="text-lg font-bold mb-2">Имате нужда от съдействие?</h3>
+        <p class="text-slate-400 text-xs mb-6 max-w-md mx-auto">Екипът ни по поддръжка е на разположение да ви помогне с активацията 24/7.</p>
+        <a href="/contacts" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-full transition transform active:scale-95 shadow-lg shadow-blue-500/30">
             📞 {{ t.nav_contacts }}
         </a>
     </div>
 
-</div>
+</main>
 
-<footer class="text-center py-8 text-gray-400 text-sm">© 2026 {{ t.footer }}</footer>
+<footer class="text-center py-10 text-slate-400 text-xs font-medium">
+    © 2026 {{ t.footer }}
+</footer>
 
 <script>
-// База данни с популярни поддържани и НЕподдържани устройства
 const ESIM_DATABASE = {
-    // Apple iPhone - Поддържани (2018+)
-    'iPhone XS': { supported: true },
-    'iPhone XS Max': { supported: true },
-    'iPhone XR': { supported: true },
-    'iPhone 11': { supported: true },
-    'iPhone 11 Pro': { supported: true },
-    'iPhone 11 Pro Max': { supported: true },
-    'iPhone SE (2020/2022)': { supported: true },
-    'iPhone 12': { supported: true },
-    'iPhone 12 Mini': { supported: true },
-    'iPhone 12 Pro': { supported: true },
-    'iPhone 12 Pro Max': { supported: true },
-    'iPhone 13': { supported: true },
-    'iPhone 13 Mini': { supported: true },
-    'iPhone 13 Pro': { supported: true },
-    'iPhone 13 Pro Max': { supported: true },
-    'iPhone 14': { supported: true },
-    'iPhone 14 Plus': { supported: true },
-    'iPhone 14 Pro': { supported: true },
-    'iPhone 14 Pro Max': { supported: true },
-    'iPhone 15': { supported: true },
-    'iPhone 15 Plus': { supported: true },
-    'iPhone 15 Pro': { supported: true },
-    'iPhone 15 Pro Max': { supported: true },
-    'iPhone 16': { supported: true },
-    'iPhone 16 Plus': { supported: true },
-    'iPhone 16 Pro': { supported: true },
-    'iPhone 16 Pro Max': { supported: true },
-    
-    // Apple iPhone - НЕподдържани (По-стари от 2018)
-    'iPhone X': { supported: false, note: 'Моделите от iPhone X и по-стари не поддържат eSIM.' },
-    'iPhone 8': { supported: false, note: 'Изисква се физическа SIM карта.' },
-    'iPhone 8 Plus': { supported: false, note: 'Изисква се физическа SIM карта.' },
-    'iPhone 7': { supported: false, note: 'Изисква се физическа SIM карта.' },
-    'iPhone 6 / 6s': { supported: false, note: 'Изисква се физическа SIM карта.' },
-
-    // Samsung Galaxy S - Поддържани
-    'Galaxy S20': { supported: true },
-    'Galaxy S20+': { supported: true },
-    'Galaxy S20 Ultra': { supported: true },
-    'Galaxy S21': { supported: true },
-    'Galaxy S21+': { supported: true },
-    'Galaxy S21 Ultra': { supported: true },
-    'Galaxy S22': { supported: true },
-    'Galaxy S22+': { supported: true },
-    'Galaxy S22 Ultra': { supported: true },
-    'Galaxy S23': { supported: true },
-    'Galaxy S23+': { supported: true },
-    'Galaxy S23 Ultra': { supported: true },
-    'Galaxy S24': { supported: true },
-    'Galaxy S24+': { supported: true },
-    'Galaxy S24 Ultra': { supported: true },
-    'Galaxy Z Fold 2/3/4/5/6': { supported: true },
-    'Galaxy Z Flip 1/3/4/5/6': { supported: true },
-
-    // Samsung - НЕподдържани
-    'Galaxy S10': { supported: false, note: 'Серията S10 няма eSIM поддръжка.' },
-    'Galaxy S9 / S8': { supported: false, note: 'Стари серии без eSIM.' },
-    'Galaxy A52 / A53 / A54 / A55': { supported: false, note: 'Сериите Galaxy A обикновено нямат eSIM поддръжка.' },
-    'Galaxy A12 / A13 / A14 / A15': { supported: false, note: 'Изисква физическа SIM карта.' },
-
-    // Google Pixel - Поддържани
-    'Pixel 3 / 3 XL': { supported: true },
-    'Pixel 4 / 4a': { supported: true },
-    'Pixel 5 / 5a': { supported: true },
-    'Pixel 6 / 6a / 6 Pro': { supported: true },
-    'Pixel 7 / 7a / 7 Pro': { supported: true },
-    'Pixel 8 / 8a / 8 Pro': { supported: true },
-    'Pixel Fold': { supported: true },
-
-    // Xiaomi / Redmi
-    'Xiaomi 12T Pro': { supported: true },
-    'Xiaomi 13 / 13 Pro / 13 Lite': { supported: true },
-    'Xiaomi 14 / 14 Pro': { supported: true },
-    'Redmi Note 10 / 11 / 12 / 13': { supported: false, note: 'Бюджетните серии Redmi не поддържат eSIM.' }
+    'iPhone XS': true, 'iPhone XS Max': true, 'iPhone XR': true,
+    'iPhone 11': true, 'iPhone 11 Pro': true, 'iPhone 11 Pro Max': true,
+    'iPhone 12': true, 'iPhone 12 Mini': true, 'iPhone 12 Pro': true, 'iPhone 12 Pro Max': true,
+    'iPhone 13': true, 'iPhone 13 Mini': true, 'iPhone 13 Pro': true, 'iPhone 13 Pro Max': true,
+    'iPhone 14': true, 'iPhone 14 Plus': true, 'iPhone 14 Pro': true, 'iPhone 14 Pro Max': true,
+    'iPhone 15': true, 'iPhone 15 Plus': true, 'iPhone 15 Pro': true, 'iPhone 15 Pro Max': true,
+    'iPhone 16': true, 'iPhone 16 Plus': true, 'iPhone 16 Pro': true, 'iPhone 16 Pro Max': true,
+    'iPhone SE (2020)': true, 'iPhone SE (2022)': true,
+    'iPhone X': false, 'iPhone 8': false, 'iPhone 7': false,
+    'Galaxy S20': true, 'Galaxy S21': true, 'Galaxy S22': true, 'Galaxy S23': true, 'Galaxy S24': true,
+    'Galaxy Z Fold 3': true, 'Galaxy Z Fold 4': true, 'Galaxy Z Fold 5': true,
+    'Galaxy Z Flip 3': true, 'Galaxy Z Flip 4': true, 'Galaxy Z Flip 5': true,
+    'Galaxy S10': false, 'Galaxy A52': false, 'Galaxy A53': false, 'Galaxy A54': false,
+    'Pixel 3': true, 'Pixel 4': true, 'Pixel 5': true, 'Pixel 6': true, 'Pixel 7': true, 'Pixel 8': true
 };
 
 const searchInput = document.getElementById('device-search');
@@ -248,76 +202,93 @@ const resultsBox = document.getElementById('device-results');
 const infoBox = document.getElementById('device-info');
 const statusDiv = document.getElementById('device-status');
 
+function checkDynamicSupport(q) {
+    q = q.toLowerCase();
+    if (q.includes('iphone')) {
+        if (q.match(/iphone\s*(1[1-6]|xs|xr|se)/)) return { supported: true };
+        if (q.match(/iphone\s*([5-9]|x\b)/)) return { supported: false, note: 'Моделите iPhone X и по-стари нямат eSIM.' };
+    }
+    if (q.includes('galaxy') || q.includes('samsung')) {
+        if (q.match(/s2[0-4]|fold|flip/)) return { supported: true };
+        if (q.match(/\ba[0-9]{2}\b|\bs[1-9]\b/)) return { supported: false, note: 'Сериите Galaxy A и по-старите S нямат eSIM.' };
+    }
+    if (q.includes('pixel')) {
+        if (q.match(/pixel\s*([3-9])/)) return { supported: true };
+    }
+    return null;
+}
+
 searchInput.addEventListener('input', function() {
     const query = this.value.trim().toLowerCase();
-    
     if (query.length < 2) {
         resultsBox.classList.add('hidden');
         infoBox.classList.add('hidden');
         return;
     }
 
-    // Търсене в базата данни
-    const matches = Object.keys(ESIM_DATABASE).filter(device => 
-        device.toLowerCase().includes(query)
-    );
+    const matches = Object.keys(ESIM_DATABASE).filter(d => d.toLowerCase().includes(query));
 
     if (matches.length > 0) {
         resultsBox.innerHTML = matches.map(device => `
-            <div class="px-4 py-3 cursor-pointer hover:bg-blue-50 border-b last:border-b-0 flex justify-between items-center transition" onclick="selectDevice('${device}')">
-                <span class="font-medium text-gray-700">${device}</span>
-                <span class="text-xs px-2 py-1 rounded ${ESIM_DATABASE[device].supported ? 'bg-green-100 text-green-700 font-semibold' : 'bg-red-100 text-red-700 font-semibold'}">
-                    ${ESIM_DATABASE[device].supported ? '✓ Има eSIM' : '✗ Няма eSIM'}
+            <div class="px-5 py-3 cursor-pointer hover:bg-slate-50 flex justify-between items-center transition" onclick="selectDevice('${device}', ${ESIM_DATABASE[device]})">
+                <span class="font-medium text-sm text-slate-800">${device}</span>
+                <span class="text-xs px-2.5 py-1 rounded-full font-bold ${ESIM_DATABASE[device] ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                    ${ESIM_DATABASE[device] ? '✓ Има eSIM' : '✗ Няма eSIM'}
                 </span>
             </div>
         `).join('');
         resultsBox.classList.remove('hidden');
     } else {
-        // Ако потребителят въведе нещо, което го няма изрично в базата
-        resultsBox.innerHTML = `
-            <div class="p-4 text-gray-600 text-sm">
-                Няма намерен точно такъв модел в базата.<br>
-                <span class="text-xs text-gray-500">Проверете в настройките на телефона: <b>Settings ➔ Cellular / Mobile Data ➔ Add eSIM</b></span>
-            </div>
-        `;
+        const dyn = checkDynamicSupport(query);
+        if (dyn) {
+            resultsBox.innerHTML = `
+                <div class="px-5 py-3 cursor-pointer hover:bg-slate-50 flex justify-between items-center transition" onclick="selectDevice('${query}', ${dyn.supported}, '${dyn.note || ''}')">
+                    <span class="font-medium text-sm text-slate-800 capitalize">${query}</span>
+                    <span class="text-xs px-2.5 py-1 rounded-full font-bold ${dyn.supported ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                        ${dyn.supported ? '✓ Има eSIM' : '✗ Няма eSIM'}
+                    </span>
+                </div>
+            `;
+        } else {
+            resultsBox.innerHTML = `
+                <div class="p-4 text-slate-500 text-xs">
+                    Няма намерено пълно съвпадение. Проверете в: <b>Settings ➔ Cellular / Mobile Data</b>
+                </div>
+            `;
+        }
         resultsBox.classList.remove('hidden');
     }
 });
 
-function selectDevice(deviceName) {
-    const item = ESIM_DATABASE[deviceName];
-    searchInput.value = deviceName;
+function selectDevice(name, isSupported, customNote = '') {
+    searchInput.value = name;
     resultsBox.classList.add('hidden');
 
-    if (item.supported) {
+    if (isSupported) {
         statusDiv.innerHTML = `
-            <div class="flex items-start gap-4">
-                <div class="text-3xl">✅</div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold">✓</div>
                 <div>
-                    <h3 class="text-lg font-bold text-green-800 mb-1">${deviceName} поддържа eSIM!</h3>
-                    <p class="text-sm text-green-700 mb-2">Можете свободно да закупите и инсталирате eSIM пакет за този телефон.</p>
-                    <span class="inline-block text-xs bg-green-100 text-green-800 px-2.5 py-1 rounded-md font-medium">Готов за активация</span>
+                    <h4 class="font-bold text-white text-sm capitalize">${name} има eSIM поддръжка!</h4>
+                    <p class="text-xs text-blue-100/80">Можете да инсталирате eSIM веднага.</p>
                 </div>
             </div>
         `;
     } else {
         statusDiv.innerHTML = `
-            <div class="flex items-start gap-4">
-                <div class="text-3xl">❌</div>
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-300 flex items-center justify-center font-bold">✕</div>
                 <div>
-                    <h3 class="text-lg font-bold text-red-800 mb-1">${deviceName} НЕ поддържа eSIM</h3>
-                    <p class="text-sm text-red-700 mb-2">${item.note || 'Този модел работи само с традиционна физическа SIM карта.'}</p>
-                    <span class="inline-block text-xs bg-red-100 text-red-800 px-2.5 py-1 rounded-md font-medium">Несъвместим</span>
+                    <h4 class="font-bold text-white text-sm capitalize">${name} НЕ поддържа eSIM</h4>
+                    <p class="text-xs text-blue-100/80">${customNote || 'Работи само с физическа SIM карта.'}</p>
                 </div>
             </div>
         `;
     }
-
     infoBox.classList.remove('hidden');
 }
 
-// Затваряне на падащото меню при клик извън него
-document.addEventListener('click', function(e) {
+document.addEventListener('click', (e) => {
     if (!e.target.closest('#device-search') && !e.target.closest('#device-results')) {
         resultsBox.classList.add('hidden');
     }
