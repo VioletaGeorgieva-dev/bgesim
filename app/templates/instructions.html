@@ -12,30 +12,33 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white flex flex-col min-h-screen">
 
-    <!-- 🌟 STICKY NAVBAR (Плавна стъклена лента) -->
+    <!-- 🌟 STICKY NAVBAR -->
     <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
         <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3">
-                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-9 w-auto">
-                <span class="text-xl font-extrabold tracking-tight text-white">{{ t.site_title }}</span>
+            <a href="/" class="flex items-center gap-3 group">
+                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-9 w-auto object-contain transition group-hover:scale-105">
+                <div>
+                    <h1 class="text-base font-extrabold text-white leading-tight">{{ t.site_title }}</h1>
+                    <p class="text-[10px] text-slate-400 font-medium">{{ t.site_subtitle }}</p>
+                </div>
             </a>
 
             <!-- Навигация -->
             <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-                <a href="/" class="text-white font-semibold">Начало</a>
-                <a href="/instructions" class="hover:text-blue-400 transition">{{ t.nav_instructions }}</a>
-                <a href="/contacts" class="hover:text-blue-400 transition">{{ t.nav_contacts }}</a>
-                <a href="/faq" class="hover:text-blue-400 transition">FAQ</a>
+                <a href="/" class="text-blue-400 font-semibold">🏠 Начало</a>
+                <a href="/instructions" class="hover:text-blue-400 transition">📖 {{ t.nav_instructions }}</a>
+                <a href="/contacts" class="hover:text-blue-400 transition">📞 {{ t.nav_contacts }}</a>
+                <a href="/faq" class="hover:text-blue-400 transition">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
             </nav>
 
             <div class="flex items-center gap-4">
                 <a href="/partner/login" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/30 transition transform active:scale-95">
-                    {{ t.partner_area_btn }}
+                    🤝 {{ t.partner_area_btn }}
                 </a>
 
-                <!-- Превключвател за език -->
+                <!-- Езици -->
                 <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 text-xs">
                     {% for code, label in supported_langs.items() %}
                     <a href="{{ lang_urls[code] }}" class="px-2.5 py-1 rounded-md font-bold transition {% if lang == code %}bg-slate-800 text-blue-400 shadow-sm{% else %}text-slate-400 hover:text-white{% endif %}">
@@ -47,75 +50,75 @@
         </div>
     </header>
 
-    <!-- 🚀 HERO SECTION (Вдъхновено от Play Bootstrap) -->
+    <!-- 🚀 HERO SECTION -->
     <section class="relative pt-36 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-        <!-- Фонов Glowing Effect -->
         <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
         <div class="max-w-5xl mx-auto px-6 text-center relative z-10">
             <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
-                ⚡ Бърза & Лесна глобална свързаност
+                ⚡ {{ t.hero_badge | default('Бърза & Лесна глобална свързаност') }}
             </span>
             <h1 class="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
-                Интернет за всяко ваше пътуване с <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">eSIM</span>
+                {{ t.hero_title | default('Интернет за всяко ваше пътуване') }}
             </h1>
             <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 font-normal leading-relaxed">
-                Забравете за скъпия роуминг и физическите SIM карти. Активирайте вашия мобилен план за броени секунди.
+                {{ t.hero_description | default('Забравете за скъпия роуминг и физическите SIM карти. Активирайте вашия мобилен план за броени секунди.') }}
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a href="/instructions" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-xl shadow-blue-600/25 transition transform active:scale-95">
-                    Инструкции за активация →
+                    📖 {{ t.nav_instructions }} →
                 </a>
-                <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-semibold text-sm transition">
-                    Научете повече
+                <a href="/contacts" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 font-semibold text-sm transition">
+                    📞 {{ t.nav_contacts }}
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ⚡ FEATURES SECTION (Карти в стил Play Bootstrap) -->
-    <section id="features" class="py-20 bg-slate-900/50 border-t border-slate-800/60">
+    <!-- ⚡ ИНФОРМАЦИОННИ КАРТИ / ПРЕДИМСТВА -->
+    <section class="py-20 bg-slate-900/50 border-t border-slate-800/60">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center max-w-2xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold text-white tracking-tight mb-4">Защо да изберете нашата eSIM?</h2>
-                <p class="text-slate-400 text-sm">Всичко, от което се нуждаете за безпроблемно пътуване по целия свят.</p>
+                <h2 class="text-3xl font-bold text-white tracking-tight mb-4">
+                    {{ t.features_title | default('Предимства на eSIM') }}
+                </h2>
+                <p class="text-slate-400 text-sm">
+                    {{ t.features_subtitle | default('Бързо, удобно и сигурно свързване в цял свят.') }}
+                </p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
-                <!-- Карта 1 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-blue-500/50 transition duration-300 group">
                     <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition">
-                        📱
+                        ⚡
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">100% Дигитално</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Без чакане по опашки, без пластмасови карти. Сканирате QR кода и сте готови.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">{{ t.feature1_title | default('Бърза активация') }}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">{{ t.feature1_text | default('Получавате QR код веднага след покупка и го сканирате с телефона си.') }}</p>
                 </div>
 
-                <!-- Карта 2 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-blue-500/50 transition duration-300 group">
                     <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition">
                         🌍
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Глобално покритие</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Поддържайте връзка в над 150+ държави с най-добрите местни мрежи.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">{{ t.feature2_title | default('Без Роуминг Такси') }}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">{{ t.feature2_text | default('Свързвате се към местните оператори на най-добри цени.') }}</p>
                 </div>
 
-                <!-- Карта 3 -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 hover:border-blue-500/50 transition duration-300 group">
                     <div class="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-2xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition">
-                        💸
+                        🔒
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Без изненадващи сметки</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">Предплатени пакети без скрити такси. Плащате само това, което ползвате.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">{{ t.feature3_title | default('Сигурност & Надеждност') }}</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">{{ t.feature3_text | default('Няма опасност да загубите или повредите физическата си SIM карта.') }}</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- 📞 FOOTER -->
-    <footer class="py-10 border-t border-slate-800/80 text-center text-slate-500 text-xs">
-        <p>© 2026 {{ t.site_title }}. Всички права запазени.</p>
+    <footer class="py-10 border-t border-slate-800/80 text-center text-slate-500 text-xs mt-auto">
+        <p>© 2026 {{ t.site_title }}. {{ t.footer | default('Всички права запазени.') }}</p>
     </footer>
 
 </body>
