@@ -11,6 +11,15 @@ from passlib.context import CryptContext
 from starlette.middleware.sessions import SessionMiddleware
 from app.api.client import check_balance, get_packages, query_esim_usage
 from app.services.esim import order_esim
+from app.europe import (
+    EUROPE_PLANS,
+    country_names,
+    europe_text,
+    get_cached,
+    plan_tagline,
+    plan_title,
+    process_plan_packages,
+)
 from app.config import settings
 from app.translations import (
     SUPPORTED_LANGS,
@@ -829,6 +838,39 @@ def search(
     return templates.TemplateResponse("index.html", ctx)
 
 
+@app.get("/europe", response_class=HTMLResponse)
+def europe(request: Request, lang: str = Cookie(default="en")):
+    plans = []
+    all_prices = []
+    for plan in EUROPE_PLANS:
+        code = plan["code"]
+        raw = get_cached(
+            f"pkg:{code}",
+            lambda code=code: get_packages(location=code).get("obj", {}).get("packageList", []),
+        )
+        packages = process_plan_packages(raw or [], code, USD_TO_EUR, MARGIN_COEFFICIENT)
+        all_prices += [p["price_eur"] for p in packages]
+        plans.append({
+            "code": code,
+            "title": plan_title(plan, lang),
+            "tagline": plan_tagline(plan, lang),
+            "countries": plan["countries"],
+            "country_names": country_names(plan, lang),
+            "featured": plan["featured"],
+            "packages": packages,
+        })
+
+    ctx = make_context(
+        request, lang,
+        x=europe_text(lang),
+        plans=plans,
+        lowest_price=min(all_prices) if all_prices else None,
+        highest_price=max(all_prices) if all_prices else None,
+        offer_count=len(all_prices),
+    )
+    return templates.TemplateResponse("europe.html", ctx)
+
+
 @app.get("/instructions", response_class=HTMLResponse)
 def instructions(request: Request, lang: str = Cookie(default="en")):
     ctx = make_context(request, lang)
@@ -1635,9 +1677,10 @@ def get_sitemap(request: Request):
 
     urls = [
         f"{base_url}/",
+        f"{base_url}/europe",
         f"{base_url}/instructions",
+        f"{base_url}/faq",
         f"{base_url}/contacts",
-        f"{base_url}/admin",
     ]
 
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
