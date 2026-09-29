@@ -14,180 +14,239 @@
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white flex flex-col min-h-screen">
 
-    <!-- 🌟 STICKY NAVBAR -->
-    <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-3 group">
-                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-9 w-auto object-contain transition group-hover:scale-105">
+    <!-- 🌟 STICKY HEADER / NAVBAR -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/85 backdrop-blur-md border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+            
+            <!-- Лого и заглавие -->
+            <a href="/" class="flex items-center gap-3 shrink-0">
+                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 md:h-10 w-auto object-contain transition transform hover:scale-105">
                 <div>
-                    <h1 class="text-base font-extrabold text-white leading-tight">{{ t.site_title }}</h1>
-                    <p class="text-[10px] text-slate-400 font-medium">{{ t.site_subtitle }}</p>
+                    <h1 class="text-sm md:text-base font-extrabold text-white leading-tight tracking-tight">{{ t.site_title }}</h1>
+                    <p class="text-[10px] text-slate-400 font-medium hidden sm:block">{{ t.site_subtitle }}</p>
                 </div>
             </a>
 
-            <!-- Навигация -->
-            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+            <!-- Десктоп Навигация -->
+            <nav class="hidden lg:flex items-center gap-6 text-sm font-medium text-slate-300">
                 <a href="/" class="hover:text-blue-400 transition">🏠 Home</a>
                 <a href="/instructions" class="text-blue-400 font-semibold">📖 {{ t.nav_instructions }}</a>
                 <a href="/contacts" class="hover:text-blue-400 transition">📞 {{ t.nav_contacts }}</a>
                 <a href="/faq" class="hover:text-blue-400 transition">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
             </nav>
 
-            <div class="flex items-center gap-4">
-                <a href="/partner/login" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/30 transition transform active:scale-95 flex items-center gap-1.5">
-                    🤝 <span>{{ t.partner_area_btn }}</span>
+            <!-- Дясна част: Партньори & Езици -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <a href="/partner/login" class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/25 transition active:scale-95 flex items-center gap-1.5 whitespace-nowrap">
+                    🤝 <span class="hidden sm:inline">{{ t.partner_area_btn }}</span>
                 </a>
 
-                <!-- Езици -->
-                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1 text-xs">
+                <!-- Превключвател на езици -->
+                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
                     {% for code, label in supported_langs.items() %}
-                    <a href="{{ lang_urls[code] }}" class="px-2.5 py-1 rounded-md font-bold transition {% if lang == code %}bg-slate-800 text-blue-400 shadow-sm{% else %}text-slate-400 hover:text-white{% endif %}">
+                    <a href="{{ lang_urls[code] }}" class="px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg font-bold transition {% if lang == code %}bg-blue-600/20 text-blue-400 border border-blue-500/30{% else %}text-slate-400 hover:text-white{% endif %}">
                         {{ label }}
                     </a>
                     {% endfor %}
                 </div>
+
+                <!-- Мобилен Hamburger бутон -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
             </div>
+        </div>
+
+        <!-- Мобилно меню панел -->
+        <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-800 bg-slate-950 px-6 py-4 space-y-3 text-sm font-medium text-slate-300">
+            <a href="/" class="block hover:text-blue-400">🏠 Home</a>
+            <a href="/instructions" class="block text-blue-400 font-semibold">📖 {{ t.nav_instructions }}</a>
+            <a href="/contacts" class="block hover:text-blue-400">📞 {{ t.nav_contacts }}</a>
+            <a href="/faq" class="block hover:text-blue-400">❓ {% if lang == 'bg' %}Въпроси{% elif lang == 'de' %}FAQ{% elif lang == 'tr' %}SSS{% elif lang == 'es' %}Preguntas{% else %}FAQ{% endif %}</a>
         </div>
     </header>
 
     <!-- 🚀 MAIN CONTENT -->
-    <main class="pt-32 pb-20 flex-grow max-w-4xl mx-auto px-6 w-full">
+    <main class="pt-24 md:pt-32 pb-20 flex-grow max-w-4xl mx-auto px-4 sm:px-6 w-full">
 
-        <!-- Заглавие -->
-        <div class="text-center mb-12">
-            <h1 class="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-4">
-                📖 {{ t.instructions_title }}
+        <!-- Заглавие & Подзаглавие -->
+        <div class="text-center mb-10 md:mb-14">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-4">
+                💡 eSIM Setup Guide
+            </span>
+            <h1 class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4 leading-tight">
+                {{ t.instructions_title }}
             </h1>
-            <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto">
+            <p class="text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                 {{ t.instructions_subtitle }}
             </p>
         </div>
 
-        <!-- ⚠️ Преди да започнете -->
-        <div class="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 mb-8 backdrop-blur-sm">
-            <h2 class="text-lg font-bold text-amber-400 mb-2 flex items-center gap-2">
-                ⚠️ {{ t.before_title }}
-            </h2>
-            <p class="text-slate-300 text-sm mb-4 leading-relaxed">{{ t.before_text | safe }}</p>
-            <ul class="list-disc list-inside text-slate-300 text-sm space-y-2">
-                <li>{{ t.before_item1 | safe }}</li>
-                <li>{{ t.before_item2 | safe }}</li>
-                <li>{{ t.before_item3 | safe }}</li>
-            </ul>
+        <!-- ⚠️ Преди да започнете (Важно предупреждение) -->
+        <div class="bg-amber-500/10 border border-amber-500/25 rounded-2xl p-5 sm:p-6 mb-8 backdrop-blur-sm relative overflow-hidden">
+            <div class="flex items-start gap-3 sm:gap-4">
+                <div class="text-2xl sm:text-3xl shrink-0">⚠️</div>
+                <div class="w-full">
+                    <h2 class="text-base sm:text-lg font-bold text-amber-400 mb-2">
+                        {{ t.before_title }}
+                    </h2>
+                    <p class="text-slate-300 text-xs sm:text-sm mb-4 leading-relaxed">{{ t.before_text | safe }}</p>
+                    <ul class="space-y-2 text-slate-300 text-xs sm:text-sm">
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 font-bold">•</span>
+                            <span>{{ t.before_item1 | safe }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 font-bold">•</span>
+                            <span>{{ t.before_item2 | safe }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 font-bold">•</span>
+                            <span>{{ t.before_item3 | safe }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        <!-- 🔍 ИНТЕРАКТИВНА ТЪРСАЧКА ЗА СЪВМЕСТИМОСТ (МНОГОЕЗИЧНА) -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 mb-8 shadow-xl">
-            <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-                🔍 {% if lang == 'bg' %}Проверка на вашето устройство{% elif lang == 'de' %}Gerätekompatibilität prüfen{% elif lang == 'tr' %}Cihaz Uyumluluk Kontrolü{% elif lang == 'es' %}Comпробар compatibilidad{% else %}Check Device Compatibility{% endif %}
+        <!-- 🔍 ИНТЕРАКТИВНА ТЪРСАЧКА ЗА СЪВМЕСТИМОСТ -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-8 mb-8 shadow-2xl relative">
+            <h2 class="text-lg sm:text-xl font-extrabold text-white mb-2 flex items-center gap-2">
+                🔍 {% if lang == 'bg' %}Проверка на вашето устройство{% elif lang == 'de' %}Gerätekompatibilität prüfen{% elif lang == 'tr' %}Cihaz Uyumluluk Kontrolü{% elif lang == 'es' %}Comprobar compatibilidad{% else %}Check Device Compatibility{% endif %}
             </h2>
-            <p class="text-slate-400 text-sm mb-6">
-                {% if lang == 'bg' %}Напишете марката или модела на телефона си (напр. <i class="text-slate-300">iPhone 13</i>, <i class="text-slate-300">Galaxy S22</i>, <i class="text-slate-300">Pixel 7</i>), за да проверите дали поддържа eSIM:{% elif lang == 'de' %}Geben Sie Ihre Telefonmarke oder Ihr Modell ein (z. B. <i class="text-slate-300">iPhone 13</i>, <i class="text-slate-300">Galaxy S22</i>), um zu prüfen, ob eSIM unterstützt wird:{% elif lang == 'tr' %}eSIM desteğini kontrol etmek için telefon markanızı veya modelinizi yazın (örn. <i class="text-slate-300">iPhone 13</i>, <i class="text-slate-300">Galaxy S22</i>):{% elif lang == 'es' %}Escriba la marca o modelo de su teléfono (ej. <i class="text-slate-300">iPhone 13</i>, <i class="text-slate-300">Galaxy S22</i>) para comprobar si admite eSIM:{% else %}Type your phone brand or model (e.g., <i class="text-slate-300">iPhone 13</i>, <i class="text-slate-300">Galaxy S22</i>, <i class="text-slate-300">Pixel 7</i>) to check eSIM support:{% endif %}
+            <p class="text-slate-400 text-xs sm:text-sm mb-5 leading-relaxed">
+                {% if lang == 'bg' %}Напишете марката или модела на телефона си (напр. <i class="text-slate-300 font-semibold">iPhone 13</i>, <i class="text-slate-300 font-semibold">Galaxy S22</i>, <i class="text-slate-300 font-semibold">Pixel 7</i>), за да проверите дали поддържа eSIM:{% elif lang == 'de' %}Geben Sie Ihre Telefonmarke oder Ihr Modell ein (z. B. <i class="text-slate-300 font-semibold">iPhone 13</i>, <i class="text-slate-300 font-semibold">Galaxy S22</i>):{% elif lang == 'tr' %}eSIM desteğini kontrol etmek için telefon markanızı veya modelinizi yazın (örn. <i class="text-slate-300 font-semibold">iPhone 13</i>):{% elif lang == 'es' %}Escriba la marca o modelo de su teléfono (ej. <i class="text-slate-300 font-semibold">iPhone 13</i>):{% else %}Type your phone brand or model (e.g., <i class="text-slate-300 font-semibold">iPhone 13</i>, <i class="text-slate-300 font-semibold">Galaxy S22</i>):{% endif %}
             </p>
             
             <div class="relative mb-4">
                 <input
                     type="text"
                     id="device-search"
-                    placeholder="{% if lang == 'bg' %}Въведете модел телефон...{% elif lang == 'de' %}Telefonmodell eingeben...{% elif lang == 'tr' %}Telefon modelini girin...{% elif lang == 'es' %}Escriba el modelo de teléfono...{% else %}Enter phone model...{% endif %}"
-                    class="w-full px-5 py-3.5 bg-slate-950 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition shadow-inner text-base placeholder-slate-500"
+                    placeholder="{% if lang == 'bg' %}Търсете модел (напр. iPhone 13)...{% elif lang == 'de' %}Telefonmodell eingeben...{% elif lang == 'tr' %}Telefon modelini girin...{% elif lang == 'es' %}Escriba el modelo...{% else %}Enter phone model...{% endif %}"
+                    class="w-full px-4 sm:px-5 py-3.5 bg-slate-950 border border-slate-700 text-white rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition shadow-inner text-sm sm:text-base placeholder-slate-500"
                     autocomplete="off"
                 >
                 <div id="device-results" class="absolute z-50 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl mt-2 max-h-60 overflow-y-auto hidden divide-y divide-slate-800"></div>
             </div>
 
             <!-- Резултат от търсенето -->
-            <div id="device-info" class="hidden bg-slate-950 rounded-xl p-5 border border-slate-800 shadow-inner transition-all">
+            <div id="device-info" class="hidden bg-slate-950 rounded-xl p-4 sm:p-5 border border-slate-800 shadow-inner transition-all">
                 <div id="device-status"></div>
             </div>
         </div>
 
-        <!-- Стъпка 1 -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 mb-6 flex gap-6 items-start hover:border-slate-700 transition">
-            <div class="flex-shrink-0 w-12 h-12 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl flex items-center justify-center text-xl font-extrabold">1</div>
-            <div>
-                <h3 class="text-xl font-bold text-white mb-2">{{ t.step1_title | safe }}</h3>
-                <p class="text-slate-300 leading-relaxed text-sm md:text-base">{{ t.step1_text | safe }}</p>
-                <p class="mt-3 text-amber-400 font-medium text-sm flex items-center gap-1.5">
-                    ⚠️ {{ t.step1_warning | safe }}
-                </p>
+        <!-- 🔷 СТЪПКА 1 -->
+        <div class="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-5 sm:p-7 mb-6 hover:border-slate-700 transition">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-xl flex items-center justify-center text-lg sm:text-xl font-black shadow-lg shadow-blue-500/10">
+                    1
+                </div>
+                <div class="w-full">
+                    <h3 class="text-lg sm:text-xl font-bold text-white mb-2 leading-snug">{{ t.step1_title | safe }}</h3>
+                    <p class="text-slate-300 leading-relaxed text-xs sm:text-sm md:text-base">{{ t.step1_text | safe }}</p>
+                    <div class="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs sm:text-sm font-medium flex items-center gap-2">
+                        <span>⚠️</span>
+                        <span>{{ t.step1_warning | safe }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Стъпка 2 -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 mb-6 flex gap-6 items-start hover:border-slate-700 transition">
-            <div class="flex-shrink-0 w-12 h-12 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl flex items-center justify-center text-xl font-extrabold">2</div>
-            <div class="w-full">
-                <h3 class="text-xl font-bold text-white mb-2">{{ t.step2_title | safe }}</h3>
-                <p class="text-slate-300 leading-relaxed mb-6 text-sm md:text-base">{{ t.step2_text | safe }}</p>
-                
-                <div class="space-y-4">
-                    <!-- Опция А -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5">
-                        <h4 class="font-bold text-blue-400 text-sm mb-1">{{ t.step2_option_a_title | safe }}</h4>
-                        <p class="text-slate-300 text-xs md:text-sm leading-relaxed">{{ t.step2_option_a_text | safe }}</p>
-                    </div>
+        <!-- 🔷 СТЪПКА 2 -->
+        <div class="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-5 sm:p-7 mb-6 hover:border-slate-700 transition">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-600/20 border border-blue-500/40 text-blue-400 rounded-xl flex items-center justify-center text-lg sm:text-xl font-black shadow-lg shadow-blue-500/10">
+                    2
+                </div>
+                <div class="w-full">
+                    <h3 class="text-lg sm:text-xl font-bold text-white mb-2 leading-snug">{{ t.step2_title | safe }}</h3>
+                    <p class="text-slate-300 leading-relaxed mb-5 text-xs sm:text-sm md:text-base">{{ t.step2_text | safe }}</p>
                     
-                    <!-- Опция Б -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5">
-                        <h4 class="font-bold text-white text-sm mb-1">{{ t.step2_option_b_title | safe }}</h4>
-                        <p class="text-slate-300 text-xs md:text-sm mb-3 leading-relaxed">{{ t.step2_option_b_text | safe }}</p>
-                        <div class="space-y-2">
-                            <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-xs md:text-sm text-slate-300">
-                                🍎 <span class="font-semibold text-white">iPhone:</span> {{ t.step2_iphone | safe }}
-                            </div>
-                            <div class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-xs md:text-sm text-slate-300">
-                                🤖 <span class="font-semibold text-white">Android:</span> {{ t.step2_android | safe }}
+                    <div class="space-y-3 sm:space-y-4">
+                        <!-- Опция А -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 sm:p-5">
+                            <h4 class="font-bold text-blue-400 text-xs sm:text-sm mb-1.5">{{ t.step2_option_a_title | safe }}</h4>
+                            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">{{ t.step2_option_a_text | safe }}</p>
+                        </div>
+                        
+                        <!-- Опция Б -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 sm:p-5">
+                            <h4 class="font-bold text-white text-xs sm:text-sm mb-1.5">{{ t.step2_option_b_title | safe }}</h4>
+                            <p class="text-slate-300 text-xs sm:text-sm mb-3 leading-relaxed">{{ t.step2_option_b_text | safe }}</p>
+                            <div class="space-y-2">
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs sm:text-sm text-slate-300">
+                                    🍎 <span class="font-semibold text-white">iPhone:</span> {{ t.step2_iphone | safe }}
+                                </div>
+                                <div class="bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs sm:text-sm text-slate-300">
+                                    🤖 <span class="font-semibold text-white">Android:</span> {{ t.step2_android | safe }}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Опция В -->
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-5">
-                        <h4 class="font-bold text-white text-sm mb-1">{{ t.step2_option_c_title | safe }}</h4>
-                        <p class="text-slate-300 text-xs md:text-sm leading-relaxed">{{ t.step2_option_c_text | safe }}</p>
+                        <!-- Опция В -->
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 sm:p-5">
+                            <h4 class="font-bold text-white text-xs sm:text-sm mb-1.5">{{ t.step2_option_c_title | safe }}</h4>
+                            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">{{ t.step2_option_c_text | safe }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Стъпка 3 -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 mb-6 flex gap-6 items-start hover:border-slate-700 transition">
-            <div class="flex-shrink-0 w-12 h-12 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl flex items-center justify-center text-xl font-extrabold">3</div>
-            <div class="w-full">
-                <h3 class="text-xl font-bold text-white mb-2">{{ t.step3_title | safe }}</h3>
-                <p class="text-slate-300 leading-relaxed mb-4 text-sm md:text-base">{{ t.step3_text | safe }}</p>
-                <div class="space-y-2">
-                    <div class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs md:text-sm text-slate-300">
-                        🍎 <span class="font-semibold text-white">iPhone:</span> {{ t.step3_iphone | safe }}
+        <!-- 🔷 СТЪПКА 3 -->
+        <div class="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-5 sm:p-7 mb-8 hover:border-slate-700 transition">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start">
+                <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 rounded-xl flex items-center justify-center text-lg sm:text-xl font-black shadow-lg shadow-emerald-500/10">
+                    3
+                </div>
+                <div class="w-full">
+                    <h3 class="text-lg sm:text-xl font-bold text-white mb-2 leading-snug">{{ t.step3_title | safe }}</h3>
+                    <p class="text-slate-300 leading-relaxed mb-4 text-xs sm:text-sm md:text-base">{{ t.step3_text | safe }}</p>
+                    <div class="space-y-2 mb-4">
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-xs sm:text-sm text-slate-300">
+                            🍎 <span class="font-semibold text-white">iPhone:</span> {{ t.step3_iphone | safe }}
+                        </div>
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-xs sm:text-sm text-slate-300">
+                            🤖 <span class="font-semibold text-white">Android:</span> {{ t.step3_android | safe }}
+                        </div>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-xs md:text-sm text-slate-300">
-                        🤖 <span class="font-semibold text-white">Android:</span> {{ t.step3_android | safe }}
+                    <div class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                        <span>✅</span>
+                        <span>{{ t.step3_success | safe }}</span>
                     </div>
                 </div>
-                <p class="text-emerald-400 text-sm font-semibold mt-4 flex items-center gap-1.5">
-                    ✅ {{ t.step3_success | safe }}
-                </p>
             </div>
         </div>
 
-        <!-- 💡 Полезни съвети -->
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8 mb-8">
-            <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2">
+        <!-- 💡 ПОЛЕЗНИ СЪВЕТИ -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 sm:p-7 mb-8">
+            <h2 class="text-base sm:text-lg font-bold text-white mb-4 flex items-center gap-2">
                 💡 {{ t.tips_title | safe }}
             </h2>
-            <ul class="list-disc list-inside text-slate-300 text-sm space-y-2 leading-relaxed">
-                <li>{{ t.tip1 | safe }}</li>
-                <li>{{ t.tip2 | safe }}</li>
-                <li>{{ t.tip3 | safe }}</li>
-                <li>{{ t.tip4 | safe }}</li>
+            <ul class="space-y-3 text-slate-300 text-xs sm:text-sm leading-relaxed">
+                <li class="flex items-start gap-2">
+                    <span class="text-blue-400">•</span>
+                    <span>{{ t.tip1 | safe }}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-blue-400">•</span>
+                    <span>{{ t.tip2 | safe }}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-blue-400">•</span>
+                    <span>{{ t.tip3 | safe }}</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="text-blue-400">•</span>
+                    <span>{{ t.tip4 | safe }}</span>
+                </li>
             </ul>
         </div>
 
-        <!-- Помощ -->
-        <div class="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-8 text-center mt-12">
-            <p class="text-slate-300 mb-4 font-medium">{{ t.instructions_help | safe }}</p>
-            <a href="/contacts" class="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold text-sm shadow-lg shadow-blue-600/25 transition active:scale-95">
+        <!-- 📞 ПОМОЩ -->
+        <div class="bg-gradient-to-r from-blue-900/30 via-slate-900 to-blue-900/30 border border-blue-500/20 rounded-2xl p-6 sm:p-8 text-center mt-12">
+            <p class="text-slate-300 text-xs sm:text-sm md:text-base mb-5 font-medium leading-relaxed">{{ t.instructions_help | safe }}</p>
+            <a href="/contacts" class="inline-flex items-center gap-2 px-7 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm shadow-xl shadow-blue-600/30 transition transform active:scale-95">
                 📞 {{ t.nav_contacts }}
             </a>
         </div>
@@ -195,12 +254,21 @@
     </main>
 
     <!-- 📞 FOOTER -->
-    <footer class="py-8 border-t border-slate-800/80 text-center text-slate-500 text-xs mt-auto">
+    <footer class="py-6 border-t border-slate-800/80 text-center text-slate-500 text-xs mt-auto px-4">
         © 2026 {{ t.footer }}
     </footer>
 
-    <!-- JavaScript с преведени системни съобщения -->
+    <!-- JavaScript логика -->
     <script>
+    // Мобилно меню Toggle
+    const mobileBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+
     const CURRENT_LANG = "{{ lang }}";
 
     const TEXTS = {
@@ -353,8 +421,8 @@
         if (matches.length > 0) {
             resultsBox.innerHTML = matches.map(device => `
                 <div class="px-4 py-3 cursor-pointer hover:bg-slate-800 flex justify-between items-center transition" onclick="selectDevice('${device}')">
-                    <span class="font-medium text-slate-200 text-sm">${device}</span>
-                    <span class="text-xs px-2.5 py-1 rounded-md font-semibold ${ESIM_DATABASE[device].supported ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
+                    <span class="font-medium text-slate-200 text-xs sm:text-sm">${device}</span>
+                    <span class="text-[10px] sm:text-xs px-2 py-0.5 sm:py-1 rounded-md font-semibold ${ESIM_DATABASE[device].supported ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">
                         ${ESIM_DATABASE[device].supported ? tJs.hasEsim : tJs.noEsim}
                     </span>
                 </div>
@@ -362,9 +430,9 @@
             resultsBox.classList.remove('hidden');
         } else {
             resultsBox.innerHTML = `
-                <div class="p-4 text-slate-400 text-sm">
+                <div class="p-4 text-slate-400 text-xs sm:text-sm">
                     ${tJs.notFound}<br>
-                    <span class="text-xs text-slate-500">${tJs.checkSettings}</span>
+                    <span class="text-[11px] text-slate-500">${tJs.checkSettings}</span>
                 </div>
             `;
             resultsBox.classList.remove('hidden');
@@ -378,23 +446,23 @@
 
         if (item.supported) {
             statusDiv.innerHTML = `
-                <div class="flex items-start gap-4">
-                    <div class="text-3xl">✅</div>
+                <div class="flex items-start gap-3 sm:gap-4">
+                    <div class="text-2xl sm:text-3xl">✅</div>
                     <div>
-                        <h3 class="text-lg font-bold text-emerald-400 mb-1">${deviceName} ${tJs.supportedTitle}</h3>
-                        <p class="text-sm text-slate-300 mb-2">${tJs.supportedDesc}</p>
-                        <span class="inline-block text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-md font-medium">${tJs.ready}</span>
+                        <h3 class="text-base sm:text-lg font-bold text-emerald-400 mb-1">${deviceName} ${tJs.supportedTitle}</h3>
+                        <p class="text-xs sm:text-sm text-slate-300 mb-2 leading-relaxed">${tJs.supportedDesc}</p>
+                        <span class="inline-block text-[10px] sm:text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-md font-medium">${tJs.ready}</span>
                     </div>
                 </div>
             `;
         } else {
             statusDiv.innerHTML = `
-                <div class="flex items-start gap-4">
-                    <div class="text-3xl">❌</div>
+                <div class="flex items-start gap-3 sm:gap-4">
+                    <div class="text-2xl sm:text-3xl">❌</div>
                     <div>
-                        <h3 class="text-lg font-bold text-rose-400 mb-1">${deviceName} ${tJs.notSupportedTitle}</h3>
-                        <p class="text-sm text-slate-300 mb-2">${tJs.notSupportedDefaultNote}</p>
-                        <span class="inline-block text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-3 py-1 rounded-md font-medium">${tJs.incompatible}</span>
+                        <h3 class="text-base sm:text-lg font-bold text-rose-400 mb-1">${deviceName} ${tJs.notSupportedTitle}</h3>
+                        <p class="text-xs sm:text-sm text-slate-300 mb-2 leading-relaxed">${tJs.notSupportedDefaultNote}</p>
+                        <span class="inline-block text-[10px] sm:text-xs bg-rose-500/10 border border-rose-500/20 text-rose-400 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-md font-medium">${tJs.incompatible}</span>
                     </div>
                 </div>
             `;
