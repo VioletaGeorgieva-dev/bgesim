@@ -1,17 +1,17 @@
 :root {
   color-scheme: light;
-  --bg: #f7f8fa;
+  --bg: #f5f7f8;
   --surface: #ffffff;
-  --surface-soft: #f1f4f8;
-  --text: #101828;
-  --muted: #667085;
-  --line: #e4e7ec;
-  --primary: #2458d3;
-  --primary-hover: #1947b7;
-  --accent: #7357d8;
-  --success: #067647;
+  --surface-soft: #eaf7f6;
+  --text: #10212b;
+  --muted: #61727d;
+  --line: #dce6e8;
+  --primary: #087f8c;
+  --primary-hover: #06636d;
+  --accent: #6c63ff;
+  --success: #087f5b;
   --radius: 18px;
-  --shadow: 0 8px 28px rgba(16, 24, 40, 0.06);
+  --shadow: 0 12px 34px rgba(16, 33, 43, 0.07);
   --content: 1160px;
 }
 
@@ -319,3 +319,94 @@ body.standard-page.auth-page a { color: var(--primary); }
 body.standard-page.auth-page form { display: grid; gap: 14px; }
 body.standard-page.auth-page input { width: 100%; padding: 10px 12px; }
 body.standard-page.auth-page button { cursor: pointer; }
+
+
+/* Refined BGeSIM visual system: deep ink, ocean teal and subtle lilac */
+.site-header {
+  background: rgba(255,255,255,.94);
+  border-bottom-color: #dce6e8;
+  box-shadow: 0 4px 24px rgba(16,33,43,.035);
+}
+.header-inner { gap: 24px; }
+.header-actions { flex: 1; gap: 18px; }
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0 auto 0 12px;
+  padding: 5px;
+  background: #f1f5f6;
+  border: 1px solid #e5edef;
+  border-radius: 14px;
+}
+.main-nav a {
+  min-height: 42px;
+  padding: 10px 13px;
+  color: #344952;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  transition: color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.main-nav a:hover, .main-nav a[aria-current="page"] {
+  color: #087f8c;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(16,33,43,.07);
+}
+.language-nav {
+  flex-shrink: 0;
+  background: #f1f5f6;
+  border: 1px solid #e5edef;
+}
+.language-nav a { color: #52636b; }
+.language-nav a:hover, .language-nav a[aria-current="page"] {
+  color: #087f8c;
+  background: #fff;
+}
+.menu-toggle { border-color: #dce6e8; }
+.hero-panel {
+  background: linear-gradient(135deg, #ffffff 0%, #f4fbfa 100%);
+  border-color: #dce9e9;
+  box-shadow: 0 16px 44px rgba(16,33,43,.065);
+}
+.hero-panel::after { border-color: rgba(8,127,140,.12); }
+.eyebrow, .section-kicker { color: #087f8c; }
+.hero h1 span { color: #087f8c; }
+.hero-note { background: rgba(255,255,255,.84); border-color: #dce9e9; }
+.search-panel, .region-card, .feature-card, .step-card, .faq-list details,
+.plan-card, .page-hero, .europe-plan-heading, .europe-package,
+.standard-page .panel, .standard-panel {
+  border-color: #e0e9eb;
+  box-shadow: 0 5px 22px rgba(16,33,43,.035);
+}
+.region-card:hover { border-color: #8dd2d3; box-shadow: 0 12px 28px rgba(8,127,140,.09); }
+.region-icon, .feature-icon, .step-number {
+  color: #087f8c;
+  background: #e7f6f5;
+}
+.search-field:focus { border-color: #087f8c; box-shadow: 0 0 0 4px rgba(8,127,140,.12); }
+.suggestions-list li:hover, .suggestions-list li.is-active { background: #eaf7f6; color: #06636d; }
+.plan-type { color: #087f8c; background: #e7f6f5; }
+.plan-facts { background: #f4f8f9; }
+.fact-value { color: #233b46; }
+.speed-tag { background: #edf2f4; }
+.europe-notes { background: #eef8f8; border-color: #cce9e8; }
+.europe-plan-heading summary, .faq-more, .footer-links a:hover { color: #087f8c; }
+.site-footer { border-top-color: #dce6e8; }
+.btn-primary, .buy-link { background: #087f8c; border-color: #087f8c; }
+.btn-primary:hover, .buy-link:hover { background: #06636d; }
+.partner-link { color: #087f8c !important; }
+@media (max-width: 1100px) {
+  .header-inner { gap: 12px; }
+  .header-actions { gap: 9px; }
+  .main-nav { gap: 1px; margin-left: 0; padding: 4px; }
+  .main-nav a { padding: 9px 8px; font-size: 12px; }
+  .language-nav a { padding: 6px 5px; }
+}
+@media (max-width: 900px) {
+  .main-nav { display: none; }
+  .header-actions { flex: 0 0 auto; }
+}
+@media (min-width: 901px) {
+  .mobile-nav { display: none !important; }
+}
