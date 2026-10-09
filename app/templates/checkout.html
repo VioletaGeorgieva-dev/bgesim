@@ -26,15 +26,14 @@
         </nav>
         <div class="w-px h-6 bg-blue-400 opacity-50"></div>
 
-        <div class="flex items-center gap-2 flex-wrap">
+        <nav class="language-nav" aria-label="Language">
+            {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
             {% for code, label in supported_langs.items() %}
-            <a href="{{ lang_urls[code] }}"
-               class="px-3 py-1 rounded-lg text-sm font-semibold transition
-               {% if lang == code %}bg-white text-blue-700{% else %}bg-blue-700 text-white hover:bg-blue-600{% endif %}">
-                {{ label }}
+            <a href="{{ lang_urls[code] }}" lang="{{ code }}" title="{{ label }}" {% if lang == code %}aria-current="page"{% endif %}>
+                <span aria-hidden="true">{{ flags.get(code, '🌐') }}</span><span>{{ code.upper() }}</span>
             </a>
             {% endfor %}
-        </div>
+        </nav>
     </div>
 </header>
 
