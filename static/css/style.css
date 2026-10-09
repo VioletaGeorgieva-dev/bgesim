@@ -1,0 +1,174 @@
+:root {
+  --page-bg: #eef5ff;
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-solid: #ffffff;
+  --panel-soft: #f7faff;
+  --primary: #0f5de7;
+  --primary-dark: #0a47b7;
+  --primary-soft: #edf3ff;
+  --accent: #f9b937;
+  --text: #10213c;
+  --muted: #5d6b82;
+  --border: rgba(15, 93, 231, 0.1);
+  --shadow: 0 18px 45px rgba(21, 56, 111, 0.12);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(122, 171, 255, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(31, 102, 233, 0.12), transparent 28%),
+    var(--page-bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+img {
+  max-width: 100%;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  box-shadow: 0 18px 35px rgba(11, 52, 128, 0.16);
+}
+
+#mobile-menu {
+  backdrop-filter: blur(12px);
+}
+
+#search-wrapper,
+#search-wrapper > div,
+section.bg-white,
+section > div.bg-white,
+.bg-white.rounded-2xl,
+.group,
+#content .space-y-4 > div,
+#content .bg-white {
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+section.bg-white,
+section > div.bg-white,
+.bg-white.rounded-2xl,
+.group,
+#content .space-y-4 > div,
+#content .bg-white {
+  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,255,.96)) !important;
+}
+
+main > section,
+#content > div,
+#content > section {
+  position: relative;
+}
+
+#content .bg-white.rounded-2xl:hover,
+.group:hover,
+#content .space-y-4 > div:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 45px rgba(22, 69, 147, 0.14) !important;
+}
+
+#search-wrapper input {
+  border-width: 1.5px !important;
+  box-shadow: inset 0 1px 2px rgba(15, 93, 231, 0.04) !important;
+}
+
+#search-wrapper input:focus {
+  box-shadow: 0 0 0 4px rgba(15, 93, 231, 0.12), inset 0 1px 2px rgba(15, 93, 231, 0.04) !important;
+}
+
+#suggestions-list {
+  border-color: rgba(15, 93, 231, 0.08) !important;
+  box-shadow: 0 25px 50px rgba(17, 38, 63, 0.16) !important;
+}
+
+#suggestions-list li:hover {
+  background: rgba(15, 93, 231, 0.06) !important;
+}
+
+#content .bg-blue-600,
+#search-wrapper button,
+footer a,
+header a[href*="/partner/login"],
+header a[href*="/europe"] {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  border: none !important;
+  box-shadow: 0 12px 24px rgba(15, 93, 231, 0.22) !important;
+}
+
+#content .bg-blue-600:hover,
+#search-wrapper button:hover,
+footer a:hover,
+header a[href*="/partner/login"]:hover,
+header a[href*="/europe"]:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+#content .bg-emerald-50,
+.bg-emerald-50 {
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+
+#content .text-blue-600,
+.text-blue-600 {
+  color: var(--primary) !important;
+}
+
+footer {
+  background: rgba(255,255,255,0.8) !important;
+  backdrop-filter: blur(8px);
+}
+
+@media (max-width: 640px) {
+  main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  section.bg-white,
+  section > div.bg-white,
+  .bg-white.rounded-2xl,
+  .group,
+  #content .space-y-4 > div,
+  #content .bg-white {
+    border-radius: 1.25rem !important;
+  }
+
+  .group,
+  .bg-white.rounded-2xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  #search-wrapper button {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    background:
+      radial-gradient(circle at top, rgba(122, 171, 255, 0.14), transparent 28%),
+      var(--page-bg);
+  }
+
+  header .max-w-7xl {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  #suggestions-list {
+    left: 0;
+    right: 0;
+  }
+}
