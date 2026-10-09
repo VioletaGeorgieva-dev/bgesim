@@ -309,3 +309,13 @@ body.standard-page button, body.standard-page [type="submit"] { min-height: 42px
 }
 
 @media (max-width: 560px) { .language-nav a span[aria-hidden="true"] { display: none; } }
+
+
+body.standard-page.auth-page { display: flex; align-items: center; justify-content: center; padding: 24px 14px; }
+body.standard-page.auth-page > div { width: min(100%, 430px); margin: 0 auto; padding: clamp(22px, 5vw, 38px); background: white; border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+body.standard-page.auth-page h1 { color: var(--text) !important; font-size: clamp(21px, 4vw, 28px); font-weight: 800; letter-spacing: -.04em; }
+body.standard-page.auth-page label { color: #344054; }
+body.standard-page.auth-page a { color: var(--primary); }
+body.standard-page.auth-page form { display: grid; gap: 14px; }
+body.standard-page.auth-page input { width: 100%; padding: 10px 12px; }
+body.standard-page.auth-page button { cursor: pointer; }
