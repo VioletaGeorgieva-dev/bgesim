@@ -21,9 +21,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col overflow-x-hidden">
 
-<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-40">
+<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-40 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 sm:h-20">
             <a href="/" class="flex items-center gap-3 shrink-0">
@@ -97,7 +97,7 @@
     </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow">
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow w-full">
 
     <section class="premium-hero mb-8">
         <div class="premium-hero-inner">
@@ -127,7 +127,7 @@
         </div>
     </section>
 
-    <section class="bg-white rounded-2xl sm:rounded-3xl shadow-md p-4 sm:p-6 lg:p-8 mb-8 border border-gray-100">
+    <section class="bg-white rounded-2xl sm:rounded-3xl shadow-md p-4 sm:p-6 lg:p-8 mb-8 border border-gray-100 w-full">
         <h2 class="text-base sm:text-lg font-bold text-gray-700 mb-3 sm:mb-4 flex items-center gap-2">
             <span>🔍</span> {{ t.search_title }}
         </h2>
@@ -165,7 +165,7 @@
         </p>
     </section>
 
-    <section class="mb-10 sm:mb-12">
+    <section class="mb-10 sm:mb-12 w-full">
         <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Popular Regions</h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -220,7 +220,7 @@
     </section>
 
     {% if groups is none %}
-    <section class="mb-10 sm:mb-12" id="esim-section">
+    <section class="mb-10 sm:mb-12 w-full" id="esim-section">
         <div class="text-center max-w-2xl mx-auto mb-8">
             <h2 class="text-xl sm:text-3xl font-black text-gray-800">
                 {{ t.esim_what_title | default('Какво е eSIM и как работи?') }}
@@ -275,7 +275,7 @@
         <p class="text-gray-500 text-sm font-medium">{{ t.loading }}</p>
     </div>
 
-    <div id="content">
+    <div id="content" class="w-full">
         {% if error %}
         <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl mb-6 text-sm font-medium">
             ⚠️ {{ error }}
@@ -368,7 +368,7 @@
     </div>
 </main>
 
-<footer class="bg-white border-t border-gray-200 text-center py-8 text-gray-500 text-xs sm:text-sm mt-auto">
+<footer class="bg-white border-t border-gray-200 text-center py-8 text-gray-500 text-xs sm:text-sm mt-auto w-full">
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-4">
             <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
