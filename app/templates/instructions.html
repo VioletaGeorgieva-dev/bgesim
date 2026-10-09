@@ -135,6 +135,80 @@
             }
             body.instructions-page #device-results { max-height:32vh; }
         }
+
+        /* Final high-specificity contrast overrides for all instruction cards. */
+        body.instructions-page > main div[class*="bg-slate-900"],
+        body.instructions-page > main div[class*="bg-slate-950"] {
+            background-color:#ffffff !important;
+            border-color:#d3e0e5 !important;
+        }
+        body.instructions-page > main div[class*="bg-slate-900"] p,
+        body.instructions-page > main div[class*="bg-slate-900"] li,
+        body.instructions-page > main div[class*="bg-slate-900"] span,
+        body.instructions-page > main div[class*="bg-slate-950"] p,
+        body.instructions-page > main div[class*="bg-slate-950"] li,
+        body.instructions-page > main div[class*="bg-slate-950"] span {
+            color:#344e5a !important;
+        }
+        body.instructions-page > main div[class*="bg-slate-900"] h1,
+        body.instructions-page > main div[class*="bg-slate-900"] h2,
+        body.instructions-page > main div[class*="bg-slate-900"] h3,
+        body.instructions-page > main div[class*="bg-slate-900"] h4,
+        body.instructions-page > main div[class*="bg-slate-950"] h1,
+        body.instructions-page > main div[class*="bg-slate-950"] h2,
+        body.instructions-page > main div[class*="bg-slate-950"] h3,
+        body.instructions-page > main div[class*="bg-slate-950"] h4 {
+            color:#16313d !important;
+        }
+        body.instructions-page > main div[class*="text-slate-300"],
+        body.instructions-page > main div[class*="text-slate-400"],
+        body.instructions-page > main span[class*="text-slate-300"],
+        body.instructions-page > main span[class*="text-slate-400"],
+        body.instructions-page > main p[class*="text-slate-300"],
+        body.instructions-page > main p[class*="text-slate-400"] {
+            color:#344e5a !important;
+        }
+        body.instructions-page > main div[class*="bg-emerald-500"],
+        body.instructions-page > main div[class*="bg-amber-500"] {
+            background-color:#f0faf8 !important;
+            border-color:#b8e2d8 !important;
+        }
+        body.instructions-page > main div[class*="bg-emerald-500"] *,
+        body.instructions-page > main div[class*="bg-amber-500"] * {
+            color:#155e50 !important;
+        }
+        body.instructions-page > main div[class*="bg-blue-600"] {
+            background-color:#dceeff !important;
+            border-color:#a7d1fa !important;
+            color:#14518a !important;
+            font-size:24px !important;
+            width:52px !important;
+            height:52px !important;
+            min-width:52px !important;
+        }
+        body.instructions-page > main div[class*="bg-emerald-600"] {
+            background-color:#dff7ed !important;
+            border-color:#9adfc4 !important;
+            color:#08744e !important;
+            font-size:24px !important;
+            width:52px !important;
+            height:52px !important;
+            min-width:52px !important;
+        }
+        body.instructions-page > main div[class*="bg-slate-950"] {
+            background-color:#f3f7f9 !important;
+        }
+        @media(max-width:640px) {
+            body.instructions-page > main div[class*="bg-blue-600"],
+            body.instructions-page > main div[class*="bg-emerald-600"] {
+                width:48px !important; height:48px !important;
+                min-width:48px !important; font-size:22px !important;
+            }
+            body.instructions-page > main p[class*="text-xs"],
+            body.instructions-page > main li[class*="text-xs"] {
+                font-size:15px !important; line-height:1.65 !important;
+            }
+        }
     </style>
 </head>
 <body class="standard-page instructions-page">
