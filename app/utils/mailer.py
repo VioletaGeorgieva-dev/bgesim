@@ -1,4 +1,5 @@
 import requests
+import html
 from app.config import get_settings
 from typing import Optional
 
@@ -401,3 +402,82 @@ def send_esim_email(
     except Exception as e:
         print(f"[EMAIL] ❌ Грешка при изпращане: {e}")
         raise
+
+
+def send_usage_warning_email(
+    to_email: str,
+    full_name: str,
+    country: str,
+    iccid: str,
+    topup_url: str,
+    percent_used: float,
+    lang: str = "en",
+) -> None:
+    """Send a usage threshold warning with a direct top-up/new-package CTA."""
+    translations = {
+        "bg": {
+            "subject": "Използвали сте {percent}% от интернет пакета си — {country}",
+            "title": "Почти изразходихте интернет пакета си",
+            "body": "Здравейте, {name}! Използвали сте <strong>{percent}%</strong> от данните за {country}.",
+            "cta": "Дозареди интернет →",
+            "note": "Ако няма съвместим пакет за дозареждане, ще можете да изберете нов пакет за същата дестинация.",
+        },
+        "en": {
+            "subject": "You've used {percent}% of your data — {country}",
+            "title": "You're running low on data",
+            "body": "Hello, {name}! You've used <strong>{percent}%</strong> of your data package for {country}.",
+            "cta": "Top up data →",
+            "note": "If no compatible top-up is available, you can choose a new package for the same destination.",
+        },
+        "de": {
+            "subject": "Sie haben {percent}% Ihres Datenvolumens verbraucht — {country}",
+            "title": "Ihr Datenvolumen wird knapp",
+            "body": "Hallo {name}! Sie haben <strong>{percent}%</strong> Ihres Datenpakets für {country} verbraucht.",
+            "cta": "Daten aufladen →",
+            "note": "Falls keine passende Aufladung verfügbar ist, können Sie ein neues Paket für dasselbe Reiseziel wählen.",
+        },
+        "tr": {
+            "subject": "Verinizin %{percent} kadarını kullandınız — {country}",
+            "title": "Veriniz azalıyor",
+            "body": "Merhaba {name}! {country} paketinizin <strong>%{percent}</strong> kadarını kullandınız.",
+            "cta": "Veri yükle →",
+            "note": "Uygun bir ek paket yoksa aynı destinasyon için yeni bir paket seçebilirsiniz.",
+        },
+        "es": {
+            "subject": "Has usado el {percent}% de tus datos — {country}",
+            "title": "Te quedan pocos datos",
+            "body": "¡Hola, {name}! Has usado el <strong>{percent}%</strong> de tu paquete de datos para {country}.",
+            "cta": "Recargar datos →",
+            "note": "Si no hay una recarga compatible, puedes elegir un nuevo paquete para el mismo destino.",
+        },
+    }
+    t = translations.get(lang, translations["en"])
+    safe_name = html.escape(full_name or "")
+    safe_country = html.escape(country or "")
+    safe_iccid = html.escape(iccid or "")
+    safe_url = html.escape(topup_url, quote=True)
+    percent_text = f"{float(percent_used):g}"
+    subject = t["subject"].format(percent=percent_text, country=country)
+    body_text = t["body"].format(name=safe_name, percent=percent_text, country=safe_country)
+    html_body = f"""
+    <!doctype html><html lang="{html.escape(lang)}"><head><meta charset="utf-8"></head>
+    <body style="margin:0;padding:24px;background:#f3f4f6;font-family:Arial,sans-serif">
+      <div style="max-width:540px;margin:20px auto;background:#fff;border-radius:16px;overflow:hidden">
+        <div style="background:#1e40af;padding:28px;text-align:center;color:#fff">
+          <h1 style="margin:0;font-size:24px">BG eSIM</h1>
+          <p style="margin:8px 0 0;color:#dbeafe">{t["title"]}</p>
+        </div>
+        <div style="padding:30px;text-align:center;color:#1f2937">
+          <p style="font-size:16px;line-height:1.6">{body_text}</p>
+          <p style="font-size:12px;color:#6b7280">ICCID: {safe_iccid}</p>
+          <a href="{safe_url}" style="display:inline-block;margin:16px 0;background:#2563eb;color:#fff;text-decoration:none;font-weight:bold;padding:15px 24px;border-radius:10px">{t["cta"]}</a>
+          <p style="font-size:13px;line-height:1.6;color:#6b7280">{t["note"]}</p>
+        </div>
+        <div style="padding:18px;text-align:center;background:#f9fafb;color:#9ca3af;font-size:12px">
+          BG eSIM · <a href="mailto:{html.escape(settings.SUPPORT_EMAIL, quote=True)}">{html.escape(settings.SUPPORT_EMAIL)}</a>
+        </div>
+      </div>
+    </body></html>
+    """
+    recipient = settings.SUPPORT_EMAIL if getattr(settings, "APP_ENV", "production") == "development" and settings.SUPPORT_EMAIL else to_email
+    _send_via_brevo(recipient, subject, html_body)

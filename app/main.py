@@ -1,6 +1,8 @@
 from collections import defaultdict
 from datetime import datetime, timedelta
 import secrets
+import html
+import hashlib
 import sqlite3
 import time
 from fastapi import FastAPI, Query, Request, Cookie, Form, HTTPException, BackgroundTasks, UploadFile, File
@@ -10,6 +12,7 @@ from fastapi.templating import Jinja2Templates
 from passlib.context import CryptContext
 from starlette.middleware.sessions import SessionMiddleware
 from app.api.client import check_balance, get_packages, query_esim_usage
+from app.api.topup import get_topup_packages, topup_esim, TopUpError
 from app.services.esim import order_esim
 from app.europe import (
     EUROPE_PLANS,
@@ -419,6 +422,24 @@ def process_webhook_data(event, base_url):
         meta = dict(stripe_session.get("metadata") or {})
 
         print(f"[BACKGROUND TASK] 🔍 Metadata: {meta}")
+
+        # Top-up checkout: fulfill only after Stripe confirms payment.
+        if meta.get("purchase_type") == "topup":
+            if stripe_session.get("payment_status") != "paid":
+                print(f"[TOPUP] Payment not confirmed for session {session_id}; skipping.")
+                return
+            try:
+                stable_txn = "bgesim-" + hashlib.sha256(session_id.encode("utf-8")).hexdigest()[:40]
+                result = topup_esim(
+                    package_code=meta.get("topup_package_code", ""),
+                    iccid=meta.get("iccid", ""),
+                    esim_tran_no=meta.get("esim_tran_no", ""),
+                    transaction_id=stable_txn,
+                )
+                print(f"[TOPUP] Provider accepted top-up for session {session_id}: {result}")
+            except Exception as e:
+                print(f"[TOPUP] ❌ Paid top-up failed; manual reconciliation required for {session_id}: {e}")
+            return
 
         if not meta.get("package_slug"):
             print("[BACKGROUND TASK] ⚠️ Липсва package_slug в metadata!")
@@ -1692,6 +1713,129 @@ def get_sitemap(request: Request):
     sitemap_xml += "</urlset>"
 
     return Response(content=sitemap_xml, media_type="application/xml")
+
+
+@app.get("/topup/{iccid}", response_class=HTMLResponse)
+def topup_page(request: Request, iccid: str, lang: str = Cookie(default="en")):
+    """Show compatible top-up offers; if none exist, link to new packages for this destination."""
+    order = get_order_by_iccid(iccid)
+    if not order or order.get("status") != "completed":
+        raise HTTPException(status_code=404, detail="eSIM поръчката не е намерена.")
+
+    country = str(order.get("country") or "")
+    country_url = "/search?country=" + urllib.parse.quote(country, safe="")
+    title = "Дозареждане на интернет" if lang == "bg" else "Top up data"
+    try:
+        packages = get_topup_packages(iccid=iccid, package_code=str(order.get("package_slug") or ""))
+    except Exception as exc:
+        print(f"[TOPUP] Package lookup failed for order {order.get('id')}: {exc}")
+        packages = None
+
+    styles = "font-family:Arial,sans-serif;max-width:680px;margin:48px auto;padding:24px;color:#1f2937"
+    if packages:
+        cards = []
+        for package in packages:
+            code = str(package.get("packageCode") or package.get("slug") or "")
+            if not code:
+                continue
+            name = html.escape(str(package.get("name") or package.get("description") or "Internet package"))
+            volume = package.get("volume")
+            if isinstance(volume, (int, float)) and volume > 0:
+                volume_label = f"{volume / (1024 ** 3):g} GB" if volume > 1024 else f"{volume:g} MB"
+            else:
+                volume_label = ""
+            duration = package.get("duration") or package.get("periodNum") or ""
+            price_raw = package.get("price")
+            price_label = ""
+            try:
+                price_eur = round((float(price_raw) / 10000) * USD_TO_EUR * MARGIN_COEFFICIENT, 2)
+                price_label = f"€{price_eur:.2f}"
+            except (TypeError, ValueError):
+                pass
+            cards.append(
+                f'<form method="post" action="/topup/{urllib.parse.quote(iccid, safe="")}/pay" '
+                'style="border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin:12px 0">'
+                f'<h3>{name}</h3><p>{html.escape(volume_label)} '
+                f'{("· " + html.escape(str(duration)) + " days") if duration else ""} '
+                f'{("· " + price_label) if price_label else ""}</p>'
+                f'<input type="hidden" name="package_code" value="{html.escape(code, quote=True)}">'
+                '<button type="submit" style="background:#2563eb;color:white;border:0;padding:12px 18px;border-radius:8px;cursor:pointer">Избери пакет и плати</button></form>'
+            )
+        if cards:
+            body = "<p>Избери съвместим пакет за съществуващата си eSIM.</p>" + "".join(cards)
+        else:
+            packages = None
+    if not packages:
+        body = (
+            '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:20px">'
+            '<h2>Няма налични пакети за дозареждане</h2>'
+            '<p>За съжаление, в момента няма съвместими пакети за дозареждане на тази eSIM. '
+            'Можете да изберете нов интернет пакет за вашата дестинация.</p>'
+            f'<a href="{country_url}" style="display:inline-block;background:#2563eb;color:white;text-decoration:none;padding:14px 20px;border-radius:9px;font-weight:bold">Купи нов пакет за дестинацията</a>'
+            '</div>'
+        )
+    return HTMLResponse(
+        f'<!doctype html><html lang="{html.escape(lang)}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
+        f'<title>{html.escape(title)}</title><body style="{styles}"><h1>{html.escape(title)}</h1>{body}'
+        f'<p style="margin-top:28px;color:#6b7280">BG eSIM · <a href="mailto:{html.escape(settings.SUPPORT_EMAIL, quote=True)}">Поддръжка</a></p></body></html>'
+    )
+
+
+@app.post("/topup/{iccid}/pay")
+def start_topup_payment(
+    request: Request,
+    iccid: str,
+    package_code: str = Form(...),
+    lang: str = Cookie(default="en"),
+):
+    order = get_order_by_iccid(iccid)
+    if not order or order.get("status") != "completed":
+        raise HTTPException(status_code=404, detail="eSIM поръчката не е намерена.")
+    try:
+        packages = get_topup_packages(iccid=iccid, package_code=str(order.get("package_slug") or ""))
+    except Exception as exc:
+        print(f"[TOPUP] Could not revalidate package before checkout: {exc}")
+        raise HTTPException(status_code=503, detail="Пакетите временно не са достъпни. Опитайте отново.")
+    selected = next((p for p in packages if str(p.get("packageCode") or p.get("slug") or "") == package_code), None)
+    if not selected:
+        raise HTTPException(status_code=400, detail="Този пакет вече не е наличен. Обновете страницата.")
+    try:
+        price_eur = round((float(selected["price"]) / 10000) * USD_TO_EUR * MARGIN_COEFFICIENT, 2)
+    except (KeyError, TypeError, ValueError):
+        raise HTTPException(status_code=503, detail="Не може да бъде потвърдена цената на пакета.")
+    if price_eur <= 0:
+        raise HTTPException(status_code=400, detail="Невалидна цена на пакета.")
+
+    package_name = str(selected.get("name") or selected.get("description") or "eSIM top-up")
+    volume = selected.get("volume", "")
+    duration = selected.get("duration") or selected.get("periodNum") or ""
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "eur",
+                "unit_amount": int(round(price_eur * 100)),
+                "product_data": {
+                    "name": f"BG eSIM top-up - {package_name}",
+                    "description": f"{volume} / {duration} days",
+                },
+            },
+            "quantity": 1,
+        }],
+        mode="payment",
+        customer_email=order.get("email") or None,
+        metadata={
+            "purchase_type": "topup",
+            "topup_package_code": package_code,
+            "iccid": iccid,
+            "esim_tran_no": str(order.get("esim_tran_no") or ""),
+            "country": str(order.get("country") or ""),
+            "lang": lang,
+        },
+        success_url=str(request.base_url) + "success?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url=str(request.base_url) + "topup/" + urllib.parse.quote(iccid, safe=""),
+    )
+    return RedirectResponse(url=session.url, status_code=303)
 
 
 if __name__ == "__main__":
