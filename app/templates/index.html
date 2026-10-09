@@ -36,7 +36,7 @@
                 </div>
             </a>
 
-            <!-- Бутон за мобилно меню (показва се само на телефон) -->
+            <!-- Бутон за мобилно меню (показва се само на мобилни устройства) -->
             <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none xl:hidden ml-auto" aria-label="Toggle Menu">
                 <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -48,7 +48,7 @@
         <div class="hidden xl:flex items-center justify-between pt-2.5">
             <nav class="flex items-center gap-5 text-sm font-medium">
                 <a href="/" class="text-white/90 hover:text-white transition whitespace-nowrap">🏠 Home</a>
-                <a href="/search?country=Europe" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
+                <a href="/europe" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
                     <span>🇪🇺 Europe</span>
                     <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
                 </a>
@@ -78,7 +78,7 @@
     <div id="mobile-menu" class="hidden xl:hidden bg-blue-900 border-t border-blue-800 px-4 pt-3 pb-6 space-y-3">
         <div class="flex flex-col gap-2">
             <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">🏠 Home</a>
-            <a href="/search?country=Europe" class="px-3 py-2 rounded-lg text-sm font-bold text-amber-300 hover:bg-blue-800 flex items-center justify-between">
+            <a href="/europe" class="px-3 py-2 rounded-lg text-sm font-bold text-amber-300 hover:bg-blue-800 flex items-center justify-between">
                 <span>🇪🇺 Europe</span>
                 <span class="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">35+</span>
             </a>
@@ -110,26 +110,26 @@
     <section class="premium-hero mb-8">
         <div class="premium-hero-inner">
             <div class="premium-copy">
-                <span class="hero-badge">Travel without borders</span>
-                <h2>Stay connected in 190+ countries</h2>
-                <p>Buy an eSIM in minutes, activate instantly, and enjoy fast data with no roaming surprises.</p>
+                <span class="hero-badge">{{ t.hero_badge | default('Travel without borders') }}</span>
+                <h2>{{ t.hero_title | default('Stay connected in 190+ countries') }}</h2>
+                <p>{{ t.hero_subtitle | default('Buy an eSIM in minutes, activate instantly, and enjoy fast data with no roaming surprises.') }}</p>
                 <div class="hero-highlights">
-                    <span>⚡ Instant activation</span>
-                    <span>🔒 Reliable coverage</span>
-                    <span>💸 No hidden fees</span>
+                    <span>{{ t.hero_feat1 | default('⚡ Instant activation') }}</span>
+                    <span>{{ t.hero_feat2 | default('🔒 Reliable coverage') }}</span>
+                    <span>{{ t.hero_feat3 | default('💸 No hidden fees') }}</span>
                 </div>
             </div>
             <div class="hero-visual">
                 <div class="mini-card globe-card">
-                    <span class="mini-label">Best value</span>
+                    <span class="mini-label">{{ t.hero_best_value | default('Best value') }}</span>
                     <div class="globe-mark">🌍</div>
-                    <strong>Europe</strong>
-                    <small>35+ destinations</small>
+                    <strong>{{ t.hero_europe | default('Europe') }}</strong>
+                    <small>{{ t.hero_destinations | default('35+ destinations') }}</small>
                 </div>
                 <div class="mini-card stat-card">
-                    <span>Avg. savings</span>
-                    <strong>Up to 70%</strong>
-                    <small>vs roaming</small>
+                    <span>{{ t.hero_savings_label | default('Avg. savings') }}</span>
+                    <strong>{{ t.hero_savings_val | default('Up to 70%') }}</strong>
+                    <small>{{ t.hero_vs_roaming | default('vs roaming') }}</small>
                 </div>
             </div>
         </div>
@@ -174,54 +174,54 @@
     </section>
 
     <section class="mb-10 sm:mb-12 w-full">
-        <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Popular Regions</h3>
+        <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">{{ t.popular_regions | default('Popular Regions') }}</h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <a href="/search?country=Europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
+            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
                 <div class="absolute top-3 right-3">
-                    <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm">⭐ Best Value</span>
+                    <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm">{{ t.best_value_badge | default('⭐ Best Value') }}</span>
                 </div>
                 <div>
                     <span class="text-4xl block mb-2">🇪🇺</span>
-                    <h4 class="text-lg sm:text-xl font-black text-gray-800 group-hover:text-amber-700 transition">Europe</h4>
-                    <p class="text-xs sm:text-sm font-bold text-amber-900 mt-1">35+ Countries</p>
-                    <p class="text-xs text-gray-600 mt-1">EU, UK, Switzerland & more</p>
+                    <h4 class="text-lg sm:text-xl font-black text-gray-800 group-hover:text-amber-700 transition">{{ t.region_europe | default('Europe') }}</h4>
+                    <p class="text-xs sm:text-sm font-bold text-amber-900 mt-1">{{ t.region_europe_sub | default('35+ Countries') }}</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ t.region_europe_desc | default('EU, UK, Switzerland & more') }}</p>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-amber-700 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    Explore <span>→</span>
+                    {{ t.explore | default('Explore') }} <span>→</span>
                 </div>
             </a>
 
             <a href="/search?country=Thailand" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
                 <div>
                     <span class="text-4xl block mb-2">🌏</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Asia</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Thailand, Vietnam, Japan</p>
+                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_asia | default('Asia') }}</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_asia_desc | default('Thailand, Vietnam, Japan') }}</p>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    Explore <span>→</span>
+                    {{ t.explore | default('Explore') }} <span>→</span>
                 </div>
             </a>
 
             <a href="/search?country=Turkey" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
                 <div>
                     <span class="text-4xl block mb-2">🌍</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Middle East</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">Turkey, UAE, Saudi Arabia</p>
+                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_me | default('Middle East') }}</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_me_desc | default('Turkey, UAE, Saudi Arabia') }}</p>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    Explore <span>→</span>
+                    {{ t.explore | default('Explore') }} <span>→</span>
                 </div>
             </a>
 
             <a href="/search?country=USA" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
                 <div>
                     <span class="text-4xl block mb-2">🌎</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Americas</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">USA, Canada, Mexico</p>
+                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_americas | default('Americas') }}</h4>
+                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_americas_desc | default('USA, Canada, Mexico') }}</p>
                 </div>
                 <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    Explore <span>→</span>
+                    {{ t.explore | default('Explore') }} <span>→</span>
                 </div>
             </a>
         </div>
@@ -455,7 +455,13 @@
         const val = document.getElementById("country-input").value.trim();
         if (val) {
             showLoader();
-            window.location.href = "/search?country=" + encodeURIComponent(val);
+            const lowerVal = val.toLowerCase();
+            // Пренасочване към /europe при търсене на Европа
+            if (lowerVal === "europe" || lowerVal === "европа" || lowerVal === "eu") {
+                window.location.href = "/europe";
+            } else {
+                window.location.href = "/search?country=" + encodeURIComponent(val);
+            }
         }
     }
 
