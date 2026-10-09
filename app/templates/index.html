@@ -1,533 +1,467 @@
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ t.site_title }}</title>
-
-    {% if lang == 'bg' %}
-    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути и надеждна мобилна връзка по целия свят.">
-    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, eSIM за пътуване">
-    {% else %}
-    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data worldwide.">
-    <meta name="keywords" content="esim bulgaria, cheap data abroad, esim turkey, travel esim data, cheap roaming worldwide">
-    {% endif %}
-
-    <meta property="og:title" content="{{ t.site_title }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://bgesim.bg/">
-    <meta property="og:image" content="/static/images/logo.png">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ t.site_title }}</title>
+  {% if lang == 'bg' %}
+  <meta name="description" content="Избери eSIM план за пътуването си с BGeSIM. Разгледай наличните дестинации, мобилни данни и срокове на валидност.">
+  {% elif lang == 'de' %}
+  <meta name="description" content="Finde mit BGeSIM einen eSIM-Datentarif für deine Reise. Entdecke verfügbare Reiseziele, Datenvolumen und Laufzeiten.">
+  {% elif lang == 'tr' %}
+  <meta name="description" content="BGeSIM ile seyahatin için bir eSIM planı seç. Mevcut destinasyonları, veri miktarını ve geçerlilik sürelerini incele.">
+  {% elif lang == 'es' %}
+  <meta name="description" content="Elige un plan eSIM para tu viaje con BGeSIM. Consulta los destinos, los datos y la validez disponibles.">
+  {% else %}
+  <meta name="description" content="Choose a travel eSIM plan with BGeSIM. Explore available destinations, data allowances and validity periods.">
+  {% endif %}
+  <meta property="og:title" content="{{ t.site_title }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bgesim.bg/">
+  <meta property="og:image" content="https://bgesim.bg/static/images/logo.png">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col overflow-x-hidden">
-
-<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
-        
-        <!-- ГОРЕН РЕД: Лого отляво, Езици и Бутон за меню отдясно -->
-        <div class="flex items-center justify-between gap-3">
-            
-            <!-- Лого -->
-            <a href="/" class="flex items-center gap-2.5 shrink-0">
-                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
-                <div>
-                    <h1 class="text-sm sm:text-xl font-extrabold tracking-tight leading-none text-white whitespace-nowrap">{{ t.site_title }}</h1>
-                    <p class="text-[10px] sm:text-xs text-blue-200 opacity-90 mt-0.5 hidden sm:block">{{ t.site_subtitle }}</p>
-                </div>
-            </a>
-
-            <!-- ДЯСНА ЧАСТ: Езици с флагове + Бутон за меню -->
-            <div class="flex items-center gap-2">
-                
-                <!-- Езици с флагове (винаги видими) -->
-                <div class="flex items-center gap-1 bg-blue-950/40 p-1 rounded-xl border border-blue-600/40">
-                    {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
-                    {% for code, label in supported_langs.items() %}
-                    <a href="{{ lang_urls[code] }}"
-                       class="px-2 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap flex items-center gap-1
-                       {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-100 hover:text-white{% endif %}"
-                       title="{{ label }}">
-                        <span>{{ flags.get(code, '🌐') }}</span>
-                        <span class="hidden md:inline">{{ label[:2].upper() }}</span>
-                    </a>
-                    {% endfor %}
-                </div>
-
-                <!-- Бутон за падащо меню (Гамбургер) -->
-                <button type="button" onclick="toggleMobileMenu()" 
-                        class="p-2.5 rounded-xl bg-blue-800/80 hover:bg-blue-700 text-white focus:outline-none transition shadow-sm border border-blue-600/50" 
-                        aria-label="Toggle Menu">
-                    <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-
-            </div>
-        </div>
-
-        <!-- ДЕСКТОП НАВИГАЦИЯ (Само за големи екрани) -->
-        <div class="hidden xl:flex items-center justify-center gap-3 pt-3 border-t border-blue-600/40 mt-3">
-            <nav class="flex items-center gap-3 text-sm font-medium">
-                <a href="/" class="text-white/90 hover:text-white transition px-3 py-1.5 rounded-xl hover:bg-blue-700/60">🏠 Home</a>
-                <a href="/europe" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
-                    <span>🇪🇺 Europe</span>
-                    <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
-                </a>
-                <a href="/instructions" class="text-white/90 hover:text-white transition px-3 py-1.5 rounded-xl hover:bg-blue-700/60">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-                <a href="/contacts" class="text-white/90 hover:text-white transition px-3 py-1.5 rounded-xl hover:bg-blue-700/60">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-                <a href="/faq" class="text-white/90 hover:text-white transition px-3 py-1.5 rounded-xl hover:bg-blue-700/60">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition">
-                    🤝 <span>{{ t.partner_area_btn }}</span>
-                </a>
-            </nav>
-        </div>
-
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand" aria-label="{{ t.site_title }}">
+      <img class="brand-logo" src="/static/images/logo.png" alt="{{ t.site_title }}">
+      <span class="brand-copy">
+        <span class="brand-name">{{ t.site_title }}</span>
+        <span class="brand-tagline">{{ t.site_subtitle }}</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="/">{{ t.nav_home | default('Home') }}</a>
+        <a href="/europe">{{ t.region_europe | default('Europe') }}</a>
+        <a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a>
+        <a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+      <nav class="language-nav" aria-label="Language">
+        {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
+        {% for code, label in supported_langs.items() %}
+        <a href="{{ lang_urls[code] }}" lang="{{ code }}" title="{{ label }}" {% if lang == code %}aria-current="page"{% endif %}>
+          <span aria-hidden="true">{{ flags.get(code, '🌐') }}</span><span>{{ code.upper() }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobile-menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"></path>
+        </svg>
+      </button>
     </div>
-
-    <!-- МОБИЛНО ПАДАЩО МЕНЮ (Съдържа всички линкове, скрити по подразбиране) -->
-    <div id="mobile-menu" class="hidden bg-blue-950/95 backdrop-blur-md border-t border-blue-800/80 px-4 pt-3 pb-5 space-y-2 shadow-2xl">
-        <div class="flex flex-col gap-1.5">
-            <a href="/" class="px-3.5 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-blue-900 flex items-center gap-3"><span>🏠</span> Home</a>
-            <a href="/europe" class="px-3.5 py-2.5 rounded-xl text-sm font-bold text-amber-300 hover:bg-blue-900 flex items-center justify-between">
-                <span class="flex items-center gap-3"><span>🇪🇺</span> Europe</span>
-                <span class="text-xs bg-amber-400/20 px-2.5 py-0.5 rounded-full">35+</span>
-            </a>
-            <a href="/instructions" class="px-3.5 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-blue-900 flex items-center gap-3"><span>📖</span> {{ t.nav_instructions | default('Инструкции') }}</a>
-            <a href="/contacts" class="px-3.5 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-blue-900 flex items-center gap-3"><span>📞</span> {{ t.nav_contacts | default('Контакти') }}</a>
-            <a href="/faq" class="px-3.5 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-blue-900 flex items-center gap-3"><span>❓</span> {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-            <a href="/partner/login" class="px-3.5 py-2.5 rounded-xl text-sm font-bold text-amber-300 hover:bg-blue-900 flex items-center gap-3 mt-1 border border-amber-500/30">
-                <span>🤝</span> <span>{{ t.partner_area_btn }}</span>
-            </a>
-        </div>
-    </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-menu" aria-label="Mobile navigation">
+    <a href="/">{{ t.nav_home | default('Home') }}</a>
+    <a href="/europe">{{ t.region_europe | default('Europe') }}</a>
+    <a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a>
+    <a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a>
+    <a href="/faq">FAQ</a>
+    <a href="/partner/login">{{ t.partner_area_btn }}</a>
+  </nav>
 </header>
 
-<script>
-    function toggleMobileMenu() {
-        const menu = document.getElementById('mobile-menu');
-        menu.classList.toggle('hidden');
-    }
-</script>
-
-<script>
-    function toggleMobileMenu() {
-        const menu = document.getElementById('mobile-menu');
-        menu.classList.toggle('hidden');
-    }
-</script>
-
-<script>
-    function toggleMobileMenu() {
-        const menu = document.getElementById('mobile-menu');
-        menu.classList.toggle('hidden');
-    }
-</script>
-
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex-grow w-full">
-
-    <section class="premium-hero mb-8">
-        <div class="premium-hero-inner">
-            <div class="premium-copy">
-                <span class="hero-badge">{{ t.hero_badge | default('Travel without borders') }}</span>
-                <h2>{{ t.hero_title | default('Stay connected in 190+ countries') }}</h2>
-                <p>{{ t.hero_subtitle | default('Buy an eSIM in minutes, activate instantly, and enjoy fast data with no roaming surprises.') }}</p>
-                <div class="hero-highlights">
-                    <span>{{ t.hero_feat1 | default('⚡ Instant activation') }}</span>
-                    <span>{{ t.hero_feat2 | default('🔒 Reliable coverage') }}</span>
-                    <span>{{ t.hero_feat3 | default('💸 No hidden fees') }}</span>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="mini-card globe-card">
-                    <span class="mini-label">{{ t.hero_best_value | default('Best value') }}</span>
-                    <div class="globe-mark">🌍</div>
-                    <strong>{{ t.hero_europe | default('Europe') }}</strong>
-                    <small>{{ t.hero_destinations | default('35+ destinations') }}</small>
-                </div>
-                <div class="mini-card stat-card">
-                    <span>{{ t.hero_savings_label | default('Avg. savings') }}</span>
-                    <strong>{{ t.hero_savings_val | default('Up to 70%') }}</strong>
-                    <small>{{ t.hero_vs_roaming | default('vs roaming') }}</small>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="bg-white rounded-2xl sm:rounded-3xl shadow-md p-4 sm:p-6 lg:p-8 mb-8 border border-gray-100 w-full">
-        <h2 class="text-base sm:text-lg font-bold text-gray-700 mb-3 sm:mb-4 flex items-center gap-2">
-            <span>🔍</span> {{ t.search_title }}
-        </h2>
-
-        <div class="relative" id="search-wrapper">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <div class="relative flex-1">
-                    <input
-                        type="text"
-                        id="country-input"
-                        name="country"
-                        placeholder="{{ t.search_placeholder }}"
-                        value="{{ selected_country }}"
-                        autocomplete="off"
-                        class="w-full px-4 py-3.5 border border-gray-200 rounded-xl sm:rounded-2xl text-sm sm:text-base focus:outline-none focus:border-blue-600 transition pr-10 shadow-sm"
-                        oninput="onSearchInput(this.value)"
-                        onkeydown="onSearchKeydown(event)"
-                        onfocus="onSearchInput(this.value)"
-                    >
-                    <button type="button" id="clear-btn" onclick="clearSearch()"
-                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg p-1 leading-none {% if not selected_country %}hidden{% endif %}">✕</button>
-
-                    <ul id="suggestions-list"
-                        class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto hidden divide-y divide-gray-50"></ul>
-                </div>
-
-                <button type="button" onclick="submitSearch()"
-                    class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg transition shrink-0">
-                    🔍 {{ t.search_btn }}
-                </button>
-            </div>
-        </div>
-        <p class="mt-3 text-xs text-gray-400 flex items-center gap-1">
-            <span>💡</span> {{ t.search_hint }}
-        </p>
-    </section>
-
-    <section class="mb-10 sm:mb-12 w-full">
-        <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">{{ t.popular_regions | default('Popular Regions') }}</h3>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
-                <div class="absolute top-3 right-3">
-                    <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm">{{ t.best_value_badge | default('⭐ Best Value') }}</span>
-                </div>
-                <div>
-                    <span class="text-4xl block mb-2">🇪🇺</span>
-                    <h4 class="text-lg sm:text-xl font-black text-gray-800 group-hover:text-amber-700 transition">{{ t.region_europe | default('Europe') }}</h4>
-                    <p class="text-xs sm:text-sm font-bold text-amber-900 mt-1">{{ t.region_europe_sub | default('35+ Countries') }}</p>
-                    <p class="text-xs text-gray-600 mt-1">{{ t.region_europe_desc | default('EU, UK, Switzerland & more') }}</p>
-                </div>
-                <div class="mt-4 flex items-center gap-1.5 text-amber-700 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    {{ t.explore | default('Explore') }} <span>→</span>
-                </div>
-            </a>
-
-            <a href="/search?country=Thailand" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
-                <div>
-                    <span class="text-4xl block mb-2">🌏</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_asia | default('Asia') }}</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_asia_desc | default('Thailand, Vietnam, Japan') }}</p>
-                </div>
-                <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    {{ t.explore | default('Explore') }} <span>→</span>
-                </div>
-            </a>
-
-            <a href="/search?country=Turkey" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
-                <div>
-                    <span class="text-4xl block mb-2">🌍</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_me | default('Middle East') }}</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_me_desc | default('Turkey, UAE, Saudi Arabia') }}</p>
-                </div>
-                <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    {{ t.explore | default('Explore') }} <span>→</span>
-                </div>
-            </a>
-
-            <a href="/search?country=USA" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
-                <div>
-                    <span class="text-4xl block mb-2">🌎</span>
-                    <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">{{ t.region_americas | default('Americas') }}</h4>
-                    <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ t.region_americas_desc | default('USA, Canada, Mexico') }}</p>
-                </div>
-                <div class="mt-4 flex items-center gap-1.5 text-blue-600 font-bold text-xs sm:text-sm group-hover:gap-2.5 transition-all">
-                    {{ t.explore | default('Explore') }} <span>→</span>
-                </div>
-            </a>
-        </div>
-    </section>
-
-    {% if groups is none %}
-    <section class="mb-10 sm:mb-12 w-full" id="esim-section">
-        <div class="text-center max-w-2xl mx-auto mb-8">
-            <h2 class="text-xl sm:text-3xl font-black text-gray-800">
-                {{ t.esim_what_title | default('Какво е eSIM и как работи?') }}
-            </h2>
-            <p class="text-xs sm:text-base text-gray-500 mt-2">
-                {{ t.esim_what_subtitle | default('Модерна технология за пътуване без граници') }}
-            </p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">📱</div>
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg mb-2">{{ t.esim_card1_title | default('Дигитална технология') }}</h3>
-                    <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">{{ t.esim_card1_text | default('eSIM е дигитална SIM карта, вградена директно в телефона ви.') }}</p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                    <span class="text-xs text-blue-600 font-bold">{{ t.esim_card1_tag | default('100% дигитален') }}</span>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">🔄</div>
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg mb-2">{{ t.esim_card2_title | default('Две карти едновременно') }}</h3>
-                    <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">{{ t.esim_card2_text | default('Вашият личен номер остава активен, докато използвате eSIM за данни.') }}</p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-xs text-emerald-600 font-bold">{{ t.esim_card2_tag | default('Dual SIM') }}</span>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
-                <div>
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">💸</div>
-                    <h3 class="font-bold text-gray-800 text-base sm:text-lg mb-2">{{ t.esim_card3_title | default('Спестява време и пари') }}</h3>
-                    <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">{{ t.esim_card3_text | default('Спирате скъпия роуминг и имате интернет веднага след активиране.') }}</p>
-                </div>
-                <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                    <span class="text-xs text-purple-600 font-bold">{{ t.esim_card3_tag | default('Без роуминг такси') }}</span>
-                </div>
-            </div>
-        </div>
-    </section>
-    {% endif %}
-
-    <div id="loader" class="hidden text-center py-16">
-        <div class="inline-block w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-        <p class="text-gray-500 text-sm font-medium">{{ t.loading }}</p>
-    </div>
-
-    <div id="content" class="w-full">
-        {% if error %}
-        <div class="bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-2xl mb-6 text-sm font-medium">
-            ⚠️ {{ error }}
-        </div>
-
-        {% elif groups is none %}
-        <div class="text-center py-12 sm:py-16 bg-white rounded-3xl border border-gray-100 shadow-sm my-6">
-            <div class="text-5xl sm:text-6xl mb-4">🌐</div>
-            <h2 class="text-lg sm:text-2xl font-bold text-gray-700 mb-2">{{ t.welcome_title }}</h2>
-            <p class="text-xs sm:text-sm text-gray-400 max-w-md mx-auto px-4">{{ t.welcome_text }}</p>
-        </div>
-
+<main class="page-shell">
+  <section class="hero">
+    <div class="hero-panel">
+      <div>
+        <span class="eyebrow"><span class="eyebrow-dot"></span>{% if lang == 'bg' %}eSIM за пътуване{% elif lang == 'de' %}Reise-eSIM{% elif lang == 'tr' %}Seyahat eSIM{% elif lang == 'es' %}eSIM para viajar{% else %}Travel eSIM{% endif %}</span>
+        {% if lang == 'bg' %}
+        <h1>Пътувай свободно.<br><span>Остани свързан.</span></h1>
+        <p class="hero-copy">Избери eSIM план за дестинацията си и разгледай наличните данни, срок на валидност и цена на едно място.</p>
+        {% elif lang == 'de' %}
+        <h1>Reise frei.<br><span>Bleib verbunden.</span></h1>
+        <p class="hero-copy">Finde einen eSIM-Tarif für dein Reiseziel und vergleiche verfügbare Daten, Laufzeiten und Preise an einem Ort.</p>
+        {% elif lang == 'tr' %}
+        <h1>Özgürce seyahat et.<br><span>Bağlantıda kal.</span></h1>
+        <p class="hero-copy">Destinasyonuna uygun bir eSIM planı bul; mevcut verileri, geçerlilik sürelerini ve fiyatları tek yerde karşılaştır.</p>
+        {% elif lang == 'es' %}
+        <h1>Viaja a tu manera.<br><span>Sigue conectado.</span></h1>
+        <p class="hero-copy">Encuentra un plan eSIM para tu destino y consulta los datos, la validez y los precios disponibles en un solo lugar.</p>
         {% else %}
-
-        {% if resolved_code %}
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 sm:px-5 py-3 rounded-2xl mb-6 text-xs sm:text-sm font-semibold flex items-center gap-2">
-            <span>✅</span>
-            <span>{{ t.found }} <strong>{{ total }}</strong> {{ t.packages_for }} „{{ selected_country }}" ({{ resolved_code }})</span>
-        </div>
+        <h1>Travel your way.<br><span>Stay connected.</span></h1>
+        <p class="hero-copy">Choose an eSIM plan for your destination and compare available data, validity periods and prices in one place.</p>
         {% endif %}
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-            {% for col_key, col_label, col_color in [
-                ("7",  t.col_7,  "bg-purple-100 text-purple-800 border-purple-200"),
-                ("15", t.col_15, "bg-blue-100 text-blue-800 border-blue-200"),
-                ("30", t.col_30, "bg-emerald-100 text-emerald-800 border-emerald-200")
-            ] %}
-            <div class="flex flex-col">
-                <div class="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
-                    <span class="{{ col_color }} border text-xs font-black px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                        📅 {{ col_label }}
-                    </span>
-                    <span class="text-gray-400 text-xs font-semibold">({{ groups[col_key]|length }} {{ t.packages }})</span>
-                </div>
-
-                {% if groups[col_key] %}
-                    <div class="space-y-4">
-                    {% for p in groups[col_key] %}
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-md border border-gray-100 p-4 sm:p-5 transition hover:-translate-y-0.5 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start gap-2 mb-3">
-                                <h3 class="font-bold text-sm sm:text-base text-gray-800 leading-snug">{{ p.name }}</h3>
-                                {% if p.dataType == 2 %}
-                                <span class="text-[10px] sm:text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold shrink-0">{{ t.label_daily }}</span>
-                                {% else %}
-                                <span class="text-[10px] sm:text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-bold shrink-0">{{ t.label_total }}</span>
-                                {% endif %}
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-2 bg-gray-50 p-2.5 rounded-xl mb-3">
-                                <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider">{{ t.label_data }}</p>
-                                    <p class="font-black text-gray-800 text-sm sm:text-base">{{ p.volume_gb }} GB</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-extrabold tracking-wider">{{ t.label_validity }}</p>
-                                    <p class="font-black text-gray-800 text-sm sm:text-base">{{ p.duration }} {{ t.days }}</p>
-                                </div>
-                            </div>
-
-                            <div class="flex gap-1 flex-wrap mb-4">
-                                {% for s in p.speed.split('/') %}
-                                <span class="text-[10px] bg-orange-50 text-orange-600 font-bold px-2 py-0.5 rounded border border-orange-100">{{ s }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 mt-auto">
-                            <div>
-                                <p class="text-xs text-gray-400 font-semibold leading-none">Total</p>
-                                <p class="text-lg sm:text-xl font-black text-blue-600">€{{ "%.2f"|format(p.price_eur) }}</p>
-                            </div>
-                            <a href="/checkout?package_slug={{ p.slug }}&country={{ p.country_name }}&duration={{ p.duration }}&gb={{ p.volume_gb }}&price_eur={{ p.price_eur }}"
-                               class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow transition active:scale-95">
-                                {{ t.buy_btn }}
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="bg-white rounded-2xl p-6 text-center text-gray-400 text-xs sm:text-sm border border-dashed border-gray-200">
-                        {{ t.no_packages }} {{ col_label }}
-                    </div>
-                {% endif %}
-            </div>
-            {% endfor %}
+        <div class="hero-proof">
+          <span><b aria-hidden="true">✓</b>{% if lang == 'bg' %}Дигитална SIM карта{% elif lang == 'de' %}Digitale SIM{% elif lang == 'tr' %}Dijital SIM{% elif lang == 'es' %}SIM digital{% else %}Digital SIM{% endif %}</span>
+          <span><b aria-hidden="true">✓</b>{% if lang == 'bg' %}Ясни данни и срок{% elif lang == 'de' %}Daten und Laufzeit im Blick{% elif lang == 'tr' %}Veri ve süre bilgisi{% elif lang == 'es' %}Datos y validez claros{% else %}Clear data and validity{% endif %}</span>
+          <span><b aria-hidden="true">✓</b>{% if lang == 'bg' %}Избор според дестинацията{% elif lang == 'de' %}Tarife nach Reiseziel{% elif lang == 'tr' %}Destinasyona göre planlar{% elif lang == 'es' %}Planes por destino{% else %}Plans by destination{% endif %}</span>
         </div>
-        {% endif %}
+      </div>
+      <div class="hero-side" aria-label="{% if lang == 'bg' %}Полезна информация{% else %}Helpful information{% endif %}">
+        <div class="hero-note">
+          <span class="hero-note-label">{% if lang == 'bg' %}Регионален план{% elif lang == 'de' %}Regionaler Tarif{% elif lang == 'tr' %}Bölgesel plan{% elif lang == 'es' %}Plan regional{% else %}Regional plan{% endif %}</span>
+          <strong>🇪🇺 {{ t.region_europe | default('Europe') }}</strong>
+          <p>{% if lang == 'bg' %}Разгледай наличните европейски предложения и покритието им.{% elif lang == 'de' %}Entdecke verfügbare Europa-Angebote und ihre Abdeckung.{% elif lang == 'tr' %}Mevcut Avrupa planlarını ve kapsama alanlarını incele.{% elif lang == 'es' %}Consulta los planes disponibles para Europa y su cobertura.{% else %}Explore available Europe plans and their coverage.{% endif %}</p>
+        </div>
+        <div class="hero-note">
+          <span class="hero-note-label">{% if lang == 'bg' %}Преди покупка{% elif lang == 'de' %}Vor dem Kauf{% elif lang == 'tr' %}Satın almadan önce{% elif lang == 'es' %}Antes de comprar{% else %}Before you buy{% endif %}</span>
+          <strong>{% if lang == 'bg' %}Данни · Срок · Цена{% elif lang == 'de' %}Daten · Laufzeit · Preis{% elif lang == 'tr' %}Veri · Süre · Fiyat{% elif lang == 'es' %}Datos · Validez · Precio{% else %}Data · Validity · Price{% endif %}</strong>
+          <p>{% if lang == 'bg' %}Сравни детайлите на наличните планове за избраната държава.{% elif lang == 'de' %}Vergleiche verfügbare Tarife für dein ausgewähltes Land.{% elif lang == 'tr' %}Seçtiğin ülke için mevcut planların ayrıntılarını karşılaştır.{% elif lang == 'es' %}Compara los detalles de los planes disponibles para tu país.{% else %}Compare available plans for your selected country.{% endif %}</p>
+        </div>
+      </div>
     </div>
+  </section>
+
+  <section class="search-panel" id="search-wrapper" aria-labelledby="search-title">
+    <h2 class="search-title" id="search-title">{{ t.search_title }}</h2>
+    <div class="search-row">
+      <div class="search-field-wrap">
+        <input type="text" id="country-input" class="search-field" name="country" placeholder="{{ t.search_placeholder }}" value="{{ selected_country }}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="suggestions-list" aria-expanded="false" oninput="onSearchInput(this.value)" onkeydown="onSearchKeydown(event)" onfocus="onSearchInput(this.value)">
+        <button type="button" class="clear-search {% if not selected_country %}hidden{% endif %}" id="clear-btn" onclick="clearSearch()" aria-label="{% if lang == 'bg' %}Изчисти търсенето{% else %}Clear search{% endif %}">×</button>
+        <ul id="suggestions-list" class="suggestions-list hidden" role="listbox"></ul>
+      </div>
+      <button type="button" class="btn-primary" onclick="submitSearch()"><span aria-hidden="true">⌕</span>{{ t.search_btn }}</button>
+    </div>
+    <p class="search-hint">{{ t.search_hint }}</p>
+  </section>
+
+  <section class="section" aria-labelledby="destinations-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">{% if lang == 'bg' %}Намери своя план{% elif lang == 'de' %}Finde deinen Tarif{% elif lang == 'tr' %}Planını bul{% elif lang == 'es' %}Encuentra tu plan{% else %}Find your plan{% endif %}</p>
+        <h2 id="destinations-title">{{ t.popular_regions | default('Explore destinations') }}</h2>
+        <p>{% if lang == 'bg' %}Започни с европейските регионални планове или потърси налични предложения за конкретна държава.{% elif lang == 'de' %}Starte mit regionalen Europa-Tarifen oder suche nach verfügbaren Angeboten für ein bestimmtes Land.{% elif lang == 'tr' %}Avrupa bölgesel planlarıyla başla veya belirli bir ülke için mevcut teklifleri ara.{% elif lang == 'es' %}Empieza con los planes regionales de Europa o busca ofertas disponibles para un país concreto.{% else %}Start with Europe regional plans or search available offers for a specific country.{% endif %}</p>
+      </div>
+    </div>
+    <div class="region-grid">
+      <a class="region-card" href="/europe">
+        <span class="region-icon" aria-hidden="true">🇪🇺</span>
+        <h3>{{ t.region_europe | default('Europe') }}</h3>
+        <p>{{ t.region_europe_desc | default('Regional plans for Europe') }}</p>
+        <span class="region-link">{{ t.explore | default('Explore') }} <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="region-card" href="/search?country=Thailand">
+        <span class="region-icon" aria-hidden="true">🌏</span>
+        <h3>Thailand</h3>
+        <p>{% if lang == 'bg' %}Държава в Азия · налични планове{% elif lang == 'de' %}Land in Asien · verfügbare Tarife{% elif lang == 'tr' %}Asya ülkesi · mevcut planlar{% elif lang == 'es' %}País de Asia · planes disponibles{% else %}Asian destination · available plans{% endif %}</p>
+        <span class="region-link">{% if lang == 'bg' %}Търси Тайланд{% elif lang == 'de' %}Thailand suchen{% elif lang == 'tr' %}Tayland ara{% elif lang == 'es' %}Buscar Tailandia{% else %}Search Thailand{% endif %} <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="region-card" href="/search?country=Turkey">
+        <span class="region-icon" aria-hidden="true">🌍</span>
+        <h3>{% if lang == 'bg' %}Турция{% elif lang == 'de' %}Türkei{% elif lang == 'tr' %}Türkiye{% elif lang == 'es' %}Turquía{% else %}Turkey{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Държава за търсене на планове{% elif lang == 'de' %}Land mit verfügbaren Tarifen{% elif lang == 'tr' %}Plan araması için ülke{% elif lang == 'es' %}País para buscar planes{% else %}Country to search available plans{% endif %}</p>
+        <span class="region-link">{% if lang == 'bg' %}Търси Турция{% elif lang == 'de' %}Türkei suchen{% elif lang == 'tr' %}Türkiye ara{% elif lang == 'es' %}Buscar Turquía{% else %}Search Turkey{% endif %} <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="region-card" href="/search?country=USA">
+        <span class="region-icon" aria-hidden="true">🌎</span>
+        <h3>{% if lang == 'bg' %}Съединени щати{% elif lang == 'de' %}Vereinigte Staaten{% elif lang == 'tr' %}Amerika Birleşik Devletleri{% elif lang == 'es' %}Estados Unidos{% else %}United States{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Държава за търсене на планове{% elif lang == 'de' %}Land mit verfügbaren Tarifen{% elif lang == 'tr' %}Plan araması için ülke{% elif lang == 'es' %}País para buscar planes{% else %}Country to search available plans{% endif %}</p>
+        <span class="region-link">{% if lang == 'bg' %}Търси САЩ{% elif lang == 'de' %}USA suchen{% elif lang == 'tr' %}ABD ara{% elif lang == 'es' %}Buscar EE. UU.{% else %}Search USA{% endif %} <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+  </section>
+
+  {% if groups is none %}
+  <section class="section" id="esim-section" aria-labelledby="benefits-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">{% if lang == 'bg' %}Защо eSIM{% elif lang == 'de' %}Warum eSIM{% elif lang == 'tr' %}Neden eSIM{% elif lang == 'es' %}Por qué eSIM{% else %}Why eSIM{% endif %}</p>
+        <h2 id="benefits-title">{{ t.esim_what_title | default('A simpler way to connect while travelling') }}</h2>
+        <p>{{ t.esim_what_subtitle | default('A digital alternative to a physical SIM card for compatible devices.') }}</p>
+      </div>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">▣</div>
+        <h3>{{ t.esim_card1_title | default('Digital SIM') }}</h3>
+        <p>{{ t.esim_card1_text | default('An eSIM is a digital SIM built into compatible phones and devices.') }}</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">↔</div>
+        <h3>{{ t.esim_card2_title | default('Keep your usual number') }}</h3>
+        <p>{{ t.esim_card2_text | default('On supported devices, your regular SIM can remain available while the eSIM handles mobile data.') }}</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon" aria-hidden="true">◎</div>
+        <h3>{{ t.esim_card3_title | default('Choose a plan for your trip') }}</h3>
+        <p>{{ t.esim_card3_text | default('Compare available data allowances, validity periods and prices before you buy.') }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="steps-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">{% if lang == 'bg' %}Три лесни стъпки{% elif lang == 'de' %}Drei einfache Schritte{% elif lang == 'tr' %}Üç kolay adım{% elif lang == 'es' %}Tres pasos sencillos{% else %}Three simple steps{% endif %}</p>
+        <h2 id="steps-title">{% if lang == 'bg' %}Как работи{% elif lang == 'de' %}So funktioniert es{% elif lang == 'tr' %}Nasıl çalışır{% elif lang == 'es' %}Cómo funciona{% else %}How it works{% endif %}</h2>
+      </div>
+    </div>
+    <div class="steps-grid">
+      <article class="step-card">
+        <div class="step-number">01</div>
+        <h3>{% if lang == 'bg' %}Избери държава{% elif lang == 'de' %}Land auswählen{% elif lang == 'tr' %}Ülke seç{% elif lang == 'es' %}Elige un país{% else %}Choose a country{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Потърси дестинацията си и разгледай наличните планове.{% elif lang == 'de' %}Suche dein Reiseziel und sieh dir verfügbare Tarife an.{% elif lang == 'tr' %}Destinasyonunu ara ve mevcut planları incele.{% elif lang == 'es' %}Busca tu destino y consulta los planes disponibles.{% else %}Search your destination and review the available plans.{% endif %}</p>
+      </article>
+      <article class="step-card">
+        <div class="step-number">02</div>
+        <h3>{% if lang == 'bg' %}Сравни и поръчай{% elif lang == 'de' %}Vergleichen und bestellen{% elif lang == 'tr' %}Karşılaştır ve sipariş ver{% elif lang == 'es' %}Compara y compra{% else %}Compare and order{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Провери данните, срока и крайната цена преди покупка.{% elif lang == 'de' %}Prüfe Datenvolumen, Laufzeit und Gesamtpreis vor dem Kauf.{% elif lang == 'tr' %}Satın almadan önce veri miktarını, süreyi ve toplam fiyatı kontrol et.{% elif lang == 'es' %}Revisa los datos, la validez y el precio total antes de comprar.{% else %}Check data, validity and total price before buying.{% endif %}</p>
+      </article>
+      <article class="step-card">
+        <div class="step-number">03</div>
+        <h3>{% if lang == 'bg' %}Инсталирай eSIM{% elif lang == 'de' %}eSIM installieren{% elif lang == 'tr' %}eSIM'i yükle{% elif lang == 'es' %}Instala la eSIM{% else %}Install your eSIM{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Следвай инструкциите за инсталиране и активиране за твоето устройство.{% elif lang == 'de' %}Folge den Installations- und Aktivierungshinweisen für dein Gerät.{% elif lang == 'tr' %}Cihazına uygun kurulum ve etkinleştirme talimatlarını izle.{% elif lang == 'es' %}Sigue las instrucciones de instalación y activación para tu dispositivo.{% else %}Follow the installation and activation instructions for your device.{% endif %}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-title">
+    <div class="section-heading">
+      <div>
+        <p class="section-kicker">FAQ</p>
+        <h2 id="faq-title">{% if lang == 'bg' %}Полезно е да знаеш{% elif lang == 'de' %}Gut zu wissen{% elif lang == 'tr' %}Bilmen gerekenler{% elif lang == 'es' %}Información útil{% else %}Good to know{% endif %}</h2>
+      </div>
+    </div>
+    <div class="faq-list">
+      <details>
+        <summary>{% if lang == 'bg' %}Какво е eSIM?{% elif lang == 'de' %}Was ist eine eSIM?{% elif lang == 'tr' %}eSIM nedir?{% elif lang == 'es' %}¿Qué es una eSIM?{% else %}What is an eSIM?{% endif %}</summary>
+        <p>{% if lang == 'bg' %}eSIM е цифров SIM профил за съвместимо устройство. Не се поставя физическа карта.{% elif lang == 'de' %}Eine eSIM ist ein digitaler SIM-Tarif für ein kompatibles Gerät. Eine physische Karte ist nicht erforderlich.{% elif lang == 'tr' %}eSIM, uyumlu cihazlar için dijital bir SIM profilidir; fiziksel kart takılmaz.{% elif lang == 'es' %}Una eSIM es un perfil SIM digital para un dispositivo compatible; no requiere una tarjeta física.{% else %}An eSIM is a digital SIM profile for a compatible device; no physical card is inserted.{% endif %}</p>
+      </details>
+      <details>
+        <summary>{% if lang == 'bg' %}Ще работи ли eSIM на телефона ми?{% elif lang == 'de' %}Funktioniert eSIM auf meinem Handy?{% elif lang == 'tr' %}eSIM telefonumda çalışır mı?{% elif lang == 'es' %}¿Funcionará la eSIM en mi teléfono?{% else %}Will eSIM work on my phone?{% endif %}</summary>
+        <p>{% if lang == 'bg' %}Провери дали устройството ти поддържа eSIM и дали не е заключено към оператор.{% elif lang == 'de' %}Prüfe, ob dein Gerät eSIM unterstützt und nicht an einen Mobilfunkanbieter gebunden ist.{% elif lang == 'tr' %}Cihazının eSIM'i desteklediğini ve operatör kilidi olmadığını kontrol et.{% elif lang == 'es' %}Comprueba que tu dispositivo admita eSIM y no esté bloqueado por un operador.{% else %}Check that your device supports eSIM and is not carrier-locked.{% endif %}</p>
+      </details>
+      <details>
+        <summary>{% if lang == 'bg' %}Как да избера подходящ план?{% elif lang == 'de' %}Wie wähle ich einen passenden Tarif?{% elif lang == 'tr' %}Uygun planı nasıl seçerim?{% elif lang == 'es' %}¿Cómo elijo un plan adecuado?{% else %}How do I choose a plan?{% endif %}</summary>
+        <p>{% if lang == 'bg' %}Сравни количеството данни, валидността, покритието и цената, показани за плана.{% elif lang == 'de' %}Vergleiche Datenvolumen, Laufzeit, Abdeckung und den angezeigten Preis.{% elif lang == 'tr' %}Veri miktarını, geçerlilik süresini, kapsama alanını ve gösterilen fiyatı karşılaştır.{% elif lang == 'es' %}Compara los datos, la validez, la cobertura y el precio indicado.{% else %}Compare the data allowance, validity, coverage and displayed price.{% endif %}</p>
+      </details>
+      <details>
+        <summary>{% if lang == 'bg' %}Къде ще намеря инструкции?{% elif lang == 'de' %}Wo finde ich die Installationsanleitung?{% elif lang == 'tr' %}Kurulum talimatlarını nerede bulabilirim?{% elif lang == 'es' %}¿Dónde encuentro las instrucciones?{% else %}Where can I find setup instructions?{% endif %}</summary>
+        <p>{% if lang == 'bg' %}Отвори страницата „Инструкции“ за помощ при инсталиране и активиране.{% elif lang == 'de' %}Öffne die Seite „Anleitungen“, um Hilfe zur Installation und Aktivierung zu erhalten.{% elif lang == 'tr' %}Kurulum ve etkinleştirme yardımı için “Talimatlar” sayfasını aç.{% elif lang == 'es' %}Abre la página de instrucciones para obtener ayuda con la instalación y activación.{% else %}Visit the instructions page for help with installation and activation.{% endif %}</p>
+      </details>
+    </div>
+    <a class="faq-more" href="/faq">{% if lang == 'bg' %}Виж всички често задавани въпроси →{% elif lang == 'de' %}Alle häufigen Fragen ansehen →{% elif lang == 'tr' %}Tüm sık sorulan soruları gör →{% elif lang == 'es' %}Ver todas las preguntas frecuentes →{% else %}View all frequently asked questions →{% endif %}</a>
+  </section>
+  {% endif %}
+
+  <div id="loader" class="loader hidden" role="status" aria-live="polite">{{ t.loading }}</div>
+  <div id="content">
+    {% if error %}
+    <div class="status-message status-error" role="alert">⚠ {{ error }}</div>
+    {% elif groups is none %}
+    <div class="status-message">{% if lang == 'bg' %}Използвай търсачката, за да намериш eSIM планове за дестинацията си.{% elif lang == 'de' %}Nutze die Suche, um eSIM-Tarife für dein Reiseziel zu finden.{% elif lang == 'tr' %}Destinasyonun için eSIM planlarını bulmak üzere aramayı kullan.{% elif lang == 'es' %}Usa el buscador para encontrar planes eSIM para tu destino.{% else %}Use search to find eSIM plans for your destination.{% endif %}</div>
+    {% else %}
+      {% if resolved_code %}
+      <div class="status-message status-success">✓ {{ t.found }} <strong>{{ total }}</strong> {{ t.packages_for }} „{{ selected_country }}” ({{ resolved_code }})</div>
+      {% endif %}
+      <div class="results-grid">
+        {% for col_key, col_label in [("7", t.col_7), ("15", t.col_15), ("30", t.col_30)] %}
+        <section>
+          <div class="result-column-title"><span>{{ col_label }}</span><span class="result-count">{{ groups[col_key]|length }} {{ t.packages }}</span></div>
+          {% if groups[col_key] %}
+          <div class="plan-list">
+            {% for p in groups[col_key] %}
+            <article class="plan-card">
+              <div>
+                <div class="plan-title-row">
+                  <h3 class="plan-title">{{ p.name }}</h3>
+                  {% if p.dataType == 2 %}
+                  <span class="plan-type plan-type-daily">{{ t.label_daily }}</span>
+                  {% else %}
+                  <span class="plan-type">{{ t.label_total }}</span>
+                  {% endif %}
+                </div>
+                <div class="plan-facts">
+                  <div><span class="fact-label">{{ t.label_data }}</span><span class="fact-value">{{ p.volume_gb }} GB</span></div>
+                  <div><span class="fact-label">{{ t.label_validity }}</span><span class="fact-value">{{ p.duration }} {{ t.days }}</span></div>
+                </div>
+                <div class="plan-speed">
+                  {% for s in p.speed.split('/') %}<span class="speed-tag">{{ s }}</span>{% endfor %}
+                </div>
+              </div>
+              <div class="plan-bottom">
+                <div><span class="price-label">{% if lang == 'bg' %}Крайна цена{% elif lang == 'de' %}Gesamtpreis{% elif lang == 'tr' %}Toplam fiyat{% elif lang == 'es' %}Precio total{% else %}Total price{% endif %}</span><span class="plan-price">€{{ "%.2f"|format(p.price_eur) }}</span></div>
+                <a class="buy-link" href="/checkout?package_slug={{ p.slug|urlencode }}&country={{ p.country_name|urlencode }}&duration={{ p.duration }}&gb={{ p.volume_gb }}&price_eur={{ p.price_eur }}">{{ t.buy_btn }}</a>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">{{ t.no_packages }} {{ col_label }}</div>
+          {% endif %}
+        </section>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
 </main>
 
-<footer class="bg-white border-t border-gray-200 text-center py-8 text-gray-500 text-xs sm:text-sm mt-auto w-full">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="mb-4">
-            <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
-                🤝 <span>{{ t.partner_area_btn }}</span>
-            </a>
-        </div>
-        <p>© 2026 {{ t.footer }}</p>
+<footer class="site-footer">
+  <div class="page-shell footer-inner">
+    <div class="footer-brand">
+      <img src="/static/images/logo.png" alt="{{ t.site_title }}">
+      <p>{% if lang == 'bg' %}Избери подходящ eSIM план за следващото си пътуване.{% elif lang == 'de' %}Finde einen passenden eSIM-Tarif für deine nächste Reise.{% elif lang == 'tr' %}Bir sonraki seyahatin için uygun eSIM planını bul.{% elif lang == 'es' %}Encuentra un plan eSIM para tu próximo viaje.{% else %}Find an eSIM plan for your next trip.{% endif %}</p>
     </div>
+    <div class="footer-column">
+      <h3>{% if lang == 'bg' %}Полезни връзки{% elif lang == 'de' %}Nützliche Links{% elif lang == 'tr' %}Faydalı bağlantılar{% elif lang == 'es' %}Enlaces útiles{% else %}Useful links{% endif %}</h3>
+      <div class="footer-links">
+        <a href="/europe">{{ t.region_europe | default('Europe') }}</a>
+        <a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a>
+        <a href="/faq">FAQ</a>
+        <a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a>
+      </div>
+    </div>
+    <div class="footer-column">
+      <h3>{% if lang == 'bg' %}Нуждаеш се от помощ?{% elif lang == 'de' %}Brauchst du Hilfe?{% elif lang == 'tr' %}Yardıma mı ihtiyacın var?{% elif lang == 'es' %}¿Necesitas ayuda?{% else %}Need help?{% endif %}</h3>
+      <div class="footer-links">
+        <a href="/contacts">{{ t.nav_contacts | default('Contact us') }}</a>
+        <a href="/partner/login" class="partner-link">{{ t.partner_area_btn }}</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="page-shell footer-bottom-inner"><span>© 2026 {{ t.footer }}</span><span>{{ t.site_title }}</span></div>
+  </div>
 </footer>
 
 <script>
-    function toggleMobileMenu() {
-        const menu = document.getElementById('mobile-menu');
-        menu.classList.toggle('hidden');
-    }
-
-    function showLoader() {
-        document.getElementById('loader').classList.remove('hidden');
-        document.getElementById('content').classList.add('hidden');
-        const esim = document.getElementById('esim-section');
-        if (esim) esim.classList.add('hidden');
-    }
-
-    const ALL_COUNTRIES = [
-        {% for code, name in country_suggestions %}
-        { code: "{{ code }}", name: "{{ name }}" },
-        {% endfor %}
-    ];
-
-    let activeIndex = -1;
-
-    function onSearchInput(val) {
-        const clearBtn = document.getElementById("clear-btn");
-        clearBtn.classList.toggle("hidden", val.length === 0);
-        if (val.trim().length < 1) { hideDropdown(); return; }
-        const q = val.toLowerCase().trim();
-        const matches = ALL_COUNTRIES.filter(function(c) {
-            return c.name.toLowerCase().startsWith(q) ||
-                   c.name.toLowerCase().includes(q) ||
-                   c.code.toLowerCase() === q;
-        }).slice(0, 8);
-        renderDropdown(matches, val);
-    }
-
-    function renderDropdown(matches, inputVal) {
-        const list = document.getElementById("suggestions-list");
-        if (matches.length === 0) { hideDropdown(); return; }
-        list.innerHTML = "";
-        activeIndex = -1;
-        matches.forEach(function(country) {
-            const li = document.createElement("li");
-            const q = inputVal.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const regex = new RegExp("(" + q + ")", "gi");
-            const highlighted = country.name.replace(regex, "<strong class='text-blue-600 font-black'>$1</strong>");
-            li.innerHTML = "<span class='text-gray-400 text-xs font-mono mr-2.5 w-7 inline-block shrink-0'>" + country.code + "</span>" + highlighted;
-            li.className = "px-4 py-3 cursor-pointer hover:bg-blue-50 text-gray-800 text-sm flex items-center transition";
-            li.addEventListener("mousedown", function(e) { e.preventDefault(); selectCountry(country.name); });
-            list.appendChild(li);
-        });
-        list.classList.remove("hidden");
-    }
-
-    function hideDropdown() {
-        document.getElementById("suggestions-list").classList.add("hidden");
-        activeIndex = -1;
-    }
-
-    function selectCountry(name) {
-        document.getElementById("country-input").value = name;
-        document.getElementById("clear-btn").classList.remove("hidden");
-        hideDropdown();
-        submitSearch();
-    }
-
-    function submitSearch() {
-        const val = document.getElementById("country-input").value.trim();
-        if (val) {
-            showLoader();
-            const lowerVal = val.toLowerCase();
-            // Пренасочване към /europe при търсене на Европа
-            if (lowerVal === "europe" || lowerVal === "европа" || lowerVal === "eu") {
-                window.location.href = "/europe";
-            } else {
-                window.location.href = "/search?country=" + encodeURIComponent(val);
-            }
-        }
-    }
-
-    function clearSearch() {
-        document.getElementById("country-input").value = "";
-        document.getElementById("clear-btn").classList.add("hidden");
-        hideDropdown();
-        document.getElementById("country-input").focus();
-        window.location.href = "/";
-    }
-
-    function onSearchKeydown(e) {
-        const list = document.getElementById("suggestions-list");
-        const items = list.querySelectorAll("li");
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            activeIndex = Math.min(activeIndex + 1, items.length - 1);
-            updateActive(items);
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            activeIndex = Math.max(activeIndex - 1, -1);
-            updateActive(items);
-        } else if (e.key === "Enter") {
-            e.preventDefault();
-            if (activeIndex >= 0 && items[activeIndex]) {
-                items[activeIndex].dispatchEvent(new Event("mousedown"));
-            } else { submitSearch(); }
-        } else if (e.key === "Escape") { hideDropdown(); }
-    }
-
-    function updateActive(items) {
-        items.forEach(function(li, i) {
-            if (i === activeIndex) {
-                li.classList.add("bg-blue-50", "font-bold");
-                li.scrollIntoView({ block: "nearest" });
-            } else {
-                li.classList.remove("bg-blue-50", "font-bold");
-            }
-        });
-    }
-
-    document.addEventListener("click", function(e) {
-        const wrapper = document.getElementById("search-wrapper");
-        if (wrapper && !wrapper.contains(e.target)) { hideDropdown(); }
+  const menuToggle = document.getElementById("menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", function () {
+      const isOpen = mobileMenu.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
     });
-</script>
+  }
 
+  function showLoader() {
+    const loader = document.getElementById("loader");
+    const content = document.getElementById("content");
+    if (loader) loader.classList.remove("hidden");
+    if (content) content.classList.add("hidden");
+    const esim = document.getElementById("esim-section");
+    if (esim) esim.classList.add("hidden");
+  }
+
+  const ALL_COUNTRIES = [
+    {% for code, name in country_suggestions %}
+    { code: {{ code | tojson }}, name: {{ name | tojson }} },
+    {% endfor %}
+  ];
+  let activeIndex = -1;
+
+  function onSearchInput(value) {
+    const clearButton = document.getElementById("clear-btn");
+    if (clearButton) clearButton.classList.toggle("hidden", value.length === 0);
+    if (!value.trim()) { hideDropdown(); return; }
+    const query = value.toLocaleLowerCase().trim();
+    const matches = ALL_COUNTRIES.filter(function (country) {
+      return country.name.toLocaleLowerCase().includes(query) || country.code.toLocaleLowerCase() === query;
+    }).slice(0, 8);
+    renderDropdown(matches);
+  }
+
+  function renderDropdown(matches) {
+    const list = document.getElementById("suggestions-list");
+    const input = document.getElementById("country-input");
+    if (!list || !input) return;
+    list.replaceChildren();
+    activeIndex = -1;
+    if (!matches.length) { hideDropdown(); return; }
+    matches.forEach(function (country) {
+      const item = document.createElement("li");
+      item.setAttribute("role", "option");
+      item.tabIndex = -1;
+      const code = document.createElement("span");
+      code.className = "country-code";
+      code.textContent = country.code;
+      const name = document.createElement("span");
+      name.textContent = country.name;
+      item.append(code, name);
+      item.addEventListener("mousedown", function (event) {
+        event.preventDefault();
+        selectCountry(country.name);
+      });
+      list.appendChild(item);
+    });
+    list.classList.remove("hidden");
+    input.setAttribute("aria-expanded", "true");
+  }
+
+  function hideDropdown() {
+    const list = document.getElementById("suggestions-list");
+    const input = document.getElementById("country-input");
+    if (list) list.classList.add("hidden");
+    if (input) input.setAttribute("aria-expanded", "false");
+    activeIndex = -1;
+  }
+
+  function selectCountry(name) {
+    const input = document.getElementById("country-input");
+    const clearButton = document.getElementById("clear-btn");
+    if (input) input.value = name;
+    if (clearButton) clearButton.classList.remove("hidden");
+    hideDropdown();
+    submitSearch();
+  }
+
+  function submitSearch() {
+    const input = document.getElementById("country-input");
+    const value = input ? input.value.trim() : "";
+    if (!value) { if (input) input.focus(); return; }
+    showLoader();
+    const normalized = value.toLocaleLowerCase();
+    if (["europe", "европа", "eu", "europa", "avrupa"].includes(normalized)) {
+      window.location.href = "/europe";
+    } else {
+      window.location.href = "/search?country=" + encodeURIComponent(value);
+    }
+  }
+
+  function clearSearch() {
+    const input = document.getElementById("country-input");
+    const clearButton = document.getElementById("clear-btn");
+    if (input) input.value = "";
+    if (clearButton) clearButton.classList.add("hidden");
+    hideDropdown();
+    if (input) input.focus();
+    window.location.href = "/";
+  }
+
+  function onSearchKeydown(event) {
+    const list = document.getElementById("suggestions-list");
+    const items = list ? Array.from(list.querySelectorAll("li")) : [];
+    if (event.key === "ArrowDown" && items.length) {
+      event.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+      updateActive(items);
+    } else if (event.key === "ArrowUp" && items.length) {
+      event.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      updateActive(items);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      if (activeIndex >= 0 && items[activeIndex]) {
+        const selected = ALL_COUNTRIES.find(function (country) {
+          return country.name === items[activeIndex].textContent.replace(items[activeIndex].querySelector(".country-code").textContent, "").trim();
+        });
+        if (selected) selectCountry(selected.name);
+        else submitSearch();
+      } else {
+        submitSearch();
+      }
+    } else if (event.key === "Escape") {
+      hideDropdown();
+    }
+  }
+
+  function updateActive(items) {
+    items.forEach(function (item, index) {
+      const active = index === activeIndex;
+      item.classList.toggle("is-active", active);
+      item.setAttribute("aria-selected", String(active));
+      if (active) item.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    const wrapper = document.getElementById("search-wrapper");
+    if (wrapper && !wrapper.contains(event.target)) hideDropdown();
+  });
+</script>
 </body>
 </html>

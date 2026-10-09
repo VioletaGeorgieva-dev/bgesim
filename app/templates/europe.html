@@ -1,172 +1,158 @@
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ x.page_title }}</title>
-    <meta name="description" content="{{ x.meta_desc }}">
-    <link rel="canonical" href="https://bgesim.bg/europe">
-    <meta property="og:title" content="{{ x.page_title }}">
-    <meta property="og:description" content="{{ x.meta_desc }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://bgesim.bg/europe">
-    <meta property="og:image" content="https://bgesim.bg/static/images/logo.png">
-    {% if lowest_price is not none %}
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "{{ x.h1 }}",
-      "description": "{{ x.meta_desc }}",
-      "brand": {"@type": "Brand", "name": "BG eSIM"},
-      "offers": {
-        "@type": "AggregateOffer",
-        "priceCurrency": "EUR",
-        "lowPrice": "{{ '%.2f'|format(lowest_price) }}",
-        "highPrice": "{{ '%.2f'|format(highest_price) }}",
-        "offerCount": {{ offer_count }},
-        "availability": "https://schema.org/InStock"
-      }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ x.page_title }}</title>
+  <meta name="description" content="{{ x.meta_desc }}">
+  <link rel="canonical" href="https://bgesim.bg/europe">
+  <meta property="og:title" content="{{ x.page_title }}">
+  <meta property="og:description" content="{{ x.meta_desc }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bgesim.bg/europe">
+  <meta property="og:image" content="https://bgesim.bg/static/images/logo.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% if lowest_price is not none %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": {{ x.h1 | tojson }},
+    "description": {{ x.meta_desc | tojson }},
+    "brand": {"@type": "Brand", "name": "BG eSIM"},
+    "offers": {
+      "@type": "AggregateOffer",
+      "priceCurrency": "EUR",
+      "lowPrice": "{{ '%.2f'|format(lowest_price) }}",
+      "highPrice": "{{ '%.2f'|format(highest_price) }}",
+      "offerCount": {{ offer_count }},
+      "availability": "https://schema.org/InStock"
     }
-    </script>
-    {% endif %}
-    <script src="https://cdn.tailwindcss.com"></script>
+  }
+  </script>
+  {% endif %}
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans">
-
-<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
-        
-        <!-- ГОРЕН РЕД: Лого и Слоган -->
-        <div class="flex items-center justify-between pb-2.5 border-b border-blue-600/40">
-            <a href="/" class="flex items-center gap-2.5 shrink-0">
-                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
-                <div>
-                    <h1 class="text-sm sm:text-xl font-extrabold tracking-tight leading-none text-white whitespace-nowrap">{{ t.site_title }}</h1>
-                    <p class="text-[10px] sm:text-xs text-blue-200 opacity-90 mt-0.5 hidden sm:block">{{ t.site_subtitle }}</p>
-                </div>
-            </a>
-            
-            <!-- Малък статус вдясно за десктоп -->
-            <div class="hidden md:flex items-center gap-2 text-xs text-blue-200">
-                <span>⚡ Instant eSIM</span>
-            </div>
-        </div>
-
-        <!-- ДОЛЕН РЕД: Хоризонтално скролираща се лента с линкове и езици -->
-        <div class="pt-2 pb-1 overflow-x-auto scrollbar-none">
-            <div class="flex items-center gap-2 min-w-max">
-                
-                <!-- Навигационни линкове -->
-                <a href="/" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">🏠 Home</a>
-                
-                <a href="/europe" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold shadow-sm whitespace-nowrap text-xs sm:text-sm">
-                    <span>🇪🇺 Europe</span>
-                    <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
-                </a>
-                
-                <a href="/instructions" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-                
-                <a href="/contacts" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-                
-                <a href="/faq" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                
-                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 text-gray-900 font-bold shadow-sm whitespace-nowrap text-xs sm:text-sm">
-                    🤝 <span>{{ t.partner_area_btn }}</span>
-                </a>
-
-                <!-- Разделител -->
-                <div class="h-5 w-px bg-blue-600/60 mx-1"></div>
-
-                <!-- Езици с флагове -->
-                {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
-                {% for code, label in supported_langs.items() %}
-                <a href="{{ lang_urls[code] }}"
-                   class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1
-                   {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
-                    <span>{{ flags.get(code, '🌐') }}</span>
-                    <span>{{ label[:2].upper() }}</span>
-                </a>
-                {% endfor %}
-
-            </div>
-        </div>
-
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand" aria-label="{{ t.site_title }}">
+      <img class="brand-logo" src="/static/images/logo.png" alt="{{ t.site_title }}">
+      <span class="brand-copy">
+        <span class="brand-name">{{ t.site_title }}</span>
+        <span class="brand-tagline">{{ t.site_subtitle }}</span>
+      </span>
+    </a>
+    <div class="header-actions">
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="/">{{ t.nav_home | default('Home') }}</a>
+        <a href="/europe" aria-current="page">{{ t.region_europe | default('Europe') }}</a>
+        <a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a>
+        <a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+      <nav class="language-nav" aria-label="Language">
+        {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
+        {% for code, label in supported_langs.items() %}
+        <a href="{{ lang_urls[code] }}" lang="{{ code }}" title="{{ label }}" {% if lang == code %}aria-current="page"{% endif %}>
+          <span aria-hidden="true">{{ flags.get(code, '🌐') }}</span><span>{{ code.upper() }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mobile-menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"></path></svg>
+      </button>
     </div>
+  </div>
+  <nav class="mobile-nav" id="mobile-menu" aria-label="Mobile navigation">
+    <a href="/">{{ t.nav_home | default('Home') }}</a>
+    <a href="/europe">{{ t.region_europe | default('Europe') }}</a>
+    <a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a>
+    <a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a>
+    <a href="/faq">FAQ</a>
+    <a href="/partner/login">{{ t.partner_area_btn }}</a>
+  </nav>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 py-8">
+<main class="page-shell">
+  <section class="page-hero">
+    <span class="eyebrow"><span class="eyebrow-dot"></span>{% if lang == 'bg' %}Регионални eSIM планове{% elif lang == 'de' %}Regionale eSIM-Tarife{% elif lang == 'tr' %}Bölgesel eSIM planları{% elif lang == 'es' %}Planes eSIM regionales{% else %}Regional eSIM plans{% endif %}</span>
+    <h1>🇪🇺 {{ x.h1 }}</h1>
+    <p>{{ x.intro }}</p>
+  </section>
 
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">🇪🇺 {{ x.h1 }}</h1>
-        <p class="text-gray-600 max-w-3xl">{{ x.intro }}</p>
+  {% for plan in plans %}
+  <section class="europe-plan-section" id="{{ plan.code|lower }}">
+    <div class="europe-plan-heading">
+      <div>
+        <h2>{{ plan.title }}</h2>
+        <p>{{ plan.tagline }}</p>
+        <details>
+          <summary>{{ x.covers.format(n=plan.countries|length) }} · {{ x.show }}</summary>
+          <p>{{ plan.country_names|join(', ') }}</p>
+        </details>
+      </div>
     </div>
 
-    {% for plan in plans %}
-    <section class="mb-12" id="{{ plan.code|lower }}">
-        <div class="bg-white rounded-2xl shadow-sm p-5 mb-5 {% if plan.featured %}border-2 border-blue-500{% endif %}">
-            <h2 class="text-xl font-bold text-gray-800">{{ plan.title }}</h2>
-            <p class="text-sm text-gray-600 mt-1">{{ plan.tagline }}</p>
-            <details class="mt-3">
-                <summary class="cursor-pointer text-sm font-semibold text-blue-600">
-                    {{ x.covers.format(n=plan.countries|length) }} · {{ x.show }}
-                </summary>
-                <p class="text-sm text-gray-600 mt-2 leading-relaxed">{{ plan.country_names|join(', ') }}</p>
-            </details>
+    {% if plan.packages %}
+    <div class="europe-package-grid">
+      {% for p in plan.packages %}
+      <article class="europe-package {% if p.recommended %}is-recommended{% endif %}">
+        {% if p.recommended %}<span class="recommended-label">{{ x.recommended }}</span>{% endif %}
+        <div class="plan-facts">
+          <div><span class="fact-label">{{ t.label_data }}</span><span class="fact-value">{{ p.volume_gb }} GB</span></div>
+          <div><span class="fact-label">{{ t.label_validity }}</span><span class="fact-value">{{ p.duration }} {{ t.days }}</span></div>
         </div>
-
-        {% if plan.packages %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for p in plan.packages %}
-            <div class="bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition hover:-translate-y-1 relative {% if p.recommended %}ring-2 ring-green-500{% endif %}">
-                {% if p.recommended %}
-                <span class="absolute -top-3 left-4 text-xs bg-green-500 text-white px-3 py-0.5 rounded-full font-bold">⭐ {{ x.recommended }}</span>
-                {% endif %}
-                <div class="grid grid-cols-2 gap-2 mb-3 mt-1">
-                    <div>
-                        <p class="text-xs text-gray-400 uppercase tracking-wide">{{ t.label_data }}</p>
-                        <p class="font-bold text-gray-700 text-lg">{{ p.volume_gb }} GB</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400 uppercase tracking-wide">{{ t.label_validity }}</p>
-                        <p class="font-bold text-gray-700 text-lg">{{ p.duration }} {{ t.days }}</p>
-                    </div>
-                </div>
-                {% if p.speed %}
-                <div class="flex gap-1 flex-wrap mb-3">
-                    {% for s in p.speed.split('/') %}
-                    <span class="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded font-semibold">{{ s }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                <div class="flex justify-between items-center pt-3 border-t border-gray-100">
-                    <p class="text-xl font-bold text-blue-600">€{{ "%.2f"|format(p.price_eur) }}</p>
-                    <a href="/checkout?package_slug={{ p.slug|urlencode }}&country={{ plan.title|urlencode }}&duration={{ p.duration }}&gb={{ p.volume_gb }}&price_eur={{ p.price_eur }}"
-                       class="px-4 py-2 bg-blue-600 text-white text-sm rounded-xl hover:bg-blue-700 transition font-semibold">
-                        {{ t.buy_btn }}
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
+        {% if p.speed %}
+        <div class="package-speed">
+          {% for s in p.speed.split('/') %}<span class="speed-tag">{{ s }}</span>{% endfor %}
         </div>
-        {% else %}
-        <div class="bg-white rounded-2xl p-6 text-center text-gray-400 text-sm">{{ x.unavailable }}</div>
         {% endif %}
-    </section>
-    {% endfor %}
+        <div class="plan-bottom">
+          <div><span class="price-label">{% if lang == 'bg' %}Крайна цена{% elif lang == 'de' %}Gesamtpreis{% elif lang == 'tr' %}Toplam fiyat{% elif lang == 'es' %}Precio total{% else %}Total price{% endif %}</span><span class="plan-price">€{{ "%.2f"|format(p.price_eur) }}</span></div>
+          <a class="buy-link" href="/checkout?package_slug={{ p.slug|urlencode }}&country={{ plan.title|urlencode }}&duration={{ p.duration }}&gb={{ p.volume_gb }}&price_eur={{ p.price_eur }}">{{ t.buy_btn }}</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">{{ x.unavailable }}</div>
+    {% endif %}
+  </section>
+  {% endfor %}
 
-    <section class="bg-blue-50 border border-blue-200 rounded-2xl p-5">
-        <h2 class="font-bold text-blue-800 mb-2">💡 {{ x.note_title }}</h2>
-        <ul class="list-disc pl-5 text-sm text-blue-900 space-y-1">
-            {% for n in x.notes %}<li>{{ n }}</li>{% endfor %}
-        </ul>
-    </section>
-
+  <section class="europe-notes">
+    <h2>{{ x.note_title }}</h2>
+    <ul>{% for n in x.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+  </section>
 </main>
 
-<footer class="text-center py-8 text-gray-400 text-sm">
-    © 2025 {{ t.footer }}
+<footer class="site-footer">
+  <div class="page-shell footer-inner">
+    <div class="footer-brand">
+      <img src="/static/images/logo.png" alt="{{ t.site_title }}">
+      <p>{% if lang == 'bg' %}Избери подходящ eSIM план за следващото си пътуване.{% elif lang == 'de' %}Finde einen passenden eSIM-Tarif für deine nächste Reise.{% elif lang == 'tr' %}Bir sonraki seyahatin için uygun eSIM planını bul.{% elif lang == 'es' %}Encuentra un plan eSIM para tu próximo viaje.{% else %}Find an eSIM plan for your next trip.{% endif %}</p>
+    </div>
+    <div class="footer-column">
+      <h3>{% if lang == 'bg' %}Полезни връзки{% elif lang == 'de' %}Nützliche Links{% elif lang == 'tr' %}Faydalı bağlantılar{% elif lang == 'es' %}Enlaces útiles{% else %}Useful links{% endif %}</h3>
+      <div class="footer-links"><a href="/">{{ t.nav_home | default('Home') }}</a><a href="/instructions">{{ t.nav_instructions | default('Instructions') }}</a><a href="/faq">FAQ</a><a href="/contacts">{{ t.nav_contacts | default('Contact') }}</a></div>
+    </div>
+    <div class="footer-column">
+      <h3>{% if lang == 'bg' %}Нуждаеш се от помощ?{% elif lang == 'de' %}Brauchst du Hilfe?{% elif lang == 'tr' %}Yardıma mı ihtiyacın var?{% elif lang == 'es' %}¿Necesitas ayuda?{% else %}Need help?{% endif %}</h3>
+      <div class="footer-links"><a href="/contacts">{{ t.nav_contacts | default('Contact us') }}</a><a href="/partner/login" class="partner-link">{{ t.partner_area_btn }}</a></div>
+    </div>
+  </div>
+  <div class="footer-bottom"><div class="page-shell footer-bottom-inner"><span>© 2026 {{ t.footer }}</span><span>{{ t.site_title }}</span></div></div>
 </footer>
 
+<script>
+  const menuToggle = document.getElementById("menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", function () {
+      const isOpen = mobileMenu.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+</script>
 </body>
 </html>
