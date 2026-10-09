@@ -41,7 +41,7 @@
             <!-- ДЯСНА ЧАСТ: Езици с флагове + Гамбургер бутон -->
             <div class="flex items-center gap-2">
                 
-                <!-- Езици с флагове (винаги видими в хедъра) -->
+                <!-- Езици с флагове (винаги видими горе в хедъра) -->
                 <div class="flex items-center gap-1 bg-blue-950/40 p-1 rounded-xl border border-blue-600/40">
                     {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
                     {% for code, label in supported_langs.items() %}
@@ -57,7 +57,7 @@
 
                 <!-- Бутон за падащо меню (Гамбургер) -->
                 <button type="button" onclick="toggleMobileMenu()" 
-                        class="p-2.5 rounded-xl bg-blue-800/80 hover:bg-blue-700 text-white focus:outline-none transition shadow-sm border border-blue-600/50" 
+                        class="p-2.5 rounded-xl bg-blue-800/80 hover:bg-blue-700 text-white focus:outline-none transition shadow-sm border border-blue-600/50 xl:hidden" 
                         aria-label="Toggle Menu">
                     <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <!-- ДЕСКТОП НАВИГАЦИЯ (Показва се само на по-големи екрани) -->
+        <!-- ДЕСКТОП НАВИГАЦИЯ (Показва се само на големи екрани навън) -->
         <div class="hidden xl:flex items-center justify-center gap-3 pt-3 border-t border-blue-600/40 mt-3">
             <nav class="flex items-center gap-3 text-sm font-medium">
                 <a href="/" class="text-white/90 hover:text-white transition px-3 py-1.5 rounded-xl hover:bg-blue-700/60">🏠 Home</a>
@@ -86,7 +86,7 @@
 
     </div>
 
-    <!-- МОБИЛНО ПАДАЩО МЕНЮ (Отваря се от бутона горе вдясно) -->
+    <!-- МОБИЛНО ПАДАЩО МЕНЮ (Тук са линковете: Home, Europe, Инструкции, Контакти, Въпроси, Партньори) -->
     <div id="mobile-menu" class="hidden xl:hidden bg-blue-950/95 backdrop-blur-md border-t border-blue-800/80 px-4 pt-3 pb-5 space-y-2 shadow-2xl">
         <div class="flex flex-col gap-1.5">
             <a href="/" class="px-3.5 py-2.5 rounded-xl text-sm font-medium text-white hover:bg-blue-900 flex items-center gap-3"><span>🏠</span> Home</a>
@@ -103,6 +103,13 @@
         </div>
     </div>
 </header>
+
+<script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        menu.classList.toggle('hidden');
+    }
+</script>
 
 <script>
     function toggleMobileMenu() {
