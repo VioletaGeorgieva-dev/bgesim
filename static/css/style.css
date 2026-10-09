@@ -307,3 +307,5 @@ body.standard-page button, body.standard-page [type="submit"] { min-height: 42px
   body.standard-page > header img { height: 34px !important; }
   body.standard-page > header nav { gap: 8px !important; }
 }
+
+@media (max-width: 560px) { .language-nav a span[aria-hidden="true"] { display: none; } }
