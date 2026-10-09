@@ -36,7 +36,7 @@
 
             <nav class="hidden lg:flex items-center gap-6">
                 <a href="/" class="text-sm font-medium text-white/90 hover:text-white hover:scale-105 transition">🏠 Home</a>
-                <a href="/europe" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-semibold shadow-sm transition">
+                <a href="/search?country=Europe" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
                     <span>🇪🇺 Europe</span>
                     <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
                 </a>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="flex items-center gap-2 lg:hidden">
-                <a href="/europe" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-400 text-gray-900 font-bold text-xs">
+                <a href="/search?country=Europe" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-400 text-gray-900 font-bold text-xs">
                     <span>🇪🇺 Europe</span>
                 </a>
                 <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none" aria-label="Toggle Menu">
@@ -142,7 +142,7 @@
                         placeholder="{{ t.search_placeholder }}"
                         value="{{ selected_country }}"
                         autocomplete="off"
-                        class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl sm:rounded-2xl text-sm sm:text-base focus:outline-none focus:border-blue-600 transition pr-10 shadow-sm"
+                        class="w-full px-4 py-3.5 border border-gray-200 rounded-xl sm:rounded-2xl text-sm sm:text-base focus:outline-none focus:border-blue-600 transition pr-10 shadow-sm"
                         oninput="onSearchInput(this.value)"
                         onkeydown="onSearchKeydown(event)"
                         onfocus="onSearchInput(this.value)"
@@ -169,7 +169,7 @@
         <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Popular Regions</h3>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
+            <a href="/search?country=Europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between min-h-[220px]">
                 <div class="absolute top-3 right-3">
                     <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm">⭐ Best Value</span>
                 </div>
