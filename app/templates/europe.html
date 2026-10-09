@@ -35,10 +35,10 @@
 <body class="bg-gray-100 text-gray-800 font-sans">
 
 <header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
         
         <!-- ГОРЕН РЕД: Лого и Слоган -->
-        <div class="flex items-center justify-between pb-3 border-b border-blue-600/40">
+        <div class="flex items-center justify-between pb-2.5 border-b border-blue-600/40">
             <a href="/" class="flex items-center gap-2.5 shrink-0">
                 <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
                 <div>
@@ -47,51 +47,47 @@
                 </div>
             </a>
             
-            <!-- Малък статус вдясно за десктоп (по желание) -->
+            <!-- Малък статус вдясно за десктоп -->
             <div class="hidden md:flex items-center gap-2 text-xs text-blue-200">
                 <span>⚡ Instant eSIM</span>
             </div>
         </div>
 
-        <!-- ДОЛЕН РЕД: Едно общо меню (Линкове + Езици с флагове на един ред с плавен скрол) -->
-        <div class="pt-2.5 overflow-x-auto scrollbar-none">
-            <div class="flex items-center justify-between gap-3 min-w-max py-0.5">
+        <!-- ДОЛЕН РЕД: Хоризонтално скролираща се лента с линкове и езици -->
+        <div class="pt-2 pb-1 overflow-x-auto scrollbar-none">
+            <div class="flex items-center gap-2 min-w-max">
                 
                 <!-- Навигационни линкове -->
-                <nav class="flex items-center gap-2 text-xs sm:text-sm font-medium">
-                    <a href="/" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap">🏠 Home</a>
-                    
-                    <a href="/europe" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
-                        <span>🇪🇺 Europe</span>
-                        <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
-                    </a>
-                    
-                    <a href="/instructions" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-                    
-                    <a href="/contacts" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-                    
-                    <a href="/faq" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                    
-                    <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
-                        🤝 <span>{{ t.partner_area_btn }}</span>
-                    </a>
-                </nav>
+                <a href="/" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">🏠 Home</a>
+                
+                <a href="/europe" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 font-bold shadow-sm whitespace-nowrap text-xs sm:text-sm">
+                    <span>🇪🇺 Europe</span>
+                    <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
+                </a>
+                
+                <a href="/instructions" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
+                
+                <a href="/contacts" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+                
+                <a href="/faq" class="text-white/90 hover:text-white transition px-2.5 py-1.5 rounded-xl hover:bg-blue-700/60 whitespace-nowrap text-xs sm:text-sm">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
+                
+                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 text-gray-900 font-bold shadow-sm whitespace-nowrap text-xs sm:text-sm">
+                    🤝 <span>{{ t.partner_area_btn }}</span>
+                </a>
 
                 <!-- Разделител -->
                 <div class="h-5 w-px bg-blue-600/60 mx-1"></div>
 
                 <!-- Езици с флагове -->
-                <div class="flex items-center gap-1">
-                    {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
-                    {% for code, label in supported_langs.items() %}
-                    <a href="{{ lang_urls[code] }}"
-                       class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1
-                       {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
-                        <span>{{ flags.get(code, '🌐') }}</span>
-                        <span>{{ label[:2].upper() }}</span>
-                    </a>
-                    {% endfor %}
-                </div>
+                {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
+                {% for code, label in supported_langs.items() %}
+                <a href="{{ lang_urls[code] }}"
+                   class="px-2.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap flex items-center gap-1
+                   {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
+                    <span>{{ flags.get(code, '🌐') }}</span>
+                    <span>{{ label[:2].upper() }}</span>
+                </a>
+                {% endfor %}
 
             </div>
         </div>
