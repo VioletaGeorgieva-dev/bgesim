@@ -12,21 +12,15 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
 
-        /* Keep the eSIM checker readable despite shared light-theme overrides. */
+        /* Make compatibility-checker text black; leave existing backgrounds unchanged. */
         body.standard-page #device-search,
         body.standard-page #device-results,
-        body.standard-page #device-info {
-            background-color: #0f172a !important;
-            color: #f8fafc !important;
-            border-color: #334155 !important;
+        body.standard-page #device-results *,
+        body.standard-page #device-info,
+        body.standard-page #device-info * {
+            color: #000 !important;
         }
-        body.standard-page #device-search::placeholder { color: #94a3b8 !important; }
-        body.standard-page #device-results > * { color: #e2e8f0 !important; }
-        body.standard-page #device-results .text-slate-200 { color: #e2e8f0 !important; }
-        body.standard-page #device-results .text-slate-400,
-        body.standard-page #device-results .text-slate-500 { color: #94a3b8 !important; }
-        body.standard-page #device-status,
-        body.standard-page #device-status .text-slate-300 { color: #cbd5e1 !important; }
+        body.standard-page #device-search::placeholder { color: #000 !important; }
     </style>
 </head>
 <body class="standard-page">
