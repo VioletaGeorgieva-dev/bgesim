@@ -242,13 +242,14 @@
                 </a>
 
                 <!-- Превключвател на езици -->
-                <div class="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs">
-                    {% for code, label in supported_langs.items() %}
-                    <a href="{{ lang_urls[code] }}" class="px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg font-bold transition {% if lang == code %}bg-blue-600/20 text-blue-400 border border-blue-500/30{% else %}text-slate-400 hover:text-white{% endif %}">
-                        {{ label }}
-                    </a>
-                    {% endfor %}
-                </div>
+                <nav class="language-nav" aria-label="Language">
+                            {% set flags = {'en': '🇬🇧', 'bg': '🇧🇬', 'de': '🇩🇪', 'tr': '🇹🇷', 'es': '🇪🇸'} %}
+                            {% for code, label in supported_langs.items() %}
+                            <a href="{{ lang_urls[code] }}" lang="{{ code }}" title="{{ label }}" {% if lang == code %}aria-current="page"{% endif %}>
+                                <span aria-hidden="true">{{ flags.get(code, '🌐') }}</span><span>{{ code.upper() }}</span>
+                            </a>
+                            {% endfor %}
+                        </nav>
 
                 <!-- Мобилен Hamburger бутон -->
                 <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white focus:outline-none">
