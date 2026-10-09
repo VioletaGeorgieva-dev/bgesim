@@ -23,57 +23,65 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col overflow-x-hidden">
 
-<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-40 w-full">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16 sm:h-20">
+<header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+        
+        <!-- ГОРЕН РЕД: Лого, Титла и Слоган -->
+        <div class="flex items-center justify-between border-b border-blue-600/50 pb-2.5 gap-4">
             <a href="/" class="flex items-center gap-3 shrink-0">
-                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-9 sm:h-12 w-auto object-contain">
+                <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
                 <div>
-                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight leading-none text-white">{{ t.site_title }}</h1>
-                    <p class="text-[10px] sm:text-xs text-blue-200 opacity-80 mt-0.5 hidden sm:block">{{ t.site_subtitle }}</p>
+                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight leading-none text-white whitespace-nowrap">{{ t.site_title }}</h1>
+                    <p class="text-[10px] sm:text-xs text-blue-200 opacity-90 mt-0.5 hidden sm:block">{{ t.site_subtitle }}</p>
                 </div>
             </a>
 
-            <nav class="hidden lg:flex items-center gap-6">
-                <a href="/" class="text-sm font-medium text-white/90 hover:text-white hover:scale-105 transition">🏠 Home</a>
-                <a href="/search?country=Europe" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
+            <!-- Бутон за мобилно меню (показва се само на телефон) -->
+            <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none xl:hidden ml-auto" aria-label="Toggle Menu">
+                <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- ДОЛЕН РЕД: Навигация, Бутон Партньори и Езици (за Десктоп) -->
+        <div class="hidden xl:flex items-center justify-between pt-2.5">
+            <nav class="flex items-center gap-5 text-sm font-medium">
+                <a href="/" class="text-white/90 hover:text-white transition whitespace-nowrap">🏠 Home</a>
+                <a href="/search?country=Europe" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
                     <span>🇪🇺 Europe</span>
                     <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
                 </a>
-                <a href="/instructions" class="text-sm font-medium text-white/90 hover:text-white transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-                <a href="/contacts" class="text-sm font-medium text-white/90 hover:text-white transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-                <a href="/faq" class="text-sm font-medium text-white/90 hover:text-white transition">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition">
+                <a href="/instructions" class="text-white/90 hover:text-white transition whitespace-nowrap">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
+                <a href="/contacts" class="text-white/90 hover:text-white transition whitespace-nowrap">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+                <a href="/faq" class="text-white/90 hover:text-white transition whitespace-nowrap">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
+                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
                     🤝 <span>{{ t.partner_area_btn }}</span>
                 </a>
             </nav>
 
-            <div class="hidden lg:flex items-center gap-1 border-l border-blue-600/60 pl-4">
+            <!-- Езици вдясно на долния ред -->
+            <div class="flex items-center gap-1 border-l border-blue-600/60 pl-4">
                 {% for code, label in supported_langs.items() %}
                 <a href="{{ lang_urls[code] }}"
-                   class="px-2.5 py-1 rounded-lg text-xs font-bold transition
+                   class="px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap
                    {% if lang == code %}bg-white text-blue-800 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
                     {{ label }}
                 </a>
                 {% endfor %}
             </div>
-
-            <div class="flex items-center gap-2 lg:hidden">
-                <a href="/search?country=Europe" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-400 text-gray-900 font-bold text-xs">
-                    <span>🇪🇺 Europe</span>
-                </a>
-                <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none" aria-label="Toggle Menu">
-                    <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
         </div>
+
     </div>
 
-    <div id="mobile-menu" class="hidden lg:hidden bg-blue-900 border-t border-blue-800 px-4 pt-3 pb-6 space-y-3">
+    <!-- Мобилно меню -->
+    <div id="mobile-menu" class="hidden xl:hidden bg-blue-900 border-t border-blue-800 px-4 pt-3 pb-6 space-y-3">
         <div class="flex flex-col gap-2">
             <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">🏠 Home</a>
+            <a href="/search?country=Europe" class="px-3 py-2 rounded-lg text-sm font-bold text-amber-300 hover:bg-blue-800 flex items-center justify-between">
+                <span>🇪🇺 Europe</span>
+                <span class="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">35+</span>
+            </a>
             <a href="/instructions" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
             <a href="/contacts" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">📞 {{ t.nav_contacts | default('Контакти') }}</a>
             <a href="/faq" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
