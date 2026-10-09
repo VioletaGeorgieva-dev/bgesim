@@ -136,20 +136,20 @@
       </a>
       <a class="region-card" href="/search?country=Thailand">
         <span class="region-icon" aria-hidden="true">🌏</span>
-        <h3>{% if lang == 'bg' %}Азия{% elif lang == 'de' %}Asien{% elif lang == 'tr' %}Asya{% elif lang == 'es' %}Asia{% else %}Asia{% endif %}</h3>
-        <p>{{ t.region_asia_desc | default('Thailand, Vietnam, Japan') }}</p>
+        <h3>Thailand</h3>
+        <p>{% if lang == 'bg' %}Държава в Азия · налични планове{% elif lang == 'de' %}Land in Asien · verfügbare Tarife{% elif lang == 'tr' %}Asya ülkesi · mevcut planlar{% elif lang == 'es' %}País de Asia · planes disponibles{% else %}Asian destination · available plans{% endif %}</p>
         <span class="region-link">{% if lang == 'bg' %}Търси Тайланд{% elif lang == 'de' %}Thailand suchen{% elif lang == 'tr' %}Tayland ara{% elif lang == 'es' %}Buscar Tailandia{% else %}Search Thailand{% endif %} <span aria-hidden="true">→</span></span>
       </a>
       <a class="region-card" href="/search?country=Turkey">
         <span class="region-icon" aria-hidden="true">🌍</span>
-        <h3>{{ t.region_me | default('Middle East') }}</h3>
-        <p>{{ t.region_me_desc | default('Turkey, UAE, Saudi Arabia') }}</p>
+        <h3>{% if lang == 'bg' %}Турция{% elif lang == 'de' %}Türkei{% elif lang == 'tr' %}Türkiye{% elif lang == 'es' %}Turquía{% else %}Turkey{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Държава за търсене на планове{% elif lang == 'de' %}Land mit verfügbaren Tarifen{% elif lang == 'tr' %}Plan araması için ülke{% elif lang == 'es' %}País para buscar planes{% else %}Country to search available plans{% endif %}</p>
         <span class="region-link">{% if lang == 'bg' %}Търси Турция{% elif lang == 'de' %}Türkei suchen{% elif lang == 'tr' %}Türkiye ara{% elif lang == 'es' %}Buscar Turquía{% else %}Search Turkey{% endif %} <span aria-hidden="true">→</span></span>
       </a>
       <a class="region-card" href="/search?country=USA">
         <span class="region-icon" aria-hidden="true">🌎</span>
-        <h3>{{ t.region_americas | default('Americas') }}</h3>
-        <p>{{ t.region_americas_desc | default('USA, Canada, Mexico') }}</p>
+        <h3>{% if lang == 'bg' %}Съединени щати{% elif lang == 'de' %}Vereinigte Staaten{% elif lang == 'tr' %}Amerika Birleşik Devletleri{% elif lang == 'es' %}Estados Unidos{% else %}United States{% endif %}</h3>
+        <p>{% if lang == 'bg' %}Държава за търсене на планове{% elif lang == 'de' %}Land mit verfügbaren Tarifen{% elif lang == 'tr' %}Plan araması için ülke{% elif lang == 'es' %}País para buscar planes{% else %}Country to search available plans{% endif %}</p>
         <span class="region-link">{% if lang == 'bg' %}Търси САЩ{% elif lang == 'de' %}USA suchen{% elif lang == 'tr' %}ABD ara{% elif lang == 'es' %}Buscar EE. UU.{% else %}Search USA{% endif %} <span aria-hidden="true">→</span></span>
       </a>
     </div>
