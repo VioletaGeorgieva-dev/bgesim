@@ -410,3 +410,59 @@ body.standard-page.auth-page button { cursor: pointer; }
 @media (min-width: 901px) {
   .mobile-nav { display: none !important; }
 }
+
+
+/* Apply the same light, modern navigation to legacy informational pages */
+body.standard-page > header {
+  background: rgba(255,255,255,.96) !important;
+  color: #10212b !important;
+  border-bottom: 1px solid #dce6e8 !important;
+  box-shadow: 0 4px 24px rgba(16,33,43,.05) !important;
+  backdrop-filter: blur(14px);
+}
+body.standard-page > header nav a {
+  color: #344952 !important;
+  opacity: 1 !important;
+  text-decoration: none;
+  border-radius: 10px;
+}
+body.standard-page > header nav a:hover,
+body.standard-page > header nav a[aria-current="page"] {
+  color: #087f8c !important;
+  background: #eaf7f6 !important;
+}
+body.standard-page > header h1 { color: #10212b !important; }
+body.standard-page > header p { color: #61727d !important; }
+body.standard-page > header .bg-blue-600,
+body.standard-page > header .bg-blue-700,
+body.standard-page > header .bg-slate-900 {
+  background: #f1f5f6 !important;
+}
+body.standard-page > header .text-white,
+body.standard-page > header .text-slate-300,
+body.standard-page > header .text-slate-400,
+body.standard-page > header .text-blue-400,
+body.standard-page > header .text-blue-700 {
+  color: #344952 !important;
+}
+body.standard-page > header .border-slate-800,
+body.standard-page > header .border-blue-500\/30 {
+  border-color: #dce6e8 !important;
+}
+body.standard-page > header .bg-gradient-to-r {
+  background: #fff !important;
+}
+body.standard-page > header a[href="/partner/login"] {
+  background: #087f8c !important;
+  color: #fff !important;
+}
+body.standard-page > header a[href="/partner/login"] span { color: #fff !important; }
+.standard-page h1, .standard-page h2, .standard-page h3 { color: #10212b; }
+.standard-page .text-blue-900 { color: #10212b !important; }
+.standard-page .text-blue-700, .standard-page .text-blue-600 { color: #087f8c !important; }
+.standard-page .bg-blue-50 { background: #eef8f8 !important; }
+.standard-page .border-blue-200 { border-color: #cce9e8 !important; }
+@media (max-width: 900px) {
+  body.standard-page > header nav { flex-wrap: wrap; }
+  body.standard-page > header nav a { padding: 8px 10px; }
+}
