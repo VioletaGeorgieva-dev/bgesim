@@ -24,84 +24,47 @@
 <body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col overflow-x-hidden">
 
 <header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
         
-        <!-- ГОРЕН РЕД: Лого, Титла и Слоган -->
-        <div class="flex items-center justify-between border-b border-blue-600/50 pb-2.5 gap-4">
-            <a href="/" class="flex items-center gap-3 shrink-0">
+        <!-- ГОРЕН РЕД: Лого и Езици за мобилни -->
+        <div class="flex items-center justify-between pb-2 gap-2">
+            <a href="/" class="flex items-center gap-2.5 shrink-0">
                 <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
                 <div>
-                    <h1 class="text-base sm:text-xl font-extrabold tracking-tight leading-none text-white whitespace-nowrap">{{ t.site_title }}</h1>
+                    <h1 class="text-sm sm:text-xl font-extrabold tracking-tight leading-none text-white whitespace-nowrap">{{ t.site_title }}</h1>
                     <p class="text-[10px] sm:text-xs text-blue-200 opacity-90 mt-0.5 hidden sm:block">{{ t.site_subtitle }}</p>
                 </div>
             </a>
 
-            <!-- Бутон за мобилно меню (показва се само на мобилни устройства) -->
-            <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none xl:hidden ml-auto" aria-label="Toggle Menu">
-                <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
+            <!-- Превключвател на езици (винаги видим на телефона горе вдясно) -->
+            <div class="flex items-center gap-1 bg-blue-950/40 p-1 rounded-xl border border-blue-600/40">
+                {% for code, label in supported_langs.items() %}
+                <a href="{{ lang_urls[code] }}"
+                   class="px-2 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold transition whitespace-nowrap
+                   {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-200 hover:text-white{% endif %}">
+                    {{ label }}
+                </a>
+                {% endfor %}
+            </div>
         </div>
 
-        <!-- ДОЛЕН РЕД: Навигация, Бутон Партньори и Езици (за Десктоп) -->
-        <div class="hidden xl:flex items-center justify-between pt-2.5">
-            <nav class="flex items-center gap-5 text-sm font-medium">
-                <a href="/" class="text-white/90 hover:text-white transition whitespace-nowrap">🏠 Home</a>
-                <a href="/europe" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
+        <!-- ДОЛЕН РЕД: Всички навигационни линкове (С хоризонтален скрол на телефон) -->
+        <div class="border-t border-blue-600/40 pt-2 overflow-x-auto">
+            <nav class="flex items-center gap-3 text-xs sm:text-sm font-medium whitespace-nowrap py-1">
+                <a href="/" class="text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-blue-700/50">🏠 Home</a>
+                <a href="/europe" class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
                     <span>🇪🇺 Europe</span>
                     <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
                 </a>
-                <a href="/instructions" class="text-white/90 hover:text-white transition whitespace-nowrap">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-                <a href="/contacts" class="text-white/90 hover:text-white transition whitespace-nowrap">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-                <a href="/faq" class="text-white/90 hover:text-white transition whitespace-nowrap">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition whitespace-nowrap">
+                <a href="/instructions" class="text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-blue-700/50">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
+                <a href="/contacts" class="text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-blue-700/50">📞 {{ t.nav_contacts | default('Контакти') }}</a>
+                <a href="/faq" class="text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-blue-700/50">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
+                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold shadow-sm transition">
                     🤝 <span>{{ t.partner_area_btn }}</span>
                 </a>
             </nav>
-
-            <!-- Езици вдясно на долния ред -->
-            <div class="flex items-center gap-1 border-l border-blue-600/60 pl-4">
-                {% for code, label in supported_langs.items() %}
-                <a href="{{ lang_urls[code] }}"
-                   class="px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap
-                   {% if lang == code %}bg-white text-blue-800 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-            </div>
         </div>
 
-    </div>
-
-    <!-- Мобилно меню -->
-    <div id="mobile-menu" class="hidden xl:hidden bg-blue-900 border-t border-blue-800 px-4 pt-3 pb-6 space-y-3">
-        <div class="flex flex-col gap-2">
-            <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">🏠 Home</a>
-            <a href="/europe" class="px-3 py-2 rounded-lg text-sm font-bold text-amber-300 hover:bg-blue-800 flex items-center justify-between">
-                <span>🇪🇺 Europe</span>
-                <span class="text-xs bg-amber-400/20 px-2 py-0.5 rounded-full">35+</span>
-            </a>
-            <a href="/instructions" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
-            <a href="/contacts" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">📞 {{ t.nav_contacts | default('Контакти') }}</a>
-            <a href="/faq" class="px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-blue-800">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-            <a href="/partner/login" class="px-3 py-2 rounded-lg text-sm font-bold text-amber-300 hover:bg-blue-800 flex items-center gap-2">
-                🤝 <span>{{ t.partner_area_btn }}</span>
-            </a>
-        </div>
-
-        <div class="pt-3 border-t border-blue-800">
-            <p class="text-xs text-blue-300 font-semibold mb-2 px-3">Изберете език / Language:</p>
-            <div class="flex flex-wrap gap-1.5 px-3">
-                {% for code, label in supported_langs.items() %}
-                <a href="{{ lang_urls[code] }}"
-                   class="px-3 py-1.5 rounded-lg text-xs font-bold transition
-                   {% if lang == code %}bg-white text-blue-900{% else %}bg-blue-800 text-blue-100 hover:bg-blue-700{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
     </div>
 </header>
 
