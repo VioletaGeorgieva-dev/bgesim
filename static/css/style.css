@@ -1,36 +1,78 @@
 :root {
-  --page-bg: #edf4ff;
-  --panel: rgba(255, 255, 255, 0.94);
-  --panel-solid: #ffffff;
-  --panel-soft: #f9fbff;
-  --primary: #0f5de7;
-  --primary-dark: #0a47b7;
-  --primary-soft: #edf3ff;
-  --accent: #f9b937;
-  --text: #10213c;
-  --muted: #5d6b82;
-  --border: rgba(15, 93, 231, 0.08);
-  --shadow: 0 18px 45px rgba(18, 57, 119, 0.12);
-  --shadow-soft: 0 12px 28px rgba(15, 93, 231, 0.10);
+  --bg: #f4f8ff;
+  --bg-strong: #eaf2ff;
+  --panel: #ffffff;
+  --panel-soft: #f8fbff;
+  --primary: #0e5bd6;
+  --primary-deep: #0b49b4;
+  --primary-soft: #eaf3ff;
+  --accent: #f6b744;
+  --accent-soft: #fff5d9;
+  --text: #172840;
+  --muted: #5f6f8b;
+  --stroke: #dfeafc;
+  --shadow: 0 18px 40px rgba(16, 52, 112, 0.12);
+  --shadow-soft: 0 10px 26px rgba(9, 57, 137, 0.08);
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
+  margin: 0;
   background:
-    radial-gradient(circle at top left, rgba(122, 171, 255, 0.18), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(31, 102, 233, 0.12), transparent 26%),
-    var(--page-bg);
+    radial-gradient(circle at top left, rgba(126, 176, 255, 0.14), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(14, 91, 214, 0.08), transparent 26%),
+    var(--bg);
   color: var(--text);
   font-family: Inter, "Segoe UI", sans-serif;
+  line-height: 1.5;
 }
 
-img { max-width: 100%; }
+img {
+  display: block;
+  max-width: 100%;
+}
 
-main { position: relative; z-index: 1; }
+a {
+  text-decoration: none;
+}
 
-header { box-shadow: 0 18px 35px rgba(11, 52, 128, 0.16); }
-#mobile-menu { backdrop-filter: blur(12px); }
+main {
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  background: linear-gradient(135deg, #0d4ec6 0%, #0c56d8 30%, #0b3e9d 100%);
+  box-shadow: 0 18px 35px rgba(11, 52, 128, 0.16);
+}
+
+header a,
+header button,
+footer a,
+#search-wrapper button,
+#content .bg-blue-600,
+header a[href*="/partner/login"],
+header a[href*="/europe"] {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+header a:hover,
+header button:hover,
+footer a:hover,
+#search-wrapper button:hover,
+#content .bg-blue-600:hover,
+header a[href*="/partner/login"]:hover,
+header a[href*="/europe"]:hover {
+  transform: translateY(-1px);
+}
+
+#mobile-menu {
+  background: rgba(10, 39, 90, 0.95);
+  backdrop-filter: blur(12px);
+}
 
 #search-wrapper,
 #search-wrapper > div,
@@ -40,50 +82,52 @@ section > div.bg-white,
 .group,
 #content .space-y-4 > div,
 #content .bg-white {
-  border-color: var(--border) !important;
-  box-shadow: var(--shadow) !important;
-}
-
-section.bg-white,
-section > div.bg-white,
-.bg-white.rounded-2xl,
-.group,
-#content .space-y-4 > div,
-#content .bg-white {
-  background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,255,.96)) !important;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(247,250,255,0.96));
+  box-shadow: var(--shadow-soft);
 }
 
 #content .bg-white.rounded-2xl:hover,
 .group:hover,
 #content .space-y-4 > div:hover {
+  box-shadow: 0 18px 32px rgba(13, 62, 145, 0.12);
   transform: translateY(-2px);
-  box-shadow: 0 22px 45px rgba(22, 69, 147, 0.14) !important;
 }
 
 #search-wrapper input {
-  border-width: 1.5px !important;
-  box-shadow: inset 0 1px 2px rgba(15, 93, 231, 0.04) !important;
+  border: 1.5px solid var(--stroke) !important;
+  box-shadow: inset 0 1px 2px rgba(15, 93, 231, 0.04);
+  background: rgba(255,255,255,0.9);
 }
 
 #search-wrapper input:focus {
-  box-shadow: 0 0 0 4px rgba(15, 93, 231, 0.12), inset 0 1px 2px rgba(15, 93, 231, 0.04) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(14, 91, 214, 0.12), inset 0 1px 2px rgba(14, 91, 214, 0.04);
 }
 
 #suggestions-list {
-  border-color: rgba(15, 93, 231, 0.08) !important;
-  box-shadow: 0 25px 50px rgba(17, 38, 63, 0.16) !important;
+  border: 1px solid var(--stroke) !important;
+  background: rgba(255,255,255,0.98);
+  box-shadow: 0 22px 42px rgba(17, 38, 63, 0.14) !important;
 }
 
-#suggestions-list li:hover { background: rgba(15, 93, 231, 0.06) !important; }
+#suggestions-list li {
+  color: var(--text);
+}
+
+#suggestions-list li:hover {
+  background: rgba(14, 91, 214, 0.05);
+}
 
 #content .bg-blue-600,
 #search-wrapper button,
 footer a,
 header a[href*="/partner/login"],
 header a[href*="/europe"] {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-  border: none !important;
-  box-shadow: 0 12px 24px rgba(15, 93, 231, 0.22) !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-deep) 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 12px 24px rgba(14, 91, 214, 0.2);
 }
 
 #content .bg-blue-600:hover,
@@ -91,29 +135,44 @@ header a[href*="/europe"] {
 footer a:hover,
 header a[href*="/partner/login"]:hover,
 header a[href*="/europe"]:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+#content .bg-blue-600,
+#search-wrapper button {
+  border-radius: 1rem;
+}
+
+#content .text-blue-600,
+.text-blue-600 {
+  color: var(--primary) !important;
 }
 
 #content .bg-emerald-50,
-.bg-emerald-50 { background: rgba(16, 185, 129, 0.08) !important; }
-#content .text-blue-600, .text-blue-600 { color: var(--primary) !important; }
-footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px); }
+.bg-emerald-50 {
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+
+footer {
+  background: rgba(255,255,255,0.8);
+  border-top: 1px solid rgba(15, 93, 231, 0.08);
+  backdrop-filter: blur(8px);
+}
 
 .premium-hero {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(15, 93, 231, 0.08);
-  border-radius: 32px;
-  background: linear-gradient(135deg, #0d4ed8 0%, #1e5fe8 28%, #6eb4ff 100%);
-  box-shadow: 0 30px 60px rgba(13, 78, 216, 0.23);
+  border-radius: 2rem;
+  background: linear-gradient(135deg, #0d4ed8 0%, #1c62ea 28%, #7db5ff 100%);
+  box-shadow: 0 24px 48px rgba(13, 78, 216, 0.2);
 }
 
 .premium-hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top right, rgba(255,255,255,0.32), transparent 28%);
+  background: radial-gradient(circle at top right, rgba(255,255,255,0.26), transparent 28%);
   pointer-events: none;
 }
 
@@ -130,37 +189,37 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 0.75rem 0.25rem 0.75rem 0.5rem;
+  padding: 0.8rem 0.25rem 0.8rem 0.5rem;
   color: #fff;
 }
 
 .hero-badge {
-  display: inline-flex;
   align-self: flex-start;
+  display: inline-flex;
   padding: 0.45rem 0.8rem;
   border-radius: 999px;
-  background: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.15);
   border: 1px solid rgba(255,255,255,0.18);
   color: #eaf3ff;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .premium-copy h2 {
-  margin-top: 1rem;
-  font-size: clamp(2rem, 4vw, 3.4rem);
+  margin: 0.9rem 0 0;
+  color: #fff;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
   line-height: 1.04;
   font-weight: 900;
   letter-spacing: -0.04em;
-  color: #fff;
 }
 
 .premium-copy p {
   max-width: 38rem;
   margin-top: 0.8rem;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.83);
   font-size: 1rem;
   line-height: 1.6;
 }
@@ -180,9 +239,9 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
   border-radius: 999px;
   background: rgba(255,255,255,0.1);
   border: 1px solid rgba(255,255,255,0.12);
+  color: #f4f9ff;
   font-size: 0.75rem;
   font-weight: 700;
-  color: #f5f9ff;
 }
 
 .hero-visual {
@@ -197,11 +256,11 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-radius: 24px;
-  border: 1px solid rgba(255,255,255,0.24);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.22);
   background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(8px);
   color: #fff;
+  backdrop-filter: blur(8px);
   box-shadow: var(--shadow-soft);
 }
 
@@ -264,10 +323,6 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
     padding: 0.2rem 0.1rem;
   }
 
-  .premium-copy h2 {
-    margin-top: 0.8rem;
-  }
-
   .hero-visual {
     justify-content: flex-start;
   }
@@ -287,14 +342,16 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
     padding-right: 1rem !important;
   }
 
-  #search-wrapper button { width: 100% !important; }
+  #search-wrapper button {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {
   body {
     background:
-      radial-gradient(circle at top, rgba(122, 171, 255, 0.14), transparent 28%),
-      var(--page-bg);
+      radial-gradient(circle at top, rgba(122, 171, 255, 0.15), transparent 28%),
+      var(--bg);
   }
 
   header .max-w-7xl {
@@ -302,7 +359,10 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
     padding-right: 0.75rem;
   }
 
-  #suggestions-list { left: 0; right: 0; }
+  #suggestions-list {
+    left: 0;
+    right: 0;
+  }
 
   .hero-highlights {
     gap: 0.5rem;
@@ -315,5 +375,12 @@ footer { background: rgba(255,255,255,0.8) !important; backdrop-filter: blur(8px
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; scroll-behavior: auto !important; }
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }
