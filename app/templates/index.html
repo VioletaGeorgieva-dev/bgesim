@@ -7,10 +7,10 @@
 
     <!-- 🚀 SEO ОПТИМИЗАЦИЯ -->
     {% if lang == 'bg' %}
-    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути чрез QR код, надежден мобилен интернет без роуминг такси.">
-    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, интернет при пътуване">
+    <meta name="description" content="Купете евтин eSIM интернет за над 190 държави от BG eSIM. Без физически карти, активиране за 2 минути, сигурен интернет при пътуване.">
+    <meta name="keywords" content="esim българия, евтин интернет в чужбина, esim турция, евтин роуминг, мобилни данни в чужбина, e-sim">
     {% else %}
-    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data without roaming fees.">
+    <meta name="description" content="Get affordable prepaid travel eSIM profiles for 190+ countries from BG eSIM. No physical SIM cards, instant 2-minute QR code activation, and reliable mobile data anywhere.">
     <meta name="keywords" content="esim bulgaria, cheap data abroad, esim turkey, travel esim data, cheap roaming worldwide">
     {% endif %}
 
@@ -21,14 +21,15 @@
     <meta property="og:image" content="/static/images/logo.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
 
-<!-- ── HEADER ───────────────────────────────────────────────────────────── -->
+<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
 <header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 sm:h-20">
-            
+
             <!-- Logo & Brand -->
             <a href="/" class="flex items-center gap-3 shrink-0">
                 <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-9 sm:h-12 w-auto object-contain">
@@ -41,9 +42,9 @@
             <!-- Desktop Navigation -->
             <nav class="hidden lg:flex items-center gap-6">
                 <a href="/" class="text-sm font-medium text-white/90 hover:text-white hover:scale-105 transition">🏠 Home</a>
-                
+
                 <!-- Europe CTA -->
-                <a href="/europe" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition transform hover:-translate-y-0.5">
+                <a href="/europe" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold transition">
                     <span>🇪🇺 Europe</span>
                     <span class="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full font-semibold">35+</span>
                 </a>
@@ -51,8 +52,8 @@
                 <a href="/instructions" class="text-sm font-medium text-white/90 hover:text-white transition">📖 {{ t.nav_instructions | default('Инструкции') }}</a>
                 <a href="/contacts" class="text-sm font-medium text-white/90 hover:text-white transition">📞 {{ t.nav_contacts | default('Контакти') }}</a>
                 <a href="/faq" class="text-sm font-medium text-white/90 hover:text-white transition">❓ {% if lang == 'bg' %}Въпроси{% else %}FAQ{% endif %}</a>
-                
-                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-950 text-xs font-bold shadow transition">
+
+                <a href="/partner/login" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-400 hover:from-yellow-400 hover:to-amber-300 text-gray-900 font-bold transition">
                     🤝 <span>{{ t.partner_area_btn }}</span>
                 </a>
             </nav>
@@ -73,7 +74,7 @@
                 <a href="/europe" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-400 text-gray-900 font-bold text-xs">
                     <span>🇪🇺 Europe</span>
                 </a>
-                
+
                 <button type="button" onclick="toggleMobileMenu()" class="p-2 rounded-lg text-blue-100 hover:text-white hover:bg-blue-700/50 focus:outline-none" aria-label="Toggle Menu">
                     <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -119,7 +120,7 @@
         <h2 class="text-base sm:text-lg font-bold text-gray-700 mb-3 sm:mb-4 flex items-center gap-2">
             <span>🔍</span> {{ t.search_title }}
         </h2>
-        
+
         <div class="relative" id="search-wrapper">
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
@@ -137,13 +138,14 @@
                     >
                     <button type="button" id="clear-btn" onclick="clearSearch()"
                         class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg p-1 leading-none {% if not selected_country %}hidden{% endif %}">✕</button>
-                    
+
                     <ul id="suggestions-list"
                         class="absolute z-50 left-0 right-0 bg-white border border-gray-200 rounded-xl shadow-2xl mt-1.5 max-h-60 overflow-y-auto hidden divide-y divide-gray-50"></ul>
                 </div>
 
                 <button type="button" onclick="submitSearch()"
-                    class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg transition shrink-0 active:scale-95">
+                    class="w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base rounded-xl sm:rounded-2xl shadow-md hover:shadow-lg transition shrink-0"
+                >
                     🔍 {{ t.search_btn }}
                 </button>
             </div>
@@ -156,11 +158,11 @@
     <!-- 🌍 POPULAR REGIONS QUICK LINKS -->
     <section class="mb-10 sm:mb-12">
         <h3 class="text-xs sm:text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">Popular Regions</h3>
-        
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            
+
             <!-- Europe Primary Card -->
-            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between">
+            <a href="/europe" class="group relative bg-gradient-to-br from-amber-50 via-amber-100/60 to-orange-50 border-2 border-amber-300/80 rounded-2xl p-5 sm:p-6 hover:shadow-xl hover:-translate-y-1 transition duration-200 flex flex-col justify-between h-full">
                 <div class="absolute top-3 right-3">
                     <span class="inline-block bg-gradient-to-r from-amber-400 to-amber-500 text-gray-900 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full shadow-sm">⭐ Best Value</span>
                 </div>
@@ -176,7 +178,7 @@
             </a>
 
             <!-- Asia Card -->
-            <a href="/search?country=Thailand" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between">
+            <a href="/search?country=Thailand" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between h-full">
                 <div>
                     <span class="text-4xl block mb-2">🌏</span>
                     <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Asia</h4>
@@ -188,7 +190,7 @@
             </a>
 
             <!-- Middle East Card -->
-            <a href="/search?country=Turkey" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between">
+            <a href="/search?country=Turkey" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between h-full">
                 <div>
                     <span class="text-4xl block mb-2">🌍</span>
                     <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Middle East</h4>
@@ -200,7 +202,7 @@
             </a>
 
             <!-- Americas Card -->
-            <a href="/search?country=USA" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between">
+            <a href="/search?country=USA" class="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:-translate-y-1 transition duration-200 flex flex-col justify-between h-full">
                 <div>
                     <span class="text-4xl block mb-2">🌎</span>
                     <h4 class="text-lg font-bold text-gray-800 group-hover:text-blue-600 transition">Americas</h4>
@@ -214,7 +216,6 @@
         </div>
     </section>
 
-    <!-- ── WHAT IS eSIM SECTION ─────────────────────────────────────────── -->
     {% if groups is none %}
     <section class="mb-10 sm:mb-12" id="esim-section">
         <div class="text-center max-w-2xl mx-auto mb-8">
@@ -227,8 +228,6 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-
-            <!-- Card 1 -->
             <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
                 <div>
                     <div class="w-12 h-12 sm:w-14 sm:h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">📱</div>
@@ -236,7 +235,7 @@
                         {{ t.esim_card1_title | default('Дигитална технология') }}
                     </h3>
                     <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">
-                        {{ t.esim_card1_text | default('eSIM е дигитална СИМ карта, вградена директно в телефона. Без физически пластики.') }}
+                        {{ t.esim_card1_text | default('eSIM е дигитална SIM карта, вградена директно в телефона. Без физически пластини и без търсене на магазин.') }}
                     </p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
@@ -245,7 +244,6 @@
                 </div>
             </div>
 
-            <!-- Card 2 -->
             <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
                 <div>
                     <div class="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">🔄</div>
@@ -253,7 +251,7 @@
                         {{ t.esim_card2_title | default('Две карти едновременно') }}
                     </h3>
                     <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">
-                        {{ t.esim_card2_text | default('Вашият личен номер остава активен за разговори и съобщения (WhatsApp/Viber). eSIM се използва за данни.') }}
+                        {{ t.esim_card2_text | default('Вашият личен номер остава активен за разговори и съобщения. eSIM се използва за мобилни данни в чужбина.') }}
                     </p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
@@ -262,7 +260,6 @@
                 </div>
             </div>
 
-            <!-- Card 3 -->
             <div class="bg-white rounded-2xl p-5 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition hover:-translate-y-1 flex flex-col justify-between">
                 <div>
                     <div class="w-12 h-12 sm:w-14 sm:h-14 bg-purple-50 rounded-2xl flex items-center justify-center mb-4 text-2xl sm:text-3xl shrink-0">💸</div>
@@ -270,7 +267,7 @@
                         {{ t.esim_card3_title | default('Спестява време и пари') }}
                     </h3>
                     <p class="text-gray-500 text-xs sm:text-sm leading-relaxed">
-                        {{ t.esim_card3_text | default('Спирате скъпия роуминг. Без търсене на магазини по летищата — имате интернет моментално.') }}
+                        {{ t.esim_card3_text | default('Спирате скъпия роуминг и имате интернет веднага след активиране, без да търсите магазин по летището.') }}
                     </p>
                 </div>
                 <div class="mt-4 pt-3 border-t border-gray-50 flex items-center gap-2">
@@ -278,7 +275,6 @@
                     <span class="text-xs text-purple-600 font-bold">{{ t.esim_card3_tag | default('Без роуминг такси') }}</span>
                 </div>
             </div>
-
         </div>
     </section>
     {% endif %}
@@ -313,7 +309,6 @@
         </div>
         {% endif %}
 
-        <!-- Package Columns -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {% for col_key, col_label, col_color in [
                 ("7",  t.col_7,  "bg-purple-100 text-purple-800 border-purple-200"),
@@ -386,11 +381,11 @@
     </div>
 </main>
 
-<!-- ── FOOTER ───────────────────────────────────────────────────────────── -->
+<!-- ── FOOTER ────────────────────────────────────────────────────────── -->
 <footer class="bg-white border-t border-gray-200 text-center py-8 text-gray-500 text-xs sm:text-sm mt-auto">
     <div class="max-w-7xl mx-auto px-4">
         <div class="mb-4">
-            <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-950 font-bold shadow-md hover:shadow-lg transition">
+            <a href="/partner/login" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-md transition">
                 🤝 <span>{{ t.partner_area_btn }}</span>
             </a>
         </div>
