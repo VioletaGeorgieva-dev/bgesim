@@ -26,8 +26,8 @@
 <header class="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-900 text-white shadow-lg sticky top-0 z-50 w-full">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
         
-        <!-- ГОРЕН РЕД: Лого и Езици за мобилни -->
-        <div class="flex items-center justify-between pb-2 gap-2">
+        <!-- ГОРЕН РЕД: Лого и Слоган -->
+        <div class="flex items-center justify-between pb-2.5 gap-2 border-b border-blue-600/40">
             <a href="/" class="flex items-center gap-2.5 shrink-0">
                 <img src="/static/images/logo.png" alt="{{ t.site_title }}" class="h-8 sm:h-10 w-auto object-contain">
                 <div>
@@ -36,20 +36,20 @@
                 </div>
             </a>
 
-            <!-- Превключвател на езици (винаги видим на телефона горе вдясно) -->
-            <div class="flex items-center gap-1 bg-blue-950/40 p-1 rounded-xl border border-blue-600/40">
+            <!-- Всички езици горе вдясно (с хоризонтален скрол на телефон, за да се събират сигурно) -->
+            <div class="flex items-center gap-1 overflow-x-auto py-1">
                 {% for code, label in supported_langs.items() %}
                 <a href="{{ lang_urls[code] }}"
-                   class="px-2 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold transition whitespace-nowrap
-                   {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-200 hover:text-white{% endif %}">
+                   class="px-2 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap
+                   {% if lang == code %}bg-white text-blue-900 shadow-sm{% else %}text-blue-100 hover:bg-blue-700/60{% endif %}">
                     {{ label }}
                 </a>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- ДОЛЕН РЕД: Всички навигационни линкове (С хоризонтален скрол на телефон) -->
-        <div class="border-t border-blue-600/40 pt-2 overflow-x-auto">
+        <!-- ДОЛЕН РЕД: Всички навигационни линкове -->
+        <div class="pt-2 overflow-x-auto">
             <nav class="flex items-center gap-3 text-xs sm:text-sm font-medium whitespace-nowrap py-1">
                 <a href="/" class="text-white/90 hover:text-white transition px-2 py-1 rounded-lg hover:bg-blue-700/50">🏠 Home</a>
                 <a href="/europe" class="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-gray-900 font-bold shadow-sm transition">
