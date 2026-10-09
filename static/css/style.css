@@ -47,6 +47,15 @@ main {
   width: 100%;
 }
 
+/* Скриване на скролбара при мобилен хоризонтален скрол в навигацията */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Анимации и бутони */
 header a,
 header button,
@@ -59,11 +68,6 @@ header a:hover,
 header button:hover,
 .group:hover {
   transform: translateY(-1px);
-}
-
-#mobile-menu {
-  background: rgba(10, 39, 90, 0.95);
-  backdrop-filter: blur(12px);
 }
 
 /* Търсачка и падащо меню */
