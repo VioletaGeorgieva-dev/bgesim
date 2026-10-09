@@ -125,7 +125,7 @@ COUNTRY_TRANSLATIONS = {
     "MZ": {"en": "Mozambique", "bg": "Мозамбик", "de": "Mosambik", "tr": "Mozambik", "es": "Mozambique"},
     "NP": {"en": "Nepal", "bg": "Непал", "de": "Nepal", "tr": "Nepal", "es": "Nepal"},
     "NL": {"en": "Netherlands", "bg": "Нидерландия", "de": "Niederlande", "tr": "Hollanda", "es": "Países Bajos"},
-    "NZ": {"en": "New Zealand", "bg": "Нова Зеландия", "de": "Neuseeland", "tr": "Yeni Zelanda", "es": "Nueva Zelanda"},
+    "NZ": {"en": "New Zealand", "bg": "Нова Зеландия", "de": "Neuseeland", "tr": "Yeni Zelanda", "es": "Nueva Зеланда"},
     "NI": {"en": "Nicaragua", "bg": "Никарагуа", "de": "Nicaragua", "tr": "Nikaragua", "es": "Nicaragua"},
     "NE": {"en": "Niger", "bg": "Нигер", "de": "Niger", "tr": "Nijer", "es": "Níger"},
     "NG": {"en": "Nigeria", "bg": "Нигерия", "de": "Nigeria", "tr": "Nijerya", "es": "Nigeria"},
@@ -467,7 +467,7 @@ UI_TRANSLATIONS = {
         "region_asia": "Азия",
         "region_asia_desc": "Тайланд, Виетнам, Япония",
         "region_me": "Близкия Изток",
-        "region_me_desc": "Турция, ОАЕ, Саудитска Арабия",
+        "region_asia_desc": "Турция, ОАЕ, Саудитска Арабия",
         "region_americas": "Америка",
         "region_americas_desc": "САЩ, Канада, Мексико",
         "explore": "Разгледай",
@@ -514,3 +514,8 @@ UI_TRANSLATIONS = {
         "partner_sales_by_promo_desc": "GDPR-защитено преглеждане — без имена, имейли или лични данни.",
     }
 }
+
+
+def get_ui(lang: str) -> dict:
+    """Връща UI преводите за дадения език (по подразбиране 'en')."""
+    return UI_TRANSLATIONS.get(lang) or UI_TRANSLATIONS.get("bg") or UI_TRANSLATIONS["en"]
